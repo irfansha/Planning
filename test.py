@@ -1,24 +1,69 @@
 import pddlpy
 
+'''
+Takes initial_state, a list of atoms, and casts it to list of tuples:
+'''
+def initial_state_cast(temp_initial_state):
+  initial_state = []
+  for cond in temp_initial_state:
+    temp_cond = str(cond)
+    temp_cond = temp_cond[1:-1]
+    temp_cond = temp_cond.split("'")
+    new_cond = []
+    for term in temp_cond:
+      if term != '' and ',' not in term :
+        new_cond.append(term)
+    initial_state.append(tuple(new_cond))
+  assert(str(temp_initial_state) == str(initial_state))
+  return initial_state
+
 domprob = pddlpy.DomainProblem('./examples-pddl/blocks/domain.pddl', './examples-pddl/blocks/probBLOCKS-4-0.pddl')
 
+#Contains objects with thier types:
+#print(domprob.worldobjects())
 
-print("DOMAIN PROBLEM")
-print("objects")
-print("\t", domprob.worldobjects())
+
 print("operators")
-print("\t", list( domprob.operators() ))
-print("init",)
-print("\t", domprob.initialstate())
+operators = list(domprob.operators())
+print(operators)
+
+
+temp_initial_state = list(domprob.initialstate())
+
+#print(temp_initial_state)
+
+initial_state = initial_state_cast(temp_initial_state)
+#print(initial_state)
+
+
+
 print("goal",)
 print("\t", domprob.goals())
 
-ops_to_test = { 1:"pick-up", 2:"put-down", 3:"stack", 4:"unstack", }
-op = ops_to_test[4]
-for o in domprob.ground_operator(op):
-    print()
-    print( "\tvars", o.variable_list )
-    print( "\tpre+", o.precondition_pos )
-    print( "\tpre-", o.precondition_neg )
-    print( "\teff+", o.effect_pos )
-    print( "\teff-", o.effect_neg )
+valid_list = []
+
+for op in operators:
+  for o in domprob.ground_operator(op):
+    #print( "\tvars", o.variable_list )
+    pre_pos = list(o.precondition_pos)
+    pre_neg = list(o.precondition_neg)
+    # Listing valid states from each operator:
+    invalid_flag = 0
+    # Looking at positive preconditions and their presence in initial state:
+    for cond in pre_pos:
+      if cond not in initial_state:
+        #print("No", cond, "\n", initial_state)
+        invalid_flag = 1
+        break
+    # Looking at negative preconditions and their presence in initial state:
+    if invalid_flag == 0:
+      for cond in pre_neg:
+        if cond in initial_state:
+          #print("No", cond, "\n", initial_state)
+          invalid_flag = 1
+          break
+    post_pos = list(o.effect_pos)
+    post_neg = list(o.effect_neg)
+    if invalid_flag == 0:
+      print(post_pos)
+      print(post_neg)
