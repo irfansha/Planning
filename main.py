@@ -7,6 +7,7 @@ Todos:
 
 import sys
 import constraints as cs
+from transition_gen import TransitionFunction as tf
 
 # Main:
 if __name__ == '__main__':
@@ -22,3 +23,9 @@ if __name__ == '__main__':
   action_vars = cs.extract_action_vars(action_list)
   #print(action_vars)
   #print(state_vars)
+
+  transition_gen = tf(state_vars, action_vars, action_list)
+
+  #print(transition_gen.state_vars_pre_map)
+  #print(transition_gen.state_vars_post_map)
+  #print(transition_gen.action_vars_map)
