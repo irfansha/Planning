@@ -2,7 +2,7 @@
 
 '''
 Todos:
-  1. XXX
+  1. Refine actions list into intergers
 '''
 
 import sys
@@ -18,4 +18,7 @@ if __name__ == '__main__':
 
   state_vars = cs.extract_state_vars(initial_state, goal_state, action_list)
   state_vars.sort()
-  print(state_vars)
+
+  action_vars = cs.extract_action_vars(action_list)
+  #print(action_vars)
+  #print(state_vars)
