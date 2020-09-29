@@ -2,7 +2,7 @@
 
 '''
 Todos:
-  1. Refine actions list into intergers
+  1. Add unit testcases for transition gates generator functions.
 '''
 
 import sys
@@ -21,11 +21,5 @@ if __name__ == '__main__':
   state_vars.sort()
 
   action_vars = cs.extract_action_vars(action_list)
-  #print(action_vars)
-  #print(state_vars)
 
-  transition_gen = tf(state_vars, action_vars, action_list)
-
-  #print(transition_gen.state_vars_pre_map)
-  #print(transition_gen.state_vars_post_map)
-  #print(transition_gen.action_vars_map)
+  transition_fun = tf(state_vars, action_vars, action_list)
