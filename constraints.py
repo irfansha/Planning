@@ -80,6 +80,6 @@ def extract_state_vars(initial_state, goal_state, action_list):
 def extract_action_vars(action_list):
   action_vars = []
   for action in action_list:
-    action_vars.append((action.name, list(action.parameters)))
+    action_vars.append((action.name, action.parameters))
   return action_vars
 
