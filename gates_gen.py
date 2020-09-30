@@ -33,6 +33,15 @@ class GatesGen():
       self.and_gate(then_list)
       self.or_gate([-if_gate, self.output_gate])
 
+  # Takes list and current list of gates
+  # generates if then not gate i.e., if x then -y -> -y' = AND(y) and OR(-x, -y'):
+  def if_then_not_gate(self, if_gate, then_list):
+    # AND gate for then list:
+    if isinstance(then_list, int):
+      self.or_gate([-if_gate, -then_list])
+    else:
+      self.and_gate(then_list)
+      self.or_gate([-if_gate, -self.output_gate])
 
 
   # Takes list and current list of gates
@@ -72,7 +81,7 @@ class GatesGen():
     for i in range(tfun.num_action_vars):
       temp_av_list = list(tfun.action_vars)
       if_gate = temp_av_list.pop(i)
-      self.if_then_gate(if_gate, temp_av_list)
+      self.if_then_not_gate(if_gate, temp_av_list)
       aux_amo_gates.append(self.output_gate)
     self.gates_list.append(['# final output AMO gate:'])
     self.and_gate(aux_amo_gates)
