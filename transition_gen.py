@@ -5,6 +5,8 @@ Todos:
   1. XXX
 '''
 
+from gates_gen import GatesGen as gg
+
 class TransitionFunction():
 
   # Mapping state variables to 1,...,n where n is the number of state variables:
@@ -38,7 +40,11 @@ class TransitionFunction():
     self.sv_pre_map, self.sv_pre_inv_map = self.pre_map_gen(state_vars)
     self.sv_post_map, self.sv_post_inv_map = self.post_map_gen(state_vars)
     self.av_map, self.av_inv_map = self.action_map_gen(len(state_vars), action_vars)
+    self.num_state_vars = len(state_vars)
+    self.num_action_vars = len(action_vars)
+    self.action_vars = list(self.av_map.keys())
     self.integer_tfun = self.integer_tfun_gen(action_list, state_vars)
+    self.gates_list = gg(self)
 
   def integer_tfun_gen(self, action_list, state_vars):
     int_tfun = []
