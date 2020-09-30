@@ -8,6 +8,7 @@ Todos:
 import sys
 from constraints import Constraints as cs
 from transition_gen import TransitionFunction as tf
+from sat_encoding_gen import SatEncoding as se
 
 # Main:
 if __name__ == '__main__':
@@ -15,6 +16,13 @@ if __name__ == '__main__':
   domain = sys.argv[1]
   problem = sys.argv[2]
   k = int(sys.argv[3])
-  constraints_extract = cs(domain, problem)
+  encoding = sys.argv[4]
 
-  transition_fun = tf(constraints_extract)
+  # Extracting constraints from problem:
+  constraints_extract = cs(domain, problem)
+  # Generating transition function:
+  tfun = tf(constraints_extract)
+
+  if (encoding == 'SAT'):
+    sat_encoding = se(constraints_extract, tfun, k)
+

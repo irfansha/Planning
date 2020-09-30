@@ -44,7 +44,7 @@ class TransitionFunction():
     self.num_action_vars = len(constraints_extract.action_vars)
     self.action_vars = list(self.av_map.keys())
     self.integer_tfun = self.integer_tfun_gen(constraints_extract.action_list, constraints_extract.state_vars)
-    self.transition_gates = gg(self)
+    self.gates_gen = gg(self)
 
   def integer_tfun_gen(self, action_list, state_vars):
     int_tfun = []
