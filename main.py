@@ -6,7 +6,7 @@ Todos:
 '''
 
 import sys
-import constraints as cs
+from constraints import Constraints as cs
 from transition_gen import TransitionFunction as tf
 
 # Main:
@@ -15,11 +15,6 @@ if __name__ == '__main__':
   domain = sys.argv[1]
   problem = sys.argv[2]
   k = int(sys.argv[3])
-  initial_state, goal_state, action_list = cs.constraints(domain, problem)
+  constraints_extract = cs(domain, problem)
 
-  state_vars = cs.extract_state_vars(initial_state, goal_state, action_list)
-  state_vars.sort()
-
-  action_vars = cs.extract_action_vars(action_list)
-
-  transition_fun = tf(state_vars, action_vars, action_list)
+  transition_fun = tf(constraints_extract)

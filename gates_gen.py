@@ -11,7 +11,7 @@ class GatesGen():
   # generates OR gate:
   def or_gate(self, current_list):
     temp_gate = ['or', self.next_gate, current_list]
-    self.gates_list.append(temp_gate)
+    self.transition_gates.append(temp_gate)
     self.output_gate = self.next_gate
     self.next_gate = self.next_gate + 1
 
@@ -19,7 +19,7 @@ class GatesGen():
   # generates AND gate:
   def and_gate(self, current_list):
     temp_gate = ['and', self.next_gate, current_list]
-    self.gates_list.append(temp_gate)
+    self.transition_gates.append(temp_gate)
     self.output_gate = self.next_gate
     self.next_gate = self.next_gate + 1
 
@@ -72,7 +72,7 @@ class GatesGen():
         #print(then_gate)
       self.if_then_gate(if_gate, then_list)
       aux_action_gates.append(self.output_gate)
-    self.gates_list.append(['# final output action gate:'])
+    self.transition_gates.append(['# final output action gate:'])
     self.and_gate(aux_action_gates)
     self.final_action_gate = self.output_gate
 
@@ -83,15 +83,15 @@ class GatesGen():
       if_gate = temp_av_list.pop(i)
       self.if_then_not_gate(if_gate, temp_av_list)
       aux_amo_gates.append(self.output_gate)
-    self.gates_list.append(['# final output AMO gate:'])
+    self.transition_gates.append(['# final output AMO gate:'])
     self.and_gate(aux_amo_gates)
     amo_output_gate = self.output_gate
 
-    self.gates_list.append(['# ALO gate:'])
+    self.transition_gates.append(['# ALO gate:'])
     self.or_gate(tfun.action_vars)
     alo_output_gate = self.output_gate
 
-    self.gates_list.append(['# final output AMO ALO gate:'])
+    self.transition_gates.append(['# final output AMO ALO gate:'])
     self.and_gate([amo_output_gate, alo_output_gate])
     self.final_amoalo_gate = self.output_gate
 
@@ -100,7 +100,7 @@ class GatesGen():
     self.final_transition_gate = self.output_gate
 
   def __init__(self, tfun):
-    self.gates_list = []
+    self.transition_gates = []
     self.output_gate = 0 # output gate will never be zero
     self.next_gate = 2*tfun.num_state_vars + tfun.num_action_vars + 1
     self.untouched_prop_map = {}
@@ -108,22 +108,24 @@ class GatesGen():
     self.final_amoalo_gate = 0 # final amo alo gate will never be zero
     self.final_transition_gate = 0 # final transition gate will never be zero
 
-    self.gates_list.append(['# Untouched Propagation gates:'])
+    self.transition_gates.append(['# Untouched Propagation gates:'])
     # Adding untouched propagation gates:
     self.add_untouched_prop_gates(tfun)
 
-    self.gates_list.append(['# Action gates:'])
+    self.transition_gates.append(['# Action gates:'])
     # Adding action gates:
     self.add_action_gates(tfun)
 
-    self.gates_list.append(['# AMO ALO gates:'])
+    self.transition_gates.append(['# AMO ALO gates:'])
     # Adding AtMostOne and AtLeastOne gates:
     self.add_amo_alo_gates(tfun)
 
-    self.gates_list.append(['# Final transition gate:'])
+    self.transition_gates.append(['# Final transition gate:'])
     # Adding final transition gate:
     self.add_final_gate()
+    self.total_gates = self.output_gate
 
 
-    for gate in self.gates_list:
-      print(gate)
+  def new_gate_gen(self, encoding, var_list):
+    for var in var_list:
+      print(var)
