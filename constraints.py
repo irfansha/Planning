@@ -23,12 +23,12 @@ class Constraints():
     parser.parse_problem(problem)
 
     state = parser.state
-    # Initial state gate:
-    self.initial_gate = list(state)
+    # Initial state gate, ASSUMING no negative initial conditions:
+    self.initial_state = list(state)
 
     goal_pos = parser.positive_goals
     goal_not = parser.negative_goals
-    self.goal_gate = [goal_pos, goal_not]
+    self.goal_state = [goal_pos, goal_not]
 
     # Grounding process
     ground_actions = []
@@ -77,7 +77,7 @@ class Constraints():
 
   def extract_action_vars(self):
     for action in self.action_list:
-      self.action_vars.append((action.name, action.parameters))
+      self.action_vars.append((action.name, tuple(action.parameters)))
 
 
   def __init__(self, domain, problem):
