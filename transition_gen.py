@@ -59,14 +59,10 @@ class TransitionFunction():
 
       # Appending the positive preconditions as positive literals:
       for pos_pre in action_list[i].positive_preconditions:
-        if pos_pre not in touched_vars:
-          touched_vars.append(pos_pre)
         current_state_literals.append(self.sv_pre_inv_map[tuple(pos_pre)])
 
       # Appending the negative preconditions as negative literals:
       for neg_pre in action_list[i].negative_preconditions:
-        if neg_pre not in touched_vars:
-          touched_vars.append(neg_pre)
         current_state_literals.append(-self.sv_pre_inv_map[tuple(neg_pre)])
 
       # Appending the positive postconditions as positive literals:
