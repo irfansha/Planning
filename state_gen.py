@@ -2,7 +2,7 @@
 
 class StateGen():
 
-  def __init__(self, vd, k):
+  def __init__(self, vd, num_state_vars, k):
     self.states = []
-    for i in range(k):
-      self.states.append(vd.get_vars(k))
+    for i in range(k+1):
+      self.states.append(vd.get_vars(num_state_vars))
