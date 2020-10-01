@@ -80,15 +80,51 @@ class SatEncoding():
     temp_final_list.append(self.initial_output_gate)
     temp_final_list.extend(self.transition_step_output_gates)
     temp_final_list.append(self.goal_output_gate)
-    self.encoding.append('# Final gate:')
+    self.encoding.append(['# Final gate:'])
 
     # Generating final gate variable:
     [self.final_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['and', self.final_output_gate, temp_final_list])
 
+  def generate_quantifier_blocks(self):
+    self.quantifier_block.append(['# State variables :'])
+    for states in self.states_gen.states:
+      self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in states) + ')'])
+    self.quantifier_block.append(['# Action variables :'])
+    for states in self.action_vars:
+      self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in states) + ')'])
+
+  def print_gate(self, gate):
+    if len(gate) == 1:
+      print(gate[0])
+    else:
+      print(str(gate[1]) + ' = ' + gate[0] + '(' + ', '.join(str(x) for x in gate[2]) + ')')
+
+  def print_gate_tofile(self, gate, f):
+    if len(gate) == 1:
+      f.write(gate[0] + '\n')
+    else:
+      f.write(str(gate[1]) + ' = ' + gate[0] + '(' + ', '.join(str(x) for x in gate[2]) + ') \n')
+
+  def print_encoding_tofile(self, file_path):
+    f = open(file_path, 'w')
+    for gate in self.quantifier_block:
+      self.print_gate_tofile(gate, f)
+    f.write('output(' + str(self.final_output_gate) + ') \n')
+    for gate in self.encoding:
+      self.print_gate_tofile(gate, f)
+
+  def print_encoding(self):
+    for gate in self.quantifier_block:
+      self.print_gate(gate)
+    print('output(' + str(self.final_output_gate) + ')')
+    for gate in self.encoding:
+      self.print_gate(gate)
+
   def __init__(self, constraints_extract, tfun, k):
     self.var_dis = vd()
     self.action_vars = []
+    self.quantifier_block = []
     self.encoding = []
     self.initial_output_gate = 0 # initial output gate can never be 0
     self.goal_output_gate = 0 # goal output gate can never be 0
@@ -107,6 +143,4 @@ class SatEncoding():
 
     self.generate_final_gate()
 
-    #print(transition_step_output_gates)
-    for gate in self.encoding:
-      print(gate)
+    self.generate_quantifier_blocks()
