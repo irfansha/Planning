@@ -17,6 +17,7 @@ if __name__ == '__main__':
   problem = sys.argv[2]
   k = int(sys.argv[3])
   encoding = sys.argv[4]
+  encoding_file_name = sys.argv[5]
 
   # Extracting constraints from problem:
   constraints_extract = cs(domain, problem)
@@ -25,4 +26,4 @@ if __name__ == '__main__':
 
   if (encoding == 'SAT'):
     sat_encoding = se(constraints_extract, tfun, k)
-
+    sat_encoding.print_encoding_tofile(encoding_file_name)
