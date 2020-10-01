@@ -9,6 +9,7 @@ import sys
 from constraints import Constraints as cs
 from transition_gen import TransitionFunction as tf
 from sat_encoding_gen import SatEncoding as se
+from run_quabs import Quabs as qb
 
 # Main:
 if __name__ == '__main__':
@@ -17,7 +18,9 @@ if __name__ == '__main__':
   problem = sys.argv[2]
   k = int(sys.argv[3])
   encoding = sys.argv[4]
-  encoding_file_name = sys.argv[5]
+  encoding_file_path = sys.argv[5]
+  output_file_path = sys.argv[6]
+  solver_path = sys.argv[7]
 
   # Extracting constraints from problem:
   constraints_extract = cs(domain, problem)
@@ -26,4 +29,6 @@ if __name__ == '__main__':
 
   if (encoding == 'SAT'):
     sat_encoding = se(constraints_extract, tfun, k)
-    sat_encoding.print_encoding_tofile(encoding_file_name)
+    sat_encoding.print_encoding_tofile(encoding_file_path)
+    run_qb = qb(encoding_file_path, output_file_path, solver_path)
+    run_qb.run()
