@@ -32,3 +32,9 @@ if __name__ == '__main__':
     sat_encoding.print_encoding_tofile(encoding_file_path)
     run_qb = qb(encoding_file_path, output_file_path, solver_path)
     run_qb.run()
+    run_qb.parse_quabs_output()
+    if run_qb.sat:
+      run_qb.extract_plan(sat_encoding.action_vars, constraints_extract.action_vars)
+      run_qb.print_plan()
+    else:
+      print('plan not found')
