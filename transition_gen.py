@@ -45,6 +45,7 @@ class TransitionFunction():
     self.action_vars = list(self.av_map.keys())
     self.integer_tfun = self.integer_tfun_gen(constraints_extract.action_list, constraints_extract.state_vars)
     self.gates_gen = gg(self)
+    self.num_aux_vars = self.gates_gen.total_gates - (2*self.num_state_vars + self.num_action_vars)
 
   def integer_tfun_gen(self, action_list, state_vars):
     int_tfun = []
@@ -86,6 +87,6 @@ class TransitionFunction():
           untouched_propagate_pairs.append((j+1, j+1+n))
           assert(self.sv_pre_map[j+1] == self.sv_post_map[j+1+n])
 
-      int_tfun.append([self.av_inv_map[action_list[i].name,action_list[i].parameters], current_state_literals, untouched_propagate_pairs])
+      int_tfun.append([self.av_inv_map[action_list[i].name,tuple(action_list[i].parameters)], current_state_literals, untouched_propagate_pairs])
 
     return int_tfun
