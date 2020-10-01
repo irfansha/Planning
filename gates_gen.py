@@ -127,5 +127,17 @@ class GatesGen():
 
 
   def new_gate_gen(self, encoding, var_list):
-    for var in var_list:
-      print(var)
+
+    for gate in self.transition_gates:
+      if (len(gate) != 1):
+        # Indirectly mapping the list of variables to transition function:
+        new_gate_name = var_list[gate[1]-1]
+        new_gate_list = []
+        for prev_gate in gate[2]:
+          if prev_gate > 0:
+            new_gate_list.append(var_list[prev_gate-1])
+          else:
+            new_gate_list.append(-var_list[(-prev_gate)-1])
+        encoding.append([gate[0], new_gate_name, new_gate_list])
+      else:
+        encoding.append([gate[0]])
