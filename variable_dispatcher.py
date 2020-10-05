@@ -8,5 +8,8 @@ class VarDispatcher():
     self.next_var = self.next_var+n
     return var_list
 
+  def set_next_var(self, n):
+    self.next_var = n
+
   def __init__(self):
     self.next_var = 1
