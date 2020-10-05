@@ -31,6 +31,14 @@ class Quabs():
   def extract_qr_plan(self, states, constraints, n, k):
     for i in range(k):
       temp_plan = []
+      add_effects = []
+      del_effects = []
+      for j in range(n):
+        if (self.sol_map[states[i][j]] != self.sol_map[states[i+1][j]]):
+          if (self.sol_map[states[i][j]] == 1 and self.sol_map[states[i+1][j]] == -1):
+            del_effects.append(constraints.state_vars[j])
+          else:
+            add_effects.append(constraints.state_vars[j])
       for action in constraints.action_list:
         valid_action = 1
         for pre_neg in action.negative_preconditions:
@@ -45,26 +53,31 @@ class Quabs():
           if self.sol_map[states[i][var_index]] == -1:
             valid_action = 0
             break
-        for pos_neg in action.del_effects:
-          var_index = constraints.state_vars.index(pos_neg)
-          #if states[i+1][var_index] in self.sol_map:
-          if self.sol_map[states[i+1][var_index]] == 1:
-            valid_action = 0
-            break
+        # XXX plan extract not complete:
         for pos_pos in action.add_effects:
           var_index = constraints.state_vars.index(pos_pos)
-          #if states[i+1][var_index] in self.sol_map:
-          if self.sol_map[states[i+1][var_index]] == -1:
+          #if states[i][var_index] in self.sol_map:
+          if self.sol_map[states[i][var_index]] == -1:
+            valid_action = 0
+            break
+        for pos_neg in action.del_effects:
+          var_index = constraints.state_vars.index(pos_neg)
+          #if states[i][var_index] in self.sol_map:
+          if self.sol_map[states[i][var_index]] == 1:
+            valid_action = 0
+            break
+        for add_effect in add_effects:
+          if add_effect not in action.add_effects:
+            valid_action = 0
+            break
+        for del_effect in del_effects:
+          if del_effect not in action.del_effects:
             valid_action = 0
             break
         if (valid_action):
-          if (action.name != 'noop'):
-            temp_plan = (action.name, action.parameters)
-            break
-      if (len(temp_plan) == 0):
-        self.plan.append(('noop',()))
-      else:
-        self.plan.append(temp_plan)
+          temp_plan = (action.name, tuple(action.parameters))
+          self.plan.append(temp_plan)
+          break
 
   def extract_plan(self, actions, action_vars):
     for step_actions in actions:
