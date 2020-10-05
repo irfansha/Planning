@@ -5,7 +5,7 @@ Todos:
   1. XXX
 '''
 
-from gates_gen import GatesGen as gg
+from gates_gen import TransitionGatesGen as gg
 
 class TransitionFunction():
 
