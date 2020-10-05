@@ -5,7 +5,7 @@ Todos:
   1. XXX
 '''
 
-class GatesGen():
+class TransitionGatesGen():
 
   # Takes list and current list of gates
   # generates OR gate:
@@ -141,3 +141,57 @@ class GatesGen():
         encoding.append([gate[0], new_gate_name, new_gate_list])
       else:
         encoding.append([gate[0]])
+
+
+
+class StateGatesGen():
+
+  # Takes list and current list of gates
+  # generates OR gate:
+  def or_gate(self, current_list):
+    temp_gate = ['or', self.next_gate, current_list]
+    self.state_gates.append(temp_gate)
+    self.output_gate = self.next_gate
+    self.next_gate = self.next_gate + 1
+
+  # Takes list and current list of gates
+  # generates AND gate:
+  def and_gate(self, current_list):
+    temp_gate = ['and', self.next_gate, current_list]
+    self.state_gates.append(temp_gate)
+    self.output_gate = self.next_gate
+    self.next_gate = self.next_gate + 1
+
+  # Takes list and current list of gates
+  # generates if then gate i.e., if x then y -> y' = AND(y) and OR(-x, y'):
+  def if_then_gate(self, if_gate, then_list):
+    # AND gate for then list:
+    if isinstance(then_list, int):
+      self.or_gate([-if_gate, then_list])
+    else:
+      self.and_gate(then_list)
+      self.or_gate([-if_gate, self.output_gate])
+
+  # Takes list and current list of gates
+  # generates if then not gate i.e., if x then -y -> -y' = AND(y) and OR(-x, -y'):
+  def if_then_not_gate(self, if_gate, then_list):
+    # AND gate for then list:
+    if isinstance(then_list, int):
+      self.or_gate([-if_gate, -then_list])
+    else:
+      self.and_gate(then_list)
+      self.or_gate([-if_gate, -self.output_gate])
+
+
+  # Takes list and current list of gates
+  # generates eq gate i.e., x == y -> if x then y and if y then x:
+  def eq_gate(self, x, y):
+    self.if_then_gate(x,y)
+    temp_first_gate = self.output_gate
+    self.if_then_gate(y,x)
+    self.and_gate([temp_first_gate,self.output_gate])
+
+  def __init__(self, next_gate, encoding):
+    self.state_gates = encoding
+    self.output_gate = 0 # output gate will never be zero
+    self.next_gate = next_gate
