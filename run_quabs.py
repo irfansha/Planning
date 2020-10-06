@@ -68,6 +68,7 @@ class Quabs():
           valid_action = 0
         if (valid_action):
           self.plan.append([action.name, tuple(action.parameters)])
+          break
 
   def extract_plan(self, actions, action_vars):
     for step_actions in actions:
