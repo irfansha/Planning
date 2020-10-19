@@ -39,38 +39,32 @@ class QREncoding():
     self.forall_vars_second = self.var_dis.get_vars(n)
 
   def generate_if_block_for_transition(self, n, k):
-    states_gg = sgg(self.var_dis.next_var, self.encoding)
+    states_gg = sgg(n)
     eq_output_gates = []
     for i in range(k):
-      step_eq_output_gates = []
-      self.encoding.append(['# Eq gate between S' + str(i) + ':(' + ', '.join(str(x) for x in self.states_gen.states[i]) + ') and'])
-      self.encoding.append(['#                 X1:('+ ', '.join(str(x) for x in self.forall_vars_first) + ')'])
-      for j in range(n):
-        states_gg.eq_gate(self.states_gen.states[i][j], self.forall_vars_first[j])
-        step_eq_output_gates.append(states_gg.output_gate)
-      # and between individual eq gates:
-      states_gg.and_gate(step_eq_output_gates)
-      first_gate = states_gg.output_gate
+      first_aux_vars = self.var_dis.get_vars(states_gg.aux_vars)
+      # First pair:
+      states_gg.new_gate_gen(self.encoding, 'S'+ str(i), 'X1', self.states_gen.states[i], self.forall_vars_first, first_aux_vars)
+      first_gate = first_aux_vars[-1]
 
-      step_eq_output_gates = []
-      self.encoding.append(['# Eq gate between S' + str(i+1) + ':(' + ', '.join(str(x) for x in self.states_gen.states[i+1]) + ') and'])
-      self.encoding.append(['#                 X2:('+ ', '.join(str(x) for x in self.forall_vars_second) + ')'])
-      for j in range(n):
-        states_gg.eq_gate(self.states_gen.states[i+1][j], self.forall_vars_second[j])
-        step_eq_output_gates.append(states_gg.output_gate)
-      # and between individual eq gates:
-      states_gg.and_gate(step_eq_output_gates)
-      second_gate = states_gg.output_gate
+      second_aux_vars = self.var_dis.get_vars(states_gg.aux_vars)
+      # Second pair
+      states_gg.new_gate_gen(self.encoding, 'S'+ str(i+1), 'X2', self.states_gen.states[i+1], self.forall_vars_second,second_aux_vars)
+      second_gate = second_aux_vars[-1]
+
       eq_output_gates.append((first_gate, second_gate))
+
     or_gates_list = []
     for i in range(k):
       self.encoding.append(['# S' + str(i) + ' == X1 and S' + str(i+1) + ' == X2' ])
-      states_gg.and_gate([eq_output_gates[i][0], eq_output_gates[i][1]])
-      or_gates_list.append(states_gg.output_gate)
+      [and_output_gate] = self.var_dis.get_vars(1)
+      self.encoding.append(['and', and_output_gate, eq_output_gates[i]])
+      or_gates_list.append(and_output_gate)
     self.encoding.append(['# or gate for if condition:'])
-    states_gg.or_gate(or_gates_list)
-    self.if_tfun_gate = states_gg.output_gate
-    self.var_dis.set_next_var(states_gg.next_gate)
+    [or_output_gate] = self.var_dis.get_vars(1)
+    self.encoding.append(['or', or_output_gate, or_gates_list])
+    self.if_tfun_gate = or_output_gate
+
 
   def generate_if_then_transition(self, tfun):
     # First generating transition function:
