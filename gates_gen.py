@@ -2,7 +2,7 @@
 
 '''
 Todos:
-  1. XXX
+  1. Move descriptive comments inside the copy state functions.
 '''
 
 class TransitionGatesGen():
@@ -144,13 +144,14 @@ class TransitionGatesGen():
 
 
 
+
 class StateGatesGen():
 
   # Takes list and current list of gates
   # generates OR gate:
   def or_gate(self, current_list):
     temp_gate = ['or', self.next_gate, current_list]
-    self.state_gates.append(temp_gate)
+    self.base_state_gates.append(temp_gate)
     self.output_gate = self.next_gate
     self.next_gate = self.next_gate + 1
 
@@ -158,7 +159,7 @@ class StateGatesGen():
   # generates AND gate:
   def and_gate(self, current_list):
     temp_gate = ['and', self.next_gate, current_list]
-    self.state_gates.append(temp_gate)
+    self.base_state_gates.append(temp_gate)
     self.output_gate = self.next_gate
     self.next_gate = self.next_gate + 1
 
@@ -191,7 +192,41 @@ class StateGatesGen():
     self.if_then_gate(y,x)
     self.and_gate([temp_first_gate,self.output_gate])
 
-  def __init__(self, next_gate, encoding):
-    self.state_gates = encoding
+  # Takes lists of gates of two states and generates equality gate:
+  def eq_state_gate(self):
+    assert(len(self.first_state_vars) == len(self.second_state_vars))
+    step_output_gates = []
+    for i in range(len(self.first_state_vars)):
+      self.eq_gate(self.first_state_vars[i], self.second_state_vars[i])
+      step_output_gates.append(self.output_gate)
+    self.and_gate(step_output_gates)
+
+  def new_gate_gen(self, encoding, first_name, second_name, first_sv_list, second_sv_list, aux_vars_list):
+    var_list = []
+    var_list.extend(first_sv_list)
+    var_list.extend(second_sv_list)
+    var_list.extend(aux_vars_list)
+
+    encoding.append(['# Eq gate between ' + first_name + ':(' + ', '.join(str(x) for x in first_sv_list) + ') and'])
+    encoding.append(['#                 '+ second_name + ':('+ ', '.join(str(x) for x in second_sv_list) + ')'])
+    encoding.append(['#          aux_gates:('+ ', '.join(str(x) for x in aux_vars_list) + ')'])
+    for gate in self.base_state_gates:
+      # Indirectly mapping the list of variables to new state constraint:
+      new_gate_name = var_list[gate[1]-1]
+      new_gate_list = []
+      for prev_gate in gate[2]:
+        if prev_gate > 0:
+          new_gate_list.append(var_list[prev_gate-1])
+        else:
+          new_gate_list.append(-var_list[(-prev_gate)-1])
+      encoding.append([gate[0], new_gate_name, new_gate_list])
+
+  def __init__(self, n):
+    self.base_state_gates = []
+    self.first_state_vars = list(range(1,n+1))
+    self.second_state_vars = list(range(n+1,2*n+1))
     self.output_gate = 0 # output gate will never be zero
-    self.next_gate = next_gate
+    self.next_gate = 2*n+1
+    self.eq_state_gate()
+    self.aux_vars = self.output_gate - 2*n
+    #print(self.output_gate, self.aux_vars, n)
