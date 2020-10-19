@@ -48,31 +48,7 @@ class SatEncoding():
       # Appending transition output gates:
       self.transition_step_output_gates.append(step_aux_vars[-1])
 
-      # Appending variables for the new transition function:
-      step_transition_vars = []
-
-      step_transition_vars.extend(self.states_gen.states[i])
-      step_transition_vars.extend(self.states_gen.states[i+1])
-
-      step_transition_vars.extend(step_action_vars)
-      step_transition_vars.extend(step_aux_vars)
-      #print(step_transition_vars)
-
-      self.encoding.append(['# Transition function from S' + str(i) + ' to S' + str(i+1) + ':'])
-
-      S_1_string = 'S_' + str(i) + ' vars : ' + ','.join(str(x) for x in self.states_gen.states[i])
-      self.encoding.append(['# ' + S_1_string])
-
-      S_2_string = 'S_' + str(i+1) + ' vars : ' + ','.join(str(x) for x in self.states_gen.states[i+1])
-      self.encoding.append(['# ' + S_2_string])
-
-      action_vars_string = 'action variables : ' + ','.join(str(x) for x in step_action_vars)
-      self.encoding.append(['# ' + action_vars_string])
-
-      aux_vars_string = 'auxilary variables : ' + ','.join(str(x) for x in step_aux_vars)
-      self.encoding.append(['# ' + aux_vars_string])
-
-      tfun.gates_gen.new_gate_gen(self.encoding, step_transition_vars)
+      tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.states_gen.states[i], self.states_gen.states[i+1], step_action_vars, step_aux_vars)
 
 
   def generate_final_gate(self):

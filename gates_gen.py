@@ -2,7 +2,7 @@
 
 '''
 Todos:
-  1. Move descriptive comments inside the copy state functions.
+  1. XXX
 '''
 
 class TransitionGatesGen():
@@ -126,7 +126,25 @@ class TransitionGatesGen():
     self.total_gates = self.output_gate
 
 
-  def new_gate_gen(self, encoding, var_list):
+  def new_gate_gen(self, encoding, first_name, second_name, first_state, second_state, action_vars, aux_vars):
+
+    # Appending variables for the new transition function:
+    var_list = []
+
+    var_list.extend(first_state)
+    var_list.extend(second_state)
+
+    var_list.extend(action_vars)
+    var_list.extend(aux_vars)
+
+    encoding.append(['# Transition function from ' + first_name + ' to ' + second_name + ':'])
+    encoding.append(['# ' + first_name + ' vars : (' + ', '.join(str(x) for x in first_state) + ')'])
+    encoding.append(['# ' + second_name + ' vars : (' + ', '.join(str(x) for x in second_state) + ')'])
+    action_vars_string = 'action variables : ' + ','.join(str(x) for x in action_vars)
+    encoding.append(['# ' + action_vars_string])
+
+    aux_vars_string = 'auxilary variables : ' + ','.join(str(x) for x in aux_vars)
+    encoding.append(['# ' + aux_vars_string])
 
     for gate in self.transition_gates:
       if (len(gate) != 1):

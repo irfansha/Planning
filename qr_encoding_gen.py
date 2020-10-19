@@ -76,26 +76,7 @@ class QREncoding():
     # Appending transition output gates:
     transition_output_gate = aux_vars[-1]
 
-    # Appending variables for the new transition function:
-    transition_vars = []
-
-    transition_vars.extend(self.forall_vars_first)
-    transition_vars.extend(self.forall_vars_second)
-
-    transition_vars.extend(self.action_vars)
-    transition_vars.extend(aux_vars)
-    #print(step_transition_vars)
-
-    self.encoding.append(['# Transition function from X1 to X2 :'])
-    self.encoding.append(['# X1 vars : (' + ', '.join(str(x) for x in self.forall_vars_first) + ')'])
-    self.encoding.append(['# X2 vars : (' + ', '.join(str(x) for x in self.forall_vars_second) + ')'])
-    action_vars_string = 'action variables : ' + ','.join(str(x) for x in self.action_vars)
-    self.encoding.append(['# ' + action_vars_string])
-
-    aux_vars_string = 'auxilary variables : ' + ','.join(str(x) for x in aux_vars)
-    self.encoding.append(['# ' + aux_vars_string])
-
-    tfun.gates_gen.new_gate_gen(self.encoding, transition_vars)
+    tfun.gates_gen.new_gate_gen(self.encoding, 'X1', 'X2', self.forall_vars_first, self.forall_vars_second, self.action_vars, aux_vars)
     # Now generating if then gate for transition:
     self.encoding.append(['# If then transition gate :'])
     [self.if_then_tfun_gate] = self.var_dis.get_vars(1)
