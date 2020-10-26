@@ -5,6 +5,8 @@ Todos:
   1. XXX
 '''
 
+import math
+
 class TransitionGatesGen():
 
   # Takes list and current list of gates
@@ -160,6 +162,181 @@ class TransitionGatesGen():
       else:
         encoding.append([gate[0]])
 
+class TransitionGatesGenWithoutAmoAlo():
+
+  # Takes list and current list of gates
+  # generates OR gate:
+  def or_gate(self, current_list):
+    temp_gate = ['or', self.next_gate, current_list]
+    self.transition_gates.append(temp_gate)
+    self.output_gate = self.next_gate
+    self.next_gate = self.next_gate + 1
+
+  # Takes list and current list of gates
+  # generates AND gate:
+  def and_gate(self, current_list):
+    temp_gate = ['and', self.next_gate, current_list]
+    self.transition_gates.append(temp_gate)
+    self.output_gate = self.next_gate
+    self.next_gate = self.next_gate + 1
+
+  # Takes list and current list of gates
+  # generates if then gate i.e., if x then y -> y' = AND(y) and OR(-x, y'):
+  def if_then_gate(self, if_gate, then_list):
+    # AND gate for then list:
+    if isinstance(then_list, int):
+      self.or_gate([-if_gate, then_list])
+    else:
+      self.and_gate(then_list)
+      self.or_gate([-if_gate, self.output_gate])
+
+  # Takes list and current list of gates
+  # generates if then not gate i.e., if x then -y -> -y' = AND(y) and OR(-x, -y'):
+  def if_then_not_gate(self, if_gate, then_list):
+    # AND gate for then list:
+    if isinstance(then_list, int):
+      self.or_gate([-if_gate, -then_list])
+    else:
+      self.and_gate(then_list)
+      self.or_gate([-if_gate, -self.output_gate])
+
+
+  # Takes list and current list of gates
+  # generates eq gate i.e., x == y -> if x then y and if y then x:
+  def eq_gate(self, x, y):
+    self.if_then_gate(x,y)
+    temp_first_gate = self.output_gate
+    self.if_then_gate(y,x)
+    self.and_gate([temp_first_gate,self.output_gate])
+    self.untouched_prop_map[(x,y)] = self.output_gate
+
+
+
+  def add_untouched_prop_gates(self, tfun):
+    # for each untouch propagation eq gates are generated:
+    for i in range(tfun.num_state_vars):
+      # pre and post integer state variables:
+      self.eq_gate(i+1, i+1+tfun.num_state_vars)
+
+  def add_action_gates(self, tfun):
+    aux_action_gates = []
+    for action in tfun.integer_tfun:
+      if_gate = action.pop(0)
+      then_list = action.pop(0)
+      for untouched_prop_list in action:
+        for untouched_prop in untouched_prop_list:
+          then_list.append(self.untouched_prop_map[untouched_prop])
+        #print(then_gate)
+      self.if_then_gate(if_gate, then_list)
+      aux_action_gates.append(self.output_gate)
+    self.transition_gates.append(['# final output action gate:'])
+    # In addition to action gates, we also include extra binary output gate:
+    final_gates = list(aux_action_gates)
+    final_gates.append(-self.extra_binary_final_ouput_gate)
+    self.and_gate(final_gates)
+    self.final_action_gate = self.output_gate
+
+
+  def aux_action_vars(self, tfun):
+    for i in range(tfun.num_aux_action_vars):
+      bin_string = format(i,'0' + str(self.num_binary_action_vars) + 'b')
+      temp_condition = []
+      for j in range(self.num_binary_action_vars):
+        if bin_string[j] == '0':
+          temp_condition.append(-self.binary_action_vars[j])
+        else:
+          temp_condition.append(self.binary_action_vars[j])
+      temp_gate = ['and', tfun.aux_action_vars[i], temp_condition]
+      self.transition_gates.append(temp_gate)
+    for i in range(tfun.num_aux_action_vars, int(math.pow(2,self.num_binary_action_vars))):
+      bin_string = format(i,'0' + str(self.num_binary_action_vars) + 'b')
+      temp_condition = []
+      for j in range(self.num_binary_action_vars):
+        if bin_string[j] == '0':
+          temp_condition.append(-self.binary_action_vars[j])
+        else:
+          temp_condition.append(self.binary_action_vars[j])
+      self.and_gate(temp_condition)
+      self.extra_binary_output_gates.append(self.output_gate)
+    #print(self.binary_action_vars)
+
+  def binary_final_gate_gen(self):
+    self.or_gate(self.extra_binary_output_gates)
+    self.extra_binary_final_ouput_gate = self.output_gate
+
+  def __init__(self, tfun):
+    self.transition_gates = []
+    self.output_gate = 0 # output gate will never be zero
+
+    self.num_aux_action_vars = tfun.num_aux_action_vars
+
+    self.num_binary_action_vars = math.ceil(math.log2(self.num_aux_action_vars))
+
+    self.binary_action_vars = list(range(2*tfun.num_state_vars + self.num_aux_action_vars + 1, 2*tfun.num_state_vars + self.num_aux_action_vars + self.num_binary_action_vars+1))
+
+    self.next_gate = 2*tfun.num_state_vars + self.num_aux_action_vars + self.num_binary_action_vars + 1
+
+    self.extra_binary_output_gates = []
+    self.aux_action_vars(tfun)
+
+    self.extra_binary_final_ouput_gate = 0 # can never be 0
+    self.binary_final_gate_gen()
+
+    self.untouched_prop_map = {}
+    self.final_action_gate = 0 # final action gate will never be zero
+
+    self.transition_gates.append(['# Untouched Propagation gates:'])
+    # Adding untouched propagation gates:
+    self.add_untouched_prop_gates(tfun)
+
+    self.transition_gates.append(['# Action gates:'])
+    # Adding action gates:
+    self.add_action_gates(tfun)
+
+    # Adding final transition gate:
+    self.total_gates = self.output_gate
+
+  def new_gate_gen(self, encoding, first_name, second_name, first_state, second_state, action_vars, aux_vars):
+
+    # Appending variables for the new transition function:
+    var_list = []
+
+    var_list.extend(first_state)
+    var_list.extend(second_state)
+
+    # Rearranging binary variables and auxilary action variables to allow ordering:
+    aux_action_vars = aux_vars[:self.num_aux_action_vars]
+
+    var_list.extend(aux_action_vars)
+
+    var_list.extend(action_vars)
+    var_list.extend(aux_vars[self.num_aux_action_vars:])
+
+    encoding.append(['# Transition function from ' + first_name + ' to ' + second_name + ':'])
+    encoding.append(['# ' + first_name + ' vars : (' + ', '.join(str(x) for x in first_state) + ')'])
+    encoding.append(['# ' + second_name + ' vars : (' + ', '.join(str(x) for x in second_state) + ')'])
+    action_vars_string = 'action variables : ' + ','.join(str(x) for x in action_vars)
+    encoding.append(['# ' + action_vars_string])
+
+    aux_action_vars_string = 'auxilary action variables : ' + ','.join(str(x) for x in aux_action_vars)
+    encoding.append(['# ' + aux_action_vars_string])
+
+    aux_vars_string  = 'auxilary variables :' + ','.join(str(x) for x in aux_vars[self.num_aux_action_vars:])
+    encoding.append(['# ' + aux_vars_string])
+
+    for gate in self.transition_gates:
+      if (len(gate) != 1):
+        # Indirectly mapping the list of variables to transition function:
+        new_gate_name = var_list[gate[1]-1]
+        new_gate_list = []
+        for prev_gate in gate[2]:
+          if prev_gate > 0:
+            new_gate_list.append(var_list[prev_gate-1])
+          else:
+            new_gate_list.append(-var_list[(-prev_gate)-1])
+        encoding.append([gate[0], new_gate_name, new_gate_list])
+      else:
+        encoding.append([gate[0]])
 
 
 
