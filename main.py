@@ -52,21 +52,19 @@ if __name__ == '__main__':
 
   if (args.e == 'SAT'):
     encoding = se(constraints_extract, tfun, args.k)
-    encoding.print_encoding_tofile(args.encoding_out)
   elif (args.e == 'QR'):
     encoding = qr(constraints_extract, tfun, args.k)
-    encoding.print_encoding_tofile(args.encoding_out)
   elif (args.e == 'QI'):
     encoding = qi(constraints_extract, tfun, args.k)
-    encoding.print_encoding_tofile(args.encoding_out)
   elif (args.e == 'CTE'):
-    ct_encoding = cte(constraints_extract, tfun, args.k)
-    ct_encoding.print_encoding_tofile(args.encoding_out)
+    encoding = cte(constraints_extract, tfun, args.k)
   else:
     print('no encoding generated')
     exit()
 
+  encoding.print_encoding_tofile(args.encoding_out)
   print("Encoding generated")
+
   if (int(args.run) >= 1):
     run_qb = qb(args.encoding_out, args.solver_out, args.solver)
     run_qb.run()
