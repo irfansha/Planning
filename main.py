@@ -7,8 +7,8 @@ Todos:
 
 import argparse, textwrap
 from constraints import Constraints as cs
-from transition_gen import TransitionFunction as tf
-#from transition_gen_withoutamoalo import TransitionFunction as tf
+from transition_gen import TransitionFunction as tfl
+from transition_gen_withoutamoalo import TransitionFunction as tfb
 from sat_encoding_gen import SatEncoding as se
 from qr_encoding_gen import QREncoding as qr
 from qbf_intermediate_encoding import QIEncoding as qi
@@ -23,7 +23,7 @@ if __name__ == '__main__':
   parser.add_argument("-V", "--version", help="show program version", action="store_true")
   parser.add_argument("-d", help="domain file path", default = 'testcases/dinner/dinner.pddl')
   parser.add_argument("-p", help="problem file path", default = 'testcases/dinner/pb1.pddl')
-  parser.add_argument("-k", help="path length",default = 4)
+  parser.add_argument("-k", type=int, help="path length",default = 4)
   parser.add_argument("-e", help=textwrap.dedent('''
                                   encoding types:
                                   SAT = Satisfiability
@@ -48,7 +48,10 @@ if __name__ == '__main__':
   # Extracting constraints from problem:
   constraints_extract = cs(args.d, args.p)
   # Generating transition function:
-  tfun = tf(constraints_extract)
+  if (args.t == 'l'):
+    tfun = tfl(constraints_extract)
+  elif (args.t == 'b'):
+    tfun = tfb(constraints_extract)
 
   if (args.e == 'SAT'):
     encoding = se(constraints_extract, tfun, args.k)
