@@ -129,18 +129,6 @@ class CTEncoding():
 
       self.condition_output_gates.append(if_then_gate)
 
-  def generate_transition_function(self, tfun):
-    # First generating transition function:
-    self.action_vars = self.var_dis.get_vars(tfun.num_action_vars)
-
-    # Generating auxilary vars:
-    aux_vars = self.var_dis.get_vars(tfun.num_aux_vars)
-
-    # Appending transition output gates:
-    self.transition_output_gate = aux_vars[-1]
-
-    tfun.gates_gen.new_gate_gen(self.encoding, 'X1', 'X2', self.transition_first_state, self.transition_second_state, self.action_vars, aux_vars)
-
   def generate_final_gate(self):
     temp_final_list = []
     temp_final_list.append(self.initial_output_gate)
@@ -154,10 +142,6 @@ class CTEncoding():
     self.encoding.append(['and', self.final_output_gate, temp_final_list])
 
   def generate_quantifier_blocks(self):
-    #self.quantifier_block.append(['# State variables :'])
-    #for states in self.states_gen.states:
-    #  self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in states) + ')'])
-
     self.quantifier_block.append(['# Initial state variables :'])
     self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in self.initial_state) + ')'])
 
@@ -172,7 +156,6 @@ class CTEncoding():
     self.quantifier_block.append(['# Layer 0:'])
     self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in self.quantifier_states_gen.states[0]) + ')'])
 
-    # XXX
     self.quantifier_block.append(['# Action variables :'])
     for states in self.action_vars:
       self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in states) + ')'])
@@ -234,15 +217,8 @@ class CTEncoding():
     # We only use log_k -1 forall variables:
     self.forall_vars = self.var_dis.get_vars(self.log_k - 1)
 
-    #self.transition_first_state = self.var_dis.get_vars(tfun.num_state_vars)
-
-    #self.transition_second_state = self.var_dis.get_vars(tfun.num_state_vars)
 
     self.generate_initial_gate(constraints_extract)
-
-    #self.generate_k_conditions(tfun.num_state_vars, k)
-
-    #self.generate_transition_function(tfun)
 
     self.generate_zero_condition(tfun)
 
