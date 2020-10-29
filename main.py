@@ -60,7 +60,10 @@ if __name__ == '__main__':
   elif (args.e == 'QI'):
     encoding = qi(constraints_extract, tfun, args.k)
   elif (args.e == 'CTE'):
-    encoding = cte(constraints_extract, tfun, args.k)
+    if (args.run == '2'):
+      encoding = cte(constraints_extract, tfun, args.k, 1)
+    else:
+      encoding = cte(constraints_extract, tfun, args.k, 0)
   else:
     print('no encoding generated')
     exit()
@@ -75,7 +78,10 @@ if __name__ == '__main__':
     if run_qb.sat:
       print("Plan found")
       if (args.run == '2'):
-        run_qb.extract_qr_plan(encoding.states_gen.states, constraints_extract, tfun.num_state_vars, args.k)
+        if (args.e == 'CTE'):
+          run_qb.extract_action_based_plan(encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
+        else:
+          run_qb.extract_qr_plan(encoding.states_gen.states, constraints_extract, tfun.num_state_vars, args.k)
         run_qb.print_plan()
         pt.test_plan(run_qb.plan, constraints_extract)
     else:
