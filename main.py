@@ -13,6 +13,7 @@ from sat_encoding_gen import SatEncoding as se
 from qr_encoding_gen import QREncoding as qr
 from qbf_intermediate_encoding import QIEncoding as qi
 from ctencoding import CTEncoding as cte
+from flat_encoding import FlatEncoding as fe
 from run_quabs import Quabs as qb
 import plan_tester as pt
 
@@ -27,8 +28,9 @@ if __name__ == '__main__':
   parser.add_argument("-e", help=textwrap.dedent('''
                                   encoding types:
                                   SAT = Satisfiability
-                                  QI  = QBF intermediate
-                                  QR  = QBF reachbility
+                                  QI  = QBF Intermediate
+                                  QR  = QBF Reachability
+                                  FE  = Flat Encoding
                                   CTE = Compact Tree Encoding'''),default = 'QI')
   parser.add_argument("-t", help="transition function with binary or linear action variables: [b l]",default = 'b')
   parser.add_argument("--run", help=textwrap.dedent('''
@@ -64,6 +66,11 @@ if __name__ == '__main__':
       encoding = cte(constraints_extract, tfun, args.k, 1)
     else:
       encoding = cte(constraints_extract, tfun, args.k, 0)
+  elif (args.e == 'FE'):
+    if (args.run == '2'):
+      encoding = fe(constraints_extract, tfun, args.k, 1)
+    else:
+      encoding = fe(constraints_extract, tfun, args.k, 0)
   else:
     print('no encoding generated')
     exit()
@@ -78,7 +85,7 @@ if __name__ == '__main__':
     if run_qb.sat:
       print("Plan found")
       if (args.run == '2'):
-        if (args.e == 'CTE'):
+        if (args.e == 'CTE' or args.e == 'FE'):
           run_qb.extract_action_based_plan(encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
         else:
           run_qb.extract_qr_plan(encoding.states_gen.states, constraints_extract, tfun.num_state_vars, args.k)
