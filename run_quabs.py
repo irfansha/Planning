@@ -27,6 +27,18 @@ class Quabs():
     else:
       self.sat = 0
 
+  def extract_action_based_plan(self, action_vars, constraints,k):
+    for i in range(k):
+      temp = ''
+      for j in range(len(action_vars[i])):
+        if self.sol_map[action_vars[i][j]] == -1:
+          temp += '0'
+        else:
+          temp += '1'
+      action_num = int(temp, 2)
+      self.plan.append([constraints.action_list[action_num].name, tuple(constraints.action_list[action_num].parameters)])
+      #print(constraints.action_list[action_num])
+
   def extract_qr_plan(self, states, constraints, n, k):
     current_states = []
     for i in range(k+1):
