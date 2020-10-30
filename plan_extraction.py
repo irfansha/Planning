@@ -14,7 +14,8 @@ class ExtractPlan():
       self.plan.append([constraints.action_list[action_num].name, tuple(constraints.action_list[action_num].parameters)])
       #print(constraints.action_list[action_num])
 
-  def extract_qr_plan(self, states, constraints, n, k):
+  def extract_qr_plan(self, states, constraints, k):
+    n = constraints.num_state_vars
     current_states = []
     for i in range(k+1):
       temp_pos_var = []

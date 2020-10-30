@@ -91,5 +91,6 @@ class Constraints():
     # Extracting and sorting state variables:
     self.extract_state_vars()
     self.state_vars.sort()
+    self.num_state_vars = len(self.state_vars)
     # Extracting action variables:
     self.extract_action_vars()
