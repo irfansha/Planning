@@ -14,7 +14,8 @@ from qr_encoding_gen import QREncoding as qr
 from qbf_intermediate_encoding import QIEncoding as qi
 from ctencoding import CTEncoding as cte
 from flat_encoding import FlatEncoding as fe
-from run_quabs import Quabs as qb
+from run_solver import RunSolver as qs
+from plan_extraction import ExtractPlan as pe
 import plan_tester as pt
 
 # Main:
@@ -40,12 +41,12 @@ if __name__ == '__main__':
                                2 = extract the plan in found'''),default = 2)
   parser.add_argument("--encoding_out", help="output encoding file",default = 'encoding.qcir')
   parser.add_argument("--solver_out", help="solver output file",default = 'solver_output.txt')
-  parser.add_argument("--solver", help="solver path",default = './quabs')
+  parser.add_argument("--solver", help="solver path",default = './solvers/qbf/quabs')
   args = parser.parse_args()
 
 
   if args.version:
-    print("Version 0.7.0")
+    print("Version 0.8.0")
 
   # Extracting constraints from problem:
   constraints_extract = cs(args.d, args.p)
@@ -79,17 +80,18 @@ if __name__ == '__main__':
   print("Encoding generated")
 
   if (int(args.run) >= 1):
-    run_qb = qb(args.encoding_out, args.solver_out, args.solver)
-    run_qb.run()
-    run_qb.parse_quabs_output()
-    if run_qb.sat:
+    run_qs = qs(args.encoding_out, args.solver_out, args.solver)
+    run_qs.run_quabs()
+    run_qs.parse_quabs_output()
+    if run_qs.sat:
       print("Plan found")
       if (args.run == '2'):
+        plan_extract = pe(run_qs.sol_map)
         if (args.e == 'CTE' or args.e == 'FE'):
-          run_qb.extract_action_based_plan(encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
+          plan_extract.extract_action_based_plan(encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
         else:
-          run_qb.extract_qr_plan(encoding.states_gen.states, constraints_extract, tfun.num_state_vars, args.k)
-        run_qb.print_plan()
-        pt.test_plan(run_qb.plan, constraints_extract)
+          plan_extract.extract_qr_plan(encoding.states_gen.states, constraints_extract, tfun.num_state_vars, args.k)
+        plan_extract.print_plan()
+        pt.test_plan(plan_extract.plan, constraints_extract)
     else:
       print('plan not found')
