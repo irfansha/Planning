@@ -7,6 +7,7 @@ from qr_encoding_gen import QREncoding as qr
 from qbf_intermediate_encoding import QIEncoding as qi
 from ctencoding import CTEncoding as cte
 from flat_encoding import FlatEncoding as fe
+from ungrounded_encoding import UngroundedEncoding as ue
 import os
 
 
@@ -35,6 +36,8 @@ class EncodingGen():
         self.encoding = fe(constraints_extract, tfun, args.k, 1)
       else:
         self.encoding = fe(constraints_extract, tfun, args.k, 0)
+    elif (args.e == 'UE'):
+      self.encoding = ue(args)
     else:
       print('no encoding generated')
       exit()

@@ -27,7 +27,8 @@ if __name__ == '__main__':
                                   QI  = QBF Intermediate
                                   QR  = QBF Reachability
                                   FE  = Flat Encoding
-                                  CTE = Compact Tree Encoding'''),default = 'QI')
+                                  CTE = Compact Tree Encoding
+                                  UE = Ungrounded Encoding'''),default = 'QI')
   parser.add_argument("-t", help="transition function with binary or linear action variables: [b l]",default = 'b')
   parser.add_argument("--run", type=int, help=textwrap.dedent('''
                                Three levels of execution:
