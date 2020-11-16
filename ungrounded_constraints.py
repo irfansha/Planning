@@ -1,7 +1,8 @@
 # Irfansha Shaik, 16.11.2020, Aarhus
 
 from pddl import PDDL_Parser
-from action import ActionWithUntouchedClauses as ac
+from action import ActionWithUntouchedPredicates as ap
+import math
 
 class UngroundedConstraints():
 
@@ -36,7 +37,7 @@ class UngroundedConstraints():
       parser.types.append("object")
 
     #Adding No-op to the actions:
-    parser.actions.append(ac('noop', [], [], [], [], [], []))
+    parser.actions.append(ap('noop', [], [], [], [], [], []))
 
     self.types = parser.types
     self.actions = parser.actions
@@ -130,15 +131,26 @@ class UngroundedConstraints():
               del_eff_param = list(del_eff[1:])
               if (temp_parameter == del_eff_param):
                 new_del_effects.append(del_eff[0])
-            untouched_clauses = []
+            untouched_predicates = []
             # Generating untouched clauses after splitting:
             for predicate in self.predicate_dict[i]:
               if predicate not in new_add_effects and predicate not in new_del_effects:
-                untouched_clauses.append(predicate)
-            self.predicate_split_action_list.append(ac(action.name, [i, temp_parameter], new_positive_preconditions, new_negative_preconditions, new_add_effects, new_del_effects, untouched_clauses))
+                untouched_predicates.append(predicate)
+            self.predicate_split_action_list.append(ap(action.name, [i, temp_parameter], new_positive_preconditions, new_negative_preconditions, new_add_effects, new_del_effects, untouched_predicates))
+    # Handling noop operation:
+    self.predicate_split_action_list.append(ap(self.actions[-1].name, [0, []], [], [], [], [], list(self.predicates)))
+
+  def extract_action_vars(self):
+    for action in self.actions:
+      self.action_vars.append((action.name, tuple(action.parameters)))
+
+  def gen_bin_var_object_types(self):
+    for obj_type in self.types:
+      obj_length = len(self.objects[obj_type])
+      num_binary_vars = math.ceil(math.log2(obj_length))
+      self.bin_object_type_vars_dict[obj_type] = num_binary_vars
 
   def __init__(self, domain, problem):
-
     self.predicate_dict = {}
     self.max_predicate_args = -1 # max predicate arguments can never be -1
 
@@ -152,3 +164,11 @@ class UngroundedConstraints():
 
     # splitting actions based on predicates:
     self.gen_predicate_split_action_list()
+
+    self.action_vars = []
+    # Extracting action variables:
+    self.extract_action_vars()
+
+    # Extracting required binary variables for objects with types:
+    self.bin_object_type_vars_dict = {}
+    self.gen_bin_var_object_types()

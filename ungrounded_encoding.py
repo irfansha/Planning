@@ -2,7 +2,6 @@
 
 from variable_dispatcher import VarDispatcher as vd
 from pddl import PDDL_Parser
-from action import ActionWithUntouchedClauses as ac
 
 class UngroundedEncoding():
 
@@ -34,7 +33,7 @@ class UngroundedEncoding():
       self.print_gate(gate)
 
 
-  def __init__(self, constraints_extract, k):
+  def __init__(self, constraints_extract, tfun, k):
     self.var_dis = vd()
     self.quantifier_block = []
     self.encoding = []
@@ -43,5 +42,8 @@ class UngroundedEncoding():
     self.transition_step_output_gates = []
     self.final_output_gate = 0 # final output gate can never be 0
 
-    for action in constraints_extract.predicate_split_action_list:
-      print(action)
+    #for action in constraints_extract.predicate_split_action_list:
+    #  print(action)
+
+    #for action_var in constraints_extract.action_vars:
+    #  print(action_var)
