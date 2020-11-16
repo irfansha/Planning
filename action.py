@@ -61,16 +61,16 @@ class Action:
             g.append(pred)
         return g
 
-class ActionWithUntouchedClauses:
+class ActionWithUntouchedPredicates:
 
-    def __init__(self, name, parameters, positive_preconditions, negative_preconditions, add_effects, del_effects, untouched_clauses):
+    def __init__(self, name, parameters, positive_preconditions, negative_preconditions, add_effects, del_effects, untouched_predicates):
         self.name = name
         self.parameters = parameters
         self.positive_preconditions = positive_preconditions
         self.negative_preconditions = negative_preconditions
         self.add_effects = add_effects
         self.del_effects = del_effects
-        self.untouched_clauses = untouched_clauses
+        self.untouched_predicates = untouched_predicates
 
     def __str__(self):
         return 'action: ' + self.name + \
@@ -79,4 +79,4 @@ class ActionWithUntouchedClauses:
         '\n  negative_preconditions: ' + str(self.negative_preconditions) + \
         '\n  add_effects: ' + str(self.add_effects) + \
         '\n  del_effects: ' + str(self.del_effects) + \
-        '\n  untouched_clauses: ' + str(self.untouched_clauses) + '\n'
+        '\n  untouched_predicates: ' + str(self.untouched_predicates) + '\n'
