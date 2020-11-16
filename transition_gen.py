@@ -2,9 +2,7 @@
 
 '''
 Todos:
-  1. Update the transition function such that, it does not need additional action variables
-     instead it uses numbering of action variables and avoid amo alo clauses.
-     Perhaps, it is better to add a different transition function class.
+  1. XXX
 '''
 
 from gates_gen import TransitionGatesGen as gg
