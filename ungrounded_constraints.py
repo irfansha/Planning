@@ -3,6 +3,7 @@
 from pddl import PDDL_Parser
 from action import ActionWithUntouchedPredicates as ap
 import math
+from collections import Counter
 
 class UngroundedConstraints():
 
@@ -32,6 +33,7 @@ class UngroundedConstraints():
     goal_not = parser.negative_goals
     self.goal_state = [goal_pos, goal_not]
 
+    # XXX handle if there are no objects:
     if (len(parser.types) == 0):
       # Adding default object type:
       parser.types.append("object")
@@ -105,7 +107,7 @@ class UngroundedConstraints():
     for action in self.actions:
       temp_parameter_dict, max_parameter_length =  self.get_unique_parameters(action)
       for i in range(max_parameter_length+1):
-        if (temp_parameter_dict != {}):
+        if i in temp_parameter_dict.keys():
           for temp_parameter in temp_parameter_dict[i]:
             # Generating new positive preconditions after splitting:
             new_positive_preconditions = []
@@ -148,7 +150,22 @@ class UngroundedConstraints():
     for obj_type in self.types:
       obj_length = len(self.objects[obj_type])
       num_binary_vars = math.ceil(math.log2(obj_length))
+      # handling log(1) = 0:
+      if (num_binary_vars == 0):
+        num_binary_vars = 1
       self.bin_object_type_vars_dict[obj_type] = num_binary_vars
+
+  # XXX check if any difference in hierarchial types:
+  def gen_forall_variables_types(self):
+    # Initializing forall_variables_type_dict with -1 for all types:
+    for obj_type in self.types:
+      self.forall_variables_type_dict[obj_type] = 0
+
+    for predicate, predicate_type in self.predicates.items():
+      values = list(predicate_type.values())
+      for obj_type, count in Counter(values).items():
+        if (self.forall_variables_type_dict[obj_type] < count):
+          self.forall_variables_type_dict[obj_type] = count
 
   def __init__(self, domain, problem):
     self.predicate_dict = {}
@@ -172,3 +189,6 @@ class UngroundedConstraints():
     # Extracting required binary variables for objects with types:
     self.bin_object_type_vars_dict = {}
     self.gen_bin_var_object_types()
+
+    self.forall_variables_type_dict = {}
+    self.gen_forall_variables_types()
