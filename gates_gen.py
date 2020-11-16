@@ -506,9 +506,13 @@ class UngroundedTransitionGatesGen():
     self.final_action_gate = self.output_gate
 
   def add_amo_alo_gates(self, tfun):
+    av_list = []
+    for ref_action in tfun.action_vars:
+      # if gate variable:
+      av_list.append(tfun.av_inv_map[ref_action[0]])
     aux_amo_gates = []
-    for i in range(tfun.num_action_vars):
-      temp_av_list = list(tfun.action_vars)
+    for i in range(len(av_list)):
+      temp_av_list = list(av_list)
       if_gate = temp_av_list.pop(i)
       self.if_then_not_gate(if_gate, temp_av_list)
       aux_amo_gates.append(self.output_gate)
@@ -517,7 +521,7 @@ class UngroundedTransitionGatesGen():
     amo_output_gate = self.output_gate
 
     self.transition_gates.append(['# ALO gate:'])
-    self.or_gate(tfun.action_vars)
+    self.or_gate(av_list)
     alo_output_gate = self.output_gate
 
     self.transition_gates.append(['# final output AMO ALO gate:'])
@@ -545,19 +549,19 @@ class UngroundedTransitionGatesGen():
     # Adding action gates:
     self.add_action_gates(tfun)
 
+    self.transition_gates.append(['# AMO ALO gates:'])
+    # Adding AtMostOne and AtLeastOne gates:
+    self.add_amo_alo_gates(tfun)
+
+    self.transition_gates.append(['# Final transition gate:'])
+    # Adding final transition gate:
+    self.add_final_gate()
+    self.total_gates = self.output_gate
+
     #for gate in self.transition_gates:
     #  print(gate)
 
-    #self.transition_gates.append(['# AMO ALO gates:'])
-    # Adding AtMostOne and AtLeastOne gates:
-    #self.add_amo_alo_gates(tfun)
-
-    #self.transition_gates.append(['# Final transition gate:'])
-    # Adding final transition gate:
-    #self.add_final_gate()
-    self.total_gates = self.output_gate
-
-
+  # XXX to be updated:
   def new_gate_gen(self, encoding, first_name, second_name, first_state, second_state, action_vars, aux_vars):
 
     # Appending variables for the new transition function:
