@@ -2,6 +2,7 @@
 
 from transition_gen import TransitionFunction as tfl
 from transition_gen_withoutamoalo import TransitionFunction as tfb
+from ungrounded_transition_gen import UngroundedTransitionFunction as utf
 from sat_encoding_gen import SatEncoding as se
 from qr_encoding_gen import QREncoding as qr
 from qbf_intermediate_encoding import QIEncoding as qi
@@ -20,6 +21,8 @@ class EncodingGen():
         tfun = tfl(constraints_extract)
       elif (args.t == 'b'):
         tfun = tfb(constraints_extract)
+    else:
+      tfun = utf(constraints_extract)
 
     if (args.e == 'SAT'):
       self.encoding = se(constraints_extract, tfun, args.k)
@@ -28,7 +31,7 @@ class EncodingGen():
     elif (args.e == 'QI'):
       self.encoding = qi(constraints_extract, tfun, args.k)
     elif (args.e == 'UE'):
-      self.encoding = ue(constraints_extract, args.k)
+      self.encoding = ue(constraints_extract, tfun, args.k)
     elif (args.e == 'CTE'):
       if (args.run == 2):
         self.encoding = cte(constraints_extract, tfun, args.k, 1)
