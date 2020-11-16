@@ -6,6 +6,7 @@ Todos:
 '''
 
 import math
+from collections import Counter
 
 class TransitionGatesGen():
 
@@ -387,6 +388,26 @@ class UngroundedTransitionGatesGen():
     self.and_gate([temp_first_gate,self.output_gate])
     self.untouched_prop_map[(x,y)] = self.output_gate
 
+  # Takes list and current list of gates
+  # generates eq gate i.e., x == y -> if x then y and if y then x:
+  def eq_forall_var_gate(self, x, y):
+    self.if_then_gate(x,y)
+    temp_first_gate = self.output_gate
+    self.if_then_gate(y,x)
+    self.and_gate([temp_first_gate,self.output_gate])
+
+
+  # Takes lists of gates of two object vars and generates equality gate:
+  def eq_forall_vars_gate(self, first_vars, second_vars):
+    assert(len(first_vars) == len(second_vars))
+    self.transition_gates.append('[# forall vars equality gates:]')
+    self.transition_gates.append('[# vars : (' + ', '.join(str(x) for x in first_vars) + ')]')
+    self.transition_gates.append('[# vars : (' + ', '.join(str(x) for x in second_vars) + ')]')
+    step_output_gates = []
+    for i in range(len(first_vars)):
+      self.eq_forall_var_gate(first_vars[i], second_vars[i])
+      step_output_gates.append(self.output_gate)
+    self.and_gate(step_output_gates)
 
 
   def add_untouched_prop_gates(self, tfun):
@@ -407,19 +428,44 @@ class UngroundedTransitionGatesGen():
     self.and_gate(temp_condition)
 
   # XXX
-  def get_forall_vars_for_parameters(self, action_if_vars, parameter_map):
-    print(action_if_vars[2], parameter_map)
+  def get_forall_vars_for_parameters(self, action_if_vars, parameter_map, obj_forall_vars):
+    temp_type_list = []
+    temp_forall_dict = {}
+    forall_vars = []
+    for parameter in action_if_vars[2]:
+      temp_type_list.append(parameter_map[tuple(parameter)])
+    for obj_type, count in Counter(temp_type_list).items():
+      temp_forall_dict[obj_type] = obj_forall_vars[obj_type][:count]
+    for parameter in action_if_vars[2]:
+      # We get the corresponding forall variables for the parameter type:
+      temp_forall_vars = temp_forall_dict[parameter_map[tuple(parameter)]].pop(0)
+      forall_vars.append(temp_forall_vars)
+    # Temp dictionary must be empty:
+    for obj_type, var_list in temp_forall_dict.items():
+      assert(len(var_list) == 0)
+    return forall_vars
+
+  def gen_parameter_forall_gates(self, forall_vars, parameter_vars):
+    step_output_gates = []
+    for i in range(len(parameter_vars)):
+      self.eq_forall_vars_gate(forall_vars[i], parameter_vars[i])
+      step_output_gates.append(self.output_gate)
+    self.and_gate(step_output_gates)
 
   def add_action_gates(self, tfun):
     aux_action_gates = []
     for ref_action in tfun.action_vars:
       # if gate variable:
       main_action_if_var = tfun.av_inv_map[ref_action[0]]
+      split_condition_output_gates = []
       for i in range(tfun.max_predicate_args+1):
         # split forall predicate if gate:
         self.gen_split_predicate_if_gate(i, tfun.split_predicates_forall_vars)
         split_predicate_if_gate = self.output_gate
+        step_parameter_output_gates = []
         step_output_gates = []
+        # Finding split actions and generating if then gates,
+        # along if conditions on parameters:
         for action in tfun.integer_tfun:
           if (tfun.av_inv_map[ref_action[0]] == action[0][0] and i == action[0][1]):
             parameter_vars = action[0][2]
@@ -427,17 +473,37 @@ class UngroundedTransitionGatesGen():
             for untouched_prop in action[2]:
               then_list.append(self.untouched_prop_map[untouched_prop])
             if (parameter_vars):
-              self.get_forall_vars_for_parameters(action[0], tfun.parameter_map)
+              forall_vars = self.get_forall_vars_for_parameters(action[0], tfun.parameter_map, tfun.obj_forall_vars)
+              self.gen_parameter_forall_gates(forall_vars, parameter_vars)
+              step_parameter_output_gates.append(self.output_gate)
+              if_parameter_output_gate = self.output_gate
+              self.if_then_gate(if_parameter_output_gate, then_list)
+              step_output_gates.append(self.output_gate)
             else:
               self.and_gate(then_list)
               step_output_gates.append(self.output_gate)
-            #print(then_list)
-        #print(step_output_gates)
-        #self.if_then_gate(if_gate, then_list)
-        #aux_action_gates.append(self.output_gate)
-    #self.transition_gates.append(['# final output action gate:'])
-    #self.and_gate(aux_action_gates)
-    #self.final_action_gate = self.output_gate
+        # If none of the parameters satisfy, we propogate the predicates:
+        if (i != 0 and step_parameter_output_gates):
+          self.or_gate(step_parameter_output_gates)
+          if_output_gate = self.output_gate
+          then_list = []
+          for predicate in tfun.predicate_dict[i]:
+            # Fetching untoched propagation gate:
+            then_list.append(self.untouched_prop_map[(tfun.sv_pre_inv_map[predicate], tfun.sv_post_inv_map[predicate])])
+          #print(then_list)
+          # We propagate only when no parameter is satisfied, hence, negative:
+          self.if_then_gate(-if_output_gate, then_list)
+          step_output_gates.append(self.output_gate)
+        # Second main if block for each split branch :
+        if(step_output_gates):
+          self.if_then_gate(split_predicate_if_gate, step_output_gates)
+          split_condition_output_gates.append(self.output_gate)
+      # Main if block for each action variable:
+      self.if_then_gate(main_action_if_var, split_condition_output_gates)
+      aux_action_gates.append(self.output_gate)
+    self.transition_gates.append(['# final output action gate:'])
+    self.and_gate(aux_action_gates)
+    self.final_action_gate = self.output_gate
 
   def add_amo_alo_gates(self, tfun):
     aux_amo_gates = []
@@ -479,8 +545,8 @@ class UngroundedTransitionGatesGen():
     # Adding action gates:
     self.add_action_gates(tfun)
 
-    for gate in self.transition_gates:
-      print(gate)
+    #for gate in self.transition_gates:
+    #  print(gate)
 
     #self.transition_gates.append(['# AMO ALO gates:'])
     # Adding AtMostOne and AtLeastOne gates:

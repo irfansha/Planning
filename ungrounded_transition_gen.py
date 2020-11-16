@@ -72,6 +72,7 @@ class UngroundedTransitionFunction():
     self.sv_pre_map, self.sv_pre_inv_map = self.pre_map_gen(constraints_extract.predicates)
     self.sv_post_map, self.sv_post_inv_map = self.post_map_gen(constraints_extract.predicates)
     self.action_vars = constraints_extract.action_vars
+    self.predicate_dict = constraints_extract.predicate_dict
     self.max_predicate_args = constraints_extract.max_predicate_args
     self.av_map, self.av_inv_map, self.parameter_map = self.action_map_gen(len(constraints_extract.predicates), constraints_extract.action_vars, constraints_extract.bin_object_type_vars_dict)
     self.obj_forall_vars = {}
@@ -115,5 +116,4 @@ class UngroundedTransitionFunction():
         cur_parameters.append(self.av_inv_map[(action_list[i].name, parameter)])
 
       int_tfun.append([(self.av_inv_map[action_list[i].name], action_list[i].parameters[0] ,cur_parameters), current_predicates, untouched_propagate_pairs])
-
     return int_tfun
