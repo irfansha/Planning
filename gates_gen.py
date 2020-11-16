@@ -561,23 +561,45 @@ class UngroundedTransitionGatesGen():
     #for gate in self.transition_gates:
     #  print(gate)
 
-  # XXX to be updated:
-  def new_gate_gen(self, encoding, first_name, second_name, first_state, second_state, action_vars, aux_vars):
+  # XXX to be tested:
+  def new_gate_gen(self, encoding, first_name, second_name, first_predicates, second_predicates, action_vars_list, forall_vars, split_forall_vars, aux_vars):
 
     # Appending variables for the new transition function:
     var_list = []
 
-    var_list.extend(first_state)
-    var_list.extend(second_state)
+    var_list.extend(first_predicates)
+    var_list.extend(second_predicates)
 
-    var_list.extend(action_vars)
+    for action_vars in action_vars_list:
+      # main action variable:
+      var_list.append(action_vars[0])
+      # parameters of the action
+      for parameter in action_vars[1]:
+        var_list.extend(parameter)
+
+    for obj_vars in forall_vars:
+      var_list.extend(obj_vars)
+    var_list.extend(split_forall_vars)
     var_list.extend(aux_vars)
 
     encoding.append(['# Transition function from ' + first_name + ' to ' + second_name + ':'])
-    encoding.append(['# ' + first_name + ' vars : (' + ', '.join(str(x) for x in first_state) + ')'])
-    encoding.append(['# ' + second_name + ' vars : (' + ', '.join(str(x) for x in second_state) + ')'])
-    action_vars_string = 'action variables : ' + ','.join(str(x) for x in action_vars)
-    encoding.append(['# ' + action_vars_string])
+    encoding.append(['# ' + first_name + ' vars : (' + ', '.join(str(x) for x in first_predicates) + ')'])
+    encoding.append(['# ' + second_name + ' vars : (' + ', '.join(str(x) for x in second_predicates) + ')'])
+    encoding.append(['# Action vars with parameters:'])
+    for action_vars in action_vars_list:
+      main_action_var = action_vars[0]
+      action_parameters = action_vars[1]
+      encoding.append(['# Action variable:' + str(main_action_var)])
+      encoding.append(['# Parameters:'])
+      for parameter in action_parameters:
+        parameter_string = ','.join(str(x) for x in action_vars)
+        encoding.append(['# ' + parameter_string])
+    encoding.append(['# Forall variables:'])
+    for obj_vars in forall_vars:
+        obj_vars_string = ','.join(str(x) for x in obj_vars)
+        encoding.append(['# ' + obj_vars_string])
+    split_forall_vars_string = 'Split forall variables : ' + ','.join(str(x) for x in split_forall_vars)
+    encoding.append(['# ' + split_forall_vars_string])
 
     aux_vars_string = 'auxilary variables : ' + ','.join(str(x) for x in aux_vars)
     encoding.append(['# ' + aux_vars_string])

@@ -81,7 +81,7 @@ class UngroundedTransitionFunction():
     [self.next_gate_var] = self.var_dis.get_vars(1)
     self.integer_tfun = self.integer_tfun_gen(constraints_extract.predicate_split_action_list, constraints_extract.predicates)
     self.gates_gen = gg(self)
-    self.num_aux_vars = self.gates_gen.total_gates - self.next_gate_var + 1 # XXX correct?
+    self.num_aux_vars = self.gates_gen.total_gates - self.next_gate_var + 1
 
   def integer_tfun_gen(self, action_list, predicates):
     int_tfun = []
