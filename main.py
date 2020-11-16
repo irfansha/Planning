@@ -8,6 +8,7 @@ Todos:
 
 import argparse, textwrap
 from constraints import Constraints as cs
+from ungrounded_constraints import UngroundedConstraints as ucs
 from generate_encoding import EncodingGen as eg
 from run_solver import RunSolver as qs
 from plan_extraction import ExtractPlan as pe
@@ -48,10 +49,13 @@ if __name__ == '__main__':
 
 
   if args.version:
-    print("Version 0.8.5")
+    print("Version 0.8.6")
 
   # Extracting constraints from problem:
-  constraints_extract = cs(args.d, args.p)
+  if (args.e != 'UE'):
+    constraints_extract = cs(args.d, args.p)
+  else:
+    constraints_extract = ucs(args.d, args.p)
 
   encoding_gen = eg(constraints_extract, args)
 

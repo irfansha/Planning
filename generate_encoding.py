@@ -15,10 +15,11 @@ class EncodingGen():
 
   def __init__(self, constraints_extract, args):
     # Generating transition function:
-    if (args.t == 'l'):
-      tfun = tfl(constraints_extract)
-    elif (args.t == 'b'):
-      tfun = tfb(constraints_extract)
+    if (args.e != 'UE'):
+      if (args.t == 'l'):
+        tfun = tfl(constraints_extract)
+      elif (args.t == 'b'):
+        tfun = tfb(constraints_extract)
 
     if (args.e == 'SAT'):
       self.encoding = se(constraints_extract, tfun, args.k)
@@ -26,6 +27,8 @@ class EncodingGen():
       self.encoding = qr(constraints_extract, tfun, args.k)
     elif (args.e == 'QI'):
       self.encoding = qi(constraints_extract, tfun, args.k)
+    elif (args.e == 'UE'):
+      self.encoding = ue(constraints_extract, args.k)
     elif (args.e == 'CTE'):
       if (args.run == 2):
         self.encoding = cte(constraints_extract, tfun, args.k, 1)
@@ -36,8 +39,6 @@ class EncodingGen():
         self.encoding = fe(constraints_extract, tfun, args.k, 1)
       else:
         self.encoding = fe(constraints_extract, tfun, args.k, 0)
-    elif (args.e == 'UE'):
-      self.encoding = ue(args)
     else:
       print('no encoding generated')
       exit()
