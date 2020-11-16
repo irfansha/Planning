@@ -37,6 +37,7 @@ class UngroundedTransitionFunction():
   def action_map_gen(self, n, action_vars, bin_object_type_vars_dict):
     action_map = {}
     action_inv_map = {}
+    parameter_map = {}
     for i in range(len(action_vars)):
       action_name_var = action_vars[i][0]
       [int_action_name_var] = self.var_dis.get_vars(1)
@@ -47,7 +48,8 @@ class UngroundedTransitionFunction():
         bin_action_var_list = self.var_dis.get_vars(bin_object_type_vars_dict[parameter[1]])
         action_map[tuple(bin_action_var_list)] = (action_name_var, parameter[0])
         action_inv_map[(action_name_var, parameter[0])] = bin_action_var_list
-    return action_map, action_inv_map
+        parameter_map[tuple(bin_action_var_list)] = parameter[1]
+    return action_map, action_inv_map, parameter_map
 
   def forall_vars_gen(self, forall_variables_type_dict, bin_object_type_vars_dict, max_predicate_args):
     for obj_type, count in forall_variables_type_dict.items():
@@ -58,7 +60,7 @@ class UngroundedTransitionFunction():
         obj_bin_vars.append(temp_bin_vars)
       self.obj_forall_vars[obj_type] = obj_bin_vars
     # Forall variables for split predicates:
-    num_binary_vars = math.ceil(math.log2(max_predicate_args))
+    num_binary_vars = math.ceil(math.log2(max_predicate_args+1))
     # handling log(1) = 0:
     if (num_binary_vars == 0):
       num_binary_vars = 1
@@ -69,8 +71,9 @@ class UngroundedTransitionFunction():
     self.var_dis = vd()
     self.sv_pre_map, self.sv_pre_inv_map = self.pre_map_gen(constraints_extract.predicates)
     self.sv_post_map, self.sv_post_inv_map = self.post_map_gen(constraints_extract.predicates)
-    
-    self.av_map, self.av_inv_map = self.action_map_gen(len(constraints_extract.predicates), constraints_extract.action_vars, constraints_extract.bin_object_type_vars_dict)
+    self.action_vars = constraints_extract.action_vars
+    self.max_predicate_args = constraints_extract.max_predicate_args
+    self.av_map, self.av_inv_map, self.parameter_map = self.action_map_gen(len(constraints_extract.predicates), constraints_extract.action_vars, constraints_extract.bin_object_type_vars_dict)
     self.obj_forall_vars = {}
     self.split_predicates_forall_vars = []
     self.forall_vars_gen(constraints_extract.forall_variables_type_dict, constraints_extract.bin_object_type_vars_dict, constraints_extract.max_predicate_args)
