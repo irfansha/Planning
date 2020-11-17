@@ -98,20 +98,126 @@ class UngroundedEncoding():
     [self.initial_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['and', self.initial_output_gate, temp_initial_gate])
 
-  # XXX to be updated:
-  def generate_goal_gate(self, constraints_extract, k):
+  def generate_goal_gate(self, constraints_extract, goal_step):
     self.encoding.append(['# Goal gate:'])
+    base_predicates = list(constraints_extract.predicates)
     temp_goal_gate = []
-    for i in range(len(constraints_extract.state_vars)):
-      state_var = constraints_extract.state_vars[i]
-      if state_var in constraints_extract.goal_state[0]:
-        temp_goal_gate.append(self.states_gen.states[k][i])
-      elif state_var in constraints_extract.goal_state[1]:
-        temp_goal_gate.append(-self.states_gen.states[k][i])
-
-    # Generating initial gate variable:
+    goal_state = constraints_extract.goal_state
+    #print(goal_state)
+    # For zero-arg predicates:
+    if 0 in constraints_extract.predicate_dict.keys():
+      self.encoding.append(['# Zero predicate gates:'])
+      zero_predicates = constraints_extract.predicate_dict[0]
+      zero_then_gate = []
+      for predicate in zero_predicates:
+        if [predicate] in goal_state[0]:
+          zero_then_gate.append(self.predicates[goal_step][base_predicates.index(predicate)])
+        elif [predicate] in goal_state[1]:
+          zero_then_gate.append(-self.predicates[goal_step][base_predicates.index(predicate)])
+      zero_if_gate = []
+      for var in self.split_forall_vars:
+        zero_if_gate.append(-var)
+      [if_output_gate] = self.var_dis.get_vars(1)
+      [then_output_gate] = self.var_dis.get_vars(1)
+      [if_then_output_gate] = self.var_dis.get_vars(1)
+      self.encoding.append(['and', if_output_gate, zero_if_gate])
+      self.encoding.append(['and', then_output_gate, zero_then_gate])
+      self.encoding.append(['or', if_then_output_gate, [-if_output_gate, then_output_gate]])
+      temp_goal_gate.append(if_then_output_gate)
+    for i in range(1, constraints_extract.max_predicate_args+1):
+      step_all_predicate_gates = []
+      if i in constraints_extract.predicate_dict.keys():
+        self.encoding.append(['# Step ' + str(i) + ' predicate gates:'])
+        for predicate in constraints_extract.predicate_dict[i]:
+          pos_param_list = []
+          neg_param_list = []
+          for state in goal_state[0]:
+            if (predicate == state[0]):
+              assert(len(state[1:]) == i)
+              pos_param_list.append(state[1:])
+          # Handling negative goals:
+          for state in goal_state[1]:
+            if (predicate == state[0]):
+              assert(len(state[1:]) == i)
+              neg_param_list.append(state[1:])
+          temp_forall_vars_map = copy.deepcopy(self.forall_vars_map)
+          predicate_forall_vars = []
+          predicate_type_list = list(constraints_extract.predicates[predicate].values())
+          for predicate_type in predicate_type_list:
+            temp_forall_vars = temp_forall_vars_map[predicate_type].pop(0)
+            predicate_forall_vars.append(temp_forall_vars)
+          pos_param_list_gate = []
+          neg_param_list_gate = []
+          for param in pos_param_list:
+            param_gate = []
+            for j in range(len(param)):
+              obj_position = constraints_extract.objects[predicate_type_list[j]].index(param[j])
+              bin_string = format(obj_position,'0' + str(len(predicate_forall_vars[j])) + 'b')
+              temp_condition = []
+              for k in range(len(predicate_forall_vars[j])):
+                if bin_string[k] == '0':
+                  temp_condition.append(-predicate_forall_vars[j][k])
+                else:
+                  temp_condition.append(predicate_forall_vars[j][k])
+              [temp_condition_gate] = self.var_dis.get_vars(1)
+              self.encoding.append(['and', temp_condition_gate, temp_condition])
+              param_gate.append(temp_condition_gate)
+              #print(param[j], obj_position, predicate_forall_vars[j], temp_condition)
+            [param_output_gate] = self.var_dis.get_vars(1)
+            self.encoding.append(['and', param_output_gate, param_gate])
+            #print(param_gate, param)
+            pos_param_list_gate.append(param_output_gate)
+          for param in neg_param_list:
+            param_gate = []
+            for j in range(len(param)):
+              obj_position = constraints_extract.objects[predicate_type_list[j]].index(param[j])
+              bin_string = format(obj_position,'0' + str(len(predicate_forall_vars[j])) + 'b')
+              temp_condition = []
+              for k in range(len(predicate_forall_vars[j])):
+                if bin_string[k] == '0':
+                  temp_condition.append(-predicate_forall_vars[j][k])
+                else:
+                  temp_condition.append(predicate_forall_vars[j][k])
+              [temp_condition_gate] = self.var_dis.get_vars(1)
+              self.encoding.append(['and', temp_condition_gate, temp_condition])
+              param_gate.append(temp_condition_gate)
+              #print(param[j], obj_position, predicate_forall_vars[j], temp_condition)
+            [param_output_gate] = self.var_dis.get_vars(1)
+            self.encoding.append(['and', param_output_gate, param_gate])
+            #print(param_gate, param)
+            neg_param_list_gate.append(param_output_gate)
+          if len(pos_param_list_gate) != 0:
+            [pos_param_list_output_gate] = self.var_dis.get_vars(1)
+            self.encoding.append(['or', pos_param_list_output_gate, pos_param_list_gate])
+            [if_param_list_pos_gate] = self.var_dis.get_vars(1)
+            cur_predicate_var = self.predicates[goal_step][base_predicates.index(predicate)]
+            self.encoding.append(['or', if_param_list_pos_gate, [-pos_param_list_output_gate, cur_predicate_var]])
+            step_all_predicate_gates.append(if_param_list_pos_gate)
+          if len(neg_param_list_gate) != 0:
+            [neg_param_list_output_gate] = self.var_dis.get_vars(1)
+            self.encoding.append(['or', neg_param_list_output_gate, neg_param_list_gate])
+            [if_param_list_neg_gate] = self.var_dis.get_vars(1)
+            cur_predicate_var = self.predicates[goal_step][base_predicates.index(predicate)]
+            self.encoding.append(['or', if_param_list_neg_gate, [-neg_param_list_output_gate, -cur_predicate_var]])
+            step_all_predicate_gates.append(if_param_list_neg_gate)
+        [step_then_output_gate] = self.var_dis.get_vars(1)
+        self.encoding.append(['and', step_then_output_gate, step_all_predicate_gates])
+        bin_string = format(i,'0' + str(len(self.split_forall_vars)) + 'b')
+        temp_condition = []
+        for k in range(len(self.split_forall_vars)):
+          if bin_string[k] == '0':
+            temp_condition.append(-self.split_forall_vars[k])
+          else:
+            temp_condition.append(self.split_forall_vars[k])
+        [step_if_output_gate] = self.var_dis.get_vars(1)
+        self.encoding.append(['and', step_if_output_gate, temp_condition])
+        [step_if_then_output_gate] = self.var_dis.get_vars(1)
+        self.encoding.append(['or', step_if_then_output_gate, [-step_if_output_gate,step_then_output_gate]])
+        temp_goal_gate.append(step_if_then_output_gate)
+    # Generating goal gate variable:
     [self.goal_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['and', self.goal_output_gate, temp_goal_gate])
+
 
 
   def generate_k_transitions(self, tfun, k):
@@ -119,7 +225,6 @@ class UngroundedEncoding():
     for i in range(k):
       # Generating auxilary vars:
       step_aux_vars = self.var_dis.get_vars(tfun.num_aux_vars)
-
       # Appending transition output gates:
       self.transition_step_output_gates.append(step_aux_vars[-1])
 
@@ -250,7 +355,7 @@ class UngroundedEncoding():
     self.generate_k_transitions(tfun, k)
 
     self.generate_initial_gate(constraints_extract)
-    #self.generate_goal_gate(constraints_extract, k)
+    self.generate_goal_gate(constraints_extract, k)
 
     self.generate_final_gate()
 

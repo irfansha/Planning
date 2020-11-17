@@ -482,8 +482,9 @@ class UngroundedTransitionGatesGen():
             else:
               self.and_gate(then_list)
               step_output_gates.append(self.output_gate)
+
         # If none of the parameters satisfy, we propogate the predicates:
-        if (i != 0 and step_parameter_output_gates):
+        if (i != 0):
           self.or_gate(step_parameter_output_gates)
           if_output_gate = self.output_gate
           then_list = []
