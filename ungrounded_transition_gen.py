@@ -71,6 +71,7 @@ class UngroundedTransitionFunction():
     self.var_dis = vd()
     self.sv_pre_map, self.sv_pre_inv_map = self.pre_map_gen(constraints_extract.predicates)
     self.sv_post_map, self.sv_post_inv_map = self.post_map_gen(constraints_extract.predicates)
+    self.num_predicates = len(constraints_extract.predicates)
     self.action_vars = constraints_extract.action_vars
     self.predicate_dict = constraints_extract.predicate_dict
     self.max_predicate_args = constraints_extract.max_predicate_args

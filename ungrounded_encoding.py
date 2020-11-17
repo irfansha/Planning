@@ -4,7 +4,7 @@ from variable_dispatcher import VarDispatcher as vd
 from pddl import PDDL_Parser
 
 class UngroundedEncoding():
-
+  # XXX to be updated:
   def generate_initial_gate(self, constraints_extract):
     self.encoding.append(['# Initial gate:'])
     temp_initial_gate = []
@@ -18,7 +18,7 @@ class UngroundedEncoding():
     # Generating initial gate variable:
     [self.initial_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['and', self.initial_output_gate, temp_initial_gate])
-
+  # XXX to be updated:
   def generate_goal_gate(self, constraints_extract, k):
     self.encoding.append(['# Goal gate:'])
     temp_goal_gate = []
@@ -37,18 +37,13 @@ class UngroundedEncoding():
   def generate_k_transitions(self, tfun, k):
     # Generating transition function for each step:
     for i in range(k):
-      # Generating action vars:
-      step_action_vars = self.var_dis.get_vars(tfun.num_action_vars)
-      self.action_vars.append(step_action_vars)
-      #print(step_action_vars)
-
       # Generating auxilary vars:
       step_aux_vars = self.var_dis.get_vars(tfun.num_aux_vars)
 
       # Appending transition output gates:
       self.transition_step_output_gates.append(step_aux_vars[-1])
 
-      tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.states_gen.states[i], self.states_gen.states[i+1], step_action_vars, step_aux_vars)
+      tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.predicates[i], self.predicates[i+1], self.action_with_parameter_vars[i], self.forall_vars, self.split_forall_vars, step_aux_vars)
 
 
   def generate_final_gate(self):
@@ -62,13 +57,30 @@ class UngroundedEncoding():
     [self.final_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['and', self.final_output_gate, temp_final_list])
 
-  def generate_quantifier_blocks(self):
-    self.quantifier_block.append(['# State variables :'])
-    for states in self.states_gen.states:
-      self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in states) + ')'])
+  def generate_quantifier_blocks(self, k):
     self.quantifier_block.append(['# Action variables :'])
-    for states in self.action_vars:
-      self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in states) + ')'])
+    for i in range(k):
+      self.quantifier_block.append(['# Time step' + str(i) + ' :'])
+      for action_vars in self.action_with_parameter_vars[i]:
+        main_action_var = action_vars[0]
+        self.quantifier_block.append(['# Main action variable :'])            # XXX add name directly later
+        self.quantifier_block.append(['exists(' + str(main_action_var) + ')'])
+        action_parameters = action_vars[1]
+        self.quantifier_block.append(['# Parameter variables :'])
+        for parameter in action_parameters:
+          self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in parameter) + ')'])
+    self.quantifier_block.append(['# Split forall variables :'])
+    self.quantifier_block.append(['forall(' + ', '.join(str(x) for x in self.split_forall_vars) + ')'])
+
+    self.quantifier_block.append(['# Object forall variables :'])
+    for obj_vars in self.forall_vars:
+      self.quantifier_block.append(['forall(' + ', '.join(str(x) for x in obj_vars) + ')'])
+
+    self.quantifier_block.append(['# Predicate variables :'])
+
+    for i in range(k+1):
+      self.quantifier_block.append(['# Time step' + str(i) + ' :'])
+      self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in self.predicates[i]) + ')'])
 
 
   def print_gate(self, gate):
@@ -98,6 +110,38 @@ class UngroundedEncoding():
     for gate in self.encoding:
       self.print_gate(gate)
 
+  # Generating k sets of action vars for k steps:
+  def gen_action_with_parameter_vars(self, object_type_dict, action_vars, tfun, k):
+    for i in range(k):
+      step_action_with_parameter_vars = []
+      for action_var in action_vars:
+        [action_name_var] = self.var_dis.get_vars(1)
+        parameter_vars = []
+        for parameter in action_var[1]:
+          parameter_vars.append(self.var_dis.get_vars(object_type_dict[parameter[1]]))
+        step_action_with_parameter_vars.append([action_name_var, parameter_vars])
+      self.action_with_parameter_vars.append(step_action_with_parameter_vars)
+
+    #for actions in self.action_with_parameter_vars:
+    #  for action in actions:
+    #    print(action)
+    #  print("\n")
+
+  # Generating k+1 states for k steps:
+  def gen_predicate_vars(self, tfun, k):
+    for i in range(k+1):
+      step_predicate_vars = self.var_dis.get_vars(tfun.num_predicates)
+      self.predicates.append(step_predicate_vars)
+
+  # Generates required variables for each type of object:
+  def gen_forall_vars(self, obj_forall_vars):
+    for obj_type, obj_var_list in obj_forall_vars.items():
+      temp_var_list = []
+      for var in obj_var_list:
+        new_vars = self.var_dis.get_vars(len(var))
+        temp_var_list.append(new_vars)
+      self.forall_vars.append(temp_var_list)
+
 
   def __init__(self, constraints_extract, tfun, k):
     self.var_dis = vd()
@@ -108,10 +152,24 @@ class UngroundedEncoding():
     self.transition_step_output_gates = []
     self.final_output_gate = 0 # final output gate can never be 0
 
-    #for action in constraints_extract.predicate_split_action_list:
-    #  print(action)
+    self.predicates = []
+    self.gen_predicate_vars(tfun, k)
 
-    #for action_var in constraints_extract.action_vars:
-    #  print(action_var)
-    #print(tfun.action_vars)
-    #tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.states_gen.states[i], self.states_gen.states[i+1], step_action_vars, step_aux_vars)
+    self.action_with_parameter_vars = []
+    self.gen_action_with_parameter_vars(constraints_extract.bin_object_type_vars_dict, constraints_extract.action_vars, tfun, k)
+
+    self.forall_vars = []
+    self.gen_forall_vars(tfun.obj_forall_vars)
+
+    self.split_forall_vars = self.var_dis.get_vars(len(tfun.split_predicates_forall_vars))
+    #print(self.split_forall_vars)
+
+    #self.generate_initial_gate(constraints_extract)
+
+    self.generate_k_transitions(tfun, k)
+
+    #self.generate_goal_gate(constraints_extract, k)
+
+    self.generate_final_gate()
+
+    self.generate_quantifier_blocks(k)

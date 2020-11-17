@@ -594,7 +594,7 @@ class UngroundedTransitionGatesGen():
       encoding.append(['# Action variable:' + str(main_action_var)])
       encoding.append(['# Parameters:'])
       for parameter in action_parameters:
-        parameter_string = ','.join(str(x) for x in action_vars)
+        parameter_string = ','.join(str(x) for x in parameter)
         encoding.append(['# ' + parameter_string])
     encoding.append(['# Forall variables:'])
     for obj_vars in forall_vars:
