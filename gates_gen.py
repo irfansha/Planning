@@ -400,9 +400,9 @@ class UngroundedTransitionGatesGen():
   # Takes lists of gates of two object vars and generates equality gate:
   def eq_forall_vars_gate(self, first_vars, second_vars):
     assert(len(first_vars) == len(second_vars))
-    self.transition_gates.append('[# forall vars equality gates:]')
-    self.transition_gates.append('[# vars : (' + ', '.join(str(x) for x in first_vars) + ')]')
-    self.transition_gates.append('[# vars : (' + ', '.join(str(x) for x in second_vars) + ')]')
+    self.transition_gates.append(['# forall vars equality gates:'])
+    self.transition_gates.append(['# vars : (' + ', '.join(str(x) for x in first_vars) + ')'])
+    self.transition_gates.append(['# vars : (' + ', '.join(str(x) for x in second_vars) + ')'])
     step_output_gates = []
     for i in range(len(first_vars)):
       self.eq_forall_var_gate(first_vars[i], second_vars[i])
@@ -528,6 +528,9 @@ class UngroundedTransitionGatesGen():
     self.and_gate([amo_output_gate, alo_output_gate])
     self.final_amoalo_gate = self.output_gate
 
+    #for gate in self.transition_gates:
+    #  print(gate)
+
   def add_final_gate(self):
     self.and_gate([self.final_action_gate, self.final_amoalo_gate])
     self.final_transition_gate = self.output_gate
@@ -558,9 +561,6 @@ class UngroundedTransitionGatesGen():
     self.add_final_gate()
     self.total_gates = self.output_gate
 
-    #for gate in self.transition_gates:
-    #  print(gate)
-
   # XXX to be tested:
   def new_gate_gen(self, encoding, first_name, second_name, first_predicates, second_predicates, action_vars_list, forall_vars, split_forall_vars, aux_vars):
 
@@ -577,10 +577,12 @@ class UngroundedTransitionGatesGen():
       for parameter in action_vars[1]:
         var_list.extend(parameter)
 
-    for obj_vars in forall_vars:
-      var_list.extend(obj_vars)
+    for obj_type_vars in forall_vars:
+      for obj_vars in obj_type_vars:
+        var_list.extend(obj_vars)
     var_list.extend(split_forall_vars)
     var_list.extend(aux_vars)
+
 
     encoding.append(['# Transition function from ' + first_name + ' to ' + second_name + ':'])
     encoding.append(['# ' + first_name + ' vars : (' + ', '.join(str(x) for x in first_predicates) + ')'])
