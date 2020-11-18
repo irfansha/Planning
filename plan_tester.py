@@ -1,5 +1,10 @@
 # Irfansha Shaik, 05.10.2020, Aarhus
 
+'''
+Todos:
+  1. For Ungrounded planning, it is possible to test without grounding
+'''
+
 
 def test_plan(plan, constraints):
   print("\nTesting plan: ")
