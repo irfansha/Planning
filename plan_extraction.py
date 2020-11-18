@@ -14,6 +14,29 @@ class ExtractPlan():
       self.plan.append([constraints.action_list[action_num].name, tuple(constraints.action_list[action_num].parameters)])
       #print(constraints.action_list[action_num])
 
+  def extract_ungrounded_plan(self, action_vars, constraints, k):
+    for action_step in action_vars:
+      for i in range(len(action_step)):
+        if (self.sol_map[action_step[i][0]] == 1):
+          action_name = constraints.action_vars[i][0]
+          base_action_parameters = constraints.action_vars[i][1]
+          action_parameters = action_step[i][1]
+          # print(action_name, action_parameters)
+          obj_parameter_list = []
+          for j in range(len(action_parameters)):
+            parameter = action_parameters[j]
+            base_parameter = base_action_parameters[j]
+            base_parameter_type = base_parameter[1]
+            temp = ''
+            for obj_i in range(len(parameter)):
+              if self.sol_map[parameter[obj_i]] == -1:
+                temp += '0'
+              else:
+                temp += '1'
+            obj_num = int(temp, 2)
+            obj_parameter_list.append(constraints.objects[base_parameter_type][obj_num])
+          self.plan.append([action_name, tuple(obj_parameter_list)])
+
   def extract_qr_plan(self, states, constraints, k):
     n = constraints.num_state_vars
     current_states = []

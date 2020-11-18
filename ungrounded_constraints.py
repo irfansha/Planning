@@ -2,6 +2,7 @@
 
 from pddl import PDDL_Parser
 from action import ActionWithUntouchedPredicates as ap
+from action import Action as ga
 import math
 from collections import Counter
 
@@ -45,6 +46,49 @@ class UngroundedConstraints():
     self.actions = parser.actions
     self.predicates = parser.predicates
     self.objects = parser.objects
+
+
+
+  # Only for testing purposes, grounded action lists required:
+  def extract_state_vars(self, domain, problem):
+    print("Caution! grounding (use only for testing purposes)")
+    parser = PDDL_Parser()
+    parser.parse_domain(domain)
+    parser.parse_problem(problem)
+    # Grounding process
+    ground_actions = []
+    self.action_list = []
+
+    for action in parser.actions:
+      for act in action.groundify(parser.objects):
+        ground_actions.append(act)
+    # Appending grounded actions:
+    for act in ground_actions:
+      self.action_list.append(act)
+
+    for var in self.initial_state:
+      if var not in self.state_vars:
+        self.state_vars.append(var)
+
+    for var_list in self.goal_state:
+      for var in var_list:
+        if var not in self.state_vars:
+          self.state_vars.append(var)
+
+    for constraint in self.action_list:
+      for cond in constraint.positive_preconditions:
+        if cond not in self.state_vars:
+          self.state_vars.append(cond)
+      for cond in constraint.negative_preconditions:
+        if cond not in self.state_vars:
+          self.state_vars.append(cond)
+      for cond in constraint.add_effects:
+        if cond not in self.state_vars:
+          self.state_vars.append(cond)
+      for cond in constraint.del_effects:
+        if cond not in self.state_vars:
+          self.state_vars.append(cond)
+
 
   def gen_predicate_list(self):
     for predicate, parameters in self.predicates.items():
@@ -167,7 +211,7 @@ class UngroundedConstraints():
         if (self.forall_variables_type_dict[obj_type] < count):
           self.forall_variables_type_dict[obj_type] = count
 
-  def __init__(self, domain, problem):
+  def __init__(self, domain, problem, testing):
     self.predicate_dict = {}
     self.max_predicate_args = -1 # max predicate arguments can never be -1
 
@@ -175,6 +219,10 @@ class UngroundedConstraints():
 
     # generating constraint for the pddl problem:
     self.extract(domain, problem)
+
+    if (testing):
+      self.state_vars = []
+      self.extract_state_vars(domain, problem)
 
     # separating predicates based on number of arguments:
     self.gen_predicate_list()

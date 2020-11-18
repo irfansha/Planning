@@ -36,6 +36,10 @@ if __name__ == '__main__':
                                0 = only generate encoding
                                1 = test plan existence
                                2 = extract the plan in found'''),default = 2)
+  parser.add_argument("--testing", type=int, help=textwrap.dedent('''
+                                          0 = no testing
+                                          1 = testing enabled,
+                                              more memory required due to grounding'''),default = 1)
   parser.add_argument("--encoding_out", help="output encoding file",default = 'encoding.qcir')
   parser.add_argument("--encoding_type", type=int, help="Encoding type: [1 = QCIR14 2 = QDIMACS]",default = 1)
   parser.add_argument("--solver_out", help="solver output file",default = 'solver_output.txt')
@@ -51,11 +55,15 @@ if __name__ == '__main__':
   if args.version:
     print("Version 0.8.6")
 
+  # If not extracting plan, we dont test by default:
+  if (args.run < 2):
+    args.testing = 0
+
   # Extracting constraints from problem:
   if (args.e != 'UE'):
     constraints_extract = cs(args.d, args.p)
   else:
-    constraints_extract = ucs(args.d, args.p)
+    constraints_extract = ucs(args.d, args.p, args.testing)
 
   encoding_gen = eg(constraints_extract, args)
 
@@ -68,9 +76,12 @@ if __name__ == '__main__':
         plan_extract = pe(run_qs.sol_map)
         if (args.e == 'CTE' or args.e == 'FE'):
           plan_extract.extract_action_based_plan(encoding_gen.encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
+        elif(args.e == 'UE'):
+          plan_extract.extract_ungrounded_plan(encoding_gen.encoding.action_with_parameter_vars, constraints_extract, args.k)
         else:
           plan_extract.extract_qr_plan(encoding_gen.encoding.states_gen.states, constraints_extract, args.k)
         plan_extract.print_plan()
-        pt.test_plan(plan_extract.plan, constraints_extract)
+        if (args.testing == 1):
+          pt.test_plan(plan_extract.plan, constraints_extract)
     else:
       print('plan not found')
