@@ -67,7 +67,7 @@ class UngroundedTransitionFunction():
     self.split_predicates_forall_vars = self.var_dis.get_vars(num_binary_vars)
 
 
-  def __init__(self, constraints_extract):
+  def __init__(self, constraints_extract, splitvars_flag):
     self.var_dis = vd()
     self.sv_pre_map, self.sv_pre_inv_map = self.pre_map_gen(constraints_extract.predicates)
     self.sv_post_map, self.sv_post_inv_map = self.post_map_gen(constraints_extract.predicates)
@@ -81,7 +81,7 @@ class UngroundedTransitionFunction():
     self.forall_vars_gen(constraints_extract.forall_variables_type_dict, constraints_extract.bin_object_type_vars_dict, constraints_extract.max_predicate_args)
     [self.next_gate_var] = self.var_dis.get_vars(1)
     self.integer_tfun = self.integer_tfun_gen(constraints_extract.predicate_split_action_list, constraints_extract.predicates)
-    self.gates_gen = gg(self)
+    self.gates_gen = gg(self, splitvars_flag)
     self.num_aux_vars = self.gates_gen.total_gates - self.next_gate_var + 1
 
   def integer_tfun_gen(self, action_list, predicates):

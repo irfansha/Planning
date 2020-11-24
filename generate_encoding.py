@@ -22,7 +22,7 @@ class EncodingGen():
       elif (args.t == 'b'):
         tfun = tfb(constraints_extract)
     else:
-      tfun = utf(constraints_extract)
+      tfun = utf(constraints_extract, args.splitvars)
 
     if (args.e == 'SAT'):
       self.encoding = se(constraints_extract, tfun, args.k)
@@ -31,7 +31,7 @@ class EncodingGen():
     elif (args.e == 'QI'):
       self.encoding = qi(constraints_extract, tfun, args.k)
     elif (args.e == 'UE'):
-      self.encoding = ue(constraints_extract, tfun, args.k)
+      self.encoding = ue(constraints_extract, tfun, args.k, args.splitvars)
     elif (args.e == 'CTE'):
       if (args.run == 2):
         self.encoding = cte(constraints_extract, tfun, args.k, 1)

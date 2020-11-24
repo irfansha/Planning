@@ -452,7 +452,7 @@ class UngroundedTransitionGatesGen():
       step_output_gates.append(self.output_gate)
     self.and_gate(step_output_gates)
 
-  def add_action_gates(self, tfun):
+  def add_action_gates(self, tfun, splitvars_flag):
     aux_action_gates = []
     for ref_action in tfun.action_vars:
       # if gate variable:
@@ -460,8 +460,9 @@ class UngroundedTransitionGatesGen():
       split_condition_output_gates = []
       for i in range(tfun.max_predicate_args+1):
         # split forall predicate if gate:
-        self.gen_split_predicate_if_gate(i, tfun.split_predicates_forall_vars)
-        split_predicate_if_gate = self.output_gate
+        if (splitvars_flag == 1):
+          self.gen_split_predicate_if_gate(i, tfun.split_predicates_forall_vars)
+          split_predicate_if_gate = self.output_gate
         step_parameter_output_gates = []
         step_output_gates = []
         # Finding split actions and generating if then gates,
@@ -497,7 +498,10 @@ class UngroundedTransitionGatesGen():
           step_output_gates.append(self.output_gate)
         # Second main if block for each split branch :
         if(step_output_gates):
-          self.if_then_gate(split_predicate_if_gate, step_output_gates)
+          if (splitvars_flag == 1):
+            self.if_then_gate(split_predicate_if_gate, step_output_gates)
+          else:
+            self.and_gate(step_output_gates)
           split_condition_output_gates.append(self.output_gate)
       # Main if block for each action variable:
       self.if_then_gate(main_action_if_var, split_condition_output_gates)
@@ -536,7 +540,7 @@ class UngroundedTransitionGatesGen():
     self.and_gate([self.final_action_gate, self.final_amoalo_gate])
     self.final_transition_gate = self.output_gate
 
-  def __init__(self, tfun):
+  def __init__(self, tfun, splitvars_flag):
     self.transition_gates = []
     self.output_gate = 0 # output gate will never be zero
     self.next_gate = tfun.next_gate_var
@@ -551,7 +555,7 @@ class UngroundedTransitionGatesGen():
 
     self.transition_gates.append(['# Action gates:'])
     # Adding action gates:
-    self.add_action_gates(tfun)
+    self.add_action_gates(tfun, splitvars_flag)
 
     self.transition_gates.append(['# AMO ALO gates:'])
     # Adding AtMostOne and AtLeastOne gates:

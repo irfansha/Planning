@@ -4,6 +4,7 @@
 Todos:
   1. Extraction in FE and CTE seems slow down the execution, perhaps
      it is possible to actually make it faster (by allowing to solve from both directions)
+  2. Use operator splitting for SAT encoding (and other grounded encodings)
 '''
 
 import argparse, textwrap
@@ -40,6 +41,7 @@ if __name__ == '__main__':
                                           0 = no testing
                                           1 = testing enabled,
                                               more memory required due to grounding'''),default = 1)
+  parser.add_argument("--splitvars", type=int, help="Turn split forall vars on: [0 = No 1 = Yes]",default = 0)
   parser.add_argument("--encoding_out", help="output encoding file",default = 'encoding.qcir')
   parser.add_argument("--encoding_type", type=int, help="Encoding type: [1 = QCIR14 2 = QDIMACS]",default = 1)
   parser.add_argument("--solver_out", help="solver output file",default = 'solver_output.txt')

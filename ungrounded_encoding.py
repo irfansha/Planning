@@ -6,7 +6,7 @@ import copy
 
 class UngroundedEncoding():
 
-  def generate_initial_gate(self, constraints_extract):
+  def generate_initial_gate(self, constraints_extract, splitvars_flag):
     self.encoding.append(['# Initial gate:'])
     base_predicates = list(constraints_extract.predicates)
     temp_initial_gate = []
@@ -21,16 +21,25 @@ class UngroundedEncoding():
           zero_then_gate.append(self.predicates[0][base_predicates.index(predicate)])
         else:
           zero_then_gate.append(-self.predicates[0][base_predicates.index(predicate)])
-      zero_if_gate = []
-      for var in self.split_forall_vars:
-        zero_if_gate.append(-var)
-      [if_output_gate] = self.var_dis.get_vars(1)
+
+      if (splitvars_flag == 1):
+        zero_if_gate = []
+        for var in self.split_forall_vars:
+          zero_if_gate.append(-var)
+        [if_output_gate] = self.var_dis.get_vars(1)
+        self.encoding.append(['and', if_output_gate, zero_if_gate])
+
       [then_output_gate] = self.var_dis.get_vars(1)
-      [if_then_output_gate] = self.var_dis.get_vars(1)
-      self.encoding.append(['and', if_output_gate, zero_if_gate])
       self.encoding.append(['and', then_output_gate, zero_then_gate])
-      self.encoding.append(['or', if_then_output_gate, [-if_output_gate, then_output_gate]])
+      [if_then_output_gate] = self.var_dis.get_vars(1)
+
+      # Only if spplit variable are present, we consider if block:
+      if (splitvars_flag == 1):
+        self.encoding.append(['or', if_then_output_gate, [-if_output_gate, then_output_gate]])
+      else:
+        self.encoding.append(['and', if_then_output_gate, [then_output_gate]])
       temp_initial_gate.append(if_then_output_gate)
+
     for i in range(1, constraints_extract.max_predicate_args+1):
       step_all_predicate_gates = []
       if i in constraints_extract.predicate_dict.keys():
@@ -82,23 +91,28 @@ class UngroundedEncoding():
             step_all_predicate_gates.append(if_param_list_false_gate)
         [step_then_output_gate] = self.var_dis.get_vars(1)
         self.encoding.append(['and', step_then_output_gate, step_all_predicate_gates])
-        bin_string = format(i,'0' + str(len(self.split_forall_vars)) + 'b')
-        temp_condition = []
-        for k in range(len(self.split_forall_vars)):
-          if bin_string[k] == '0':
-            temp_condition.append(-self.split_forall_vars[k])
-          else:
-            temp_condition.append(self.split_forall_vars[k])
-        [step_if_output_gate] = self.var_dis.get_vars(1)
-        self.encoding.append(['and', step_if_output_gate, temp_condition])
+        if (splitvars_flag == 1):
+          bin_string = format(i,'0' + str(len(self.split_forall_vars)) + 'b')
+          temp_condition = []
+          for k in range(len(self.split_forall_vars)):
+            if bin_string[k] == '0':
+              temp_condition.append(-self.split_forall_vars[k])
+            else:
+              temp_condition.append(self.split_forall_vars[k])
+          [step_if_output_gate] = self.var_dis.get_vars(1)
+          self.encoding.append(['and', step_if_output_gate, temp_condition])
         [step_if_then_output_gate] = self.var_dis.get_vars(1)
-        self.encoding.append(['or', step_if_then_output_gate, [-step_if_output_gate,step_then_output_gate]])
+        # Same as above, if condition is only considered if splitvars are used:
+        if (splitvars_flag == 1):
+          self.encoding.append(['or', step_if_then_output_gate, [-step_if_output_gate,step_then_output_gate]])
+        else:
+          self.encoding.append(['and', step_if_then_output_gate, [step_then_output_gate]])
         temp_initial_gate.append(step_if_then_output_gate)
     # Generating initial gate variable:
     [self.initial_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['and', self.initial_output_gate, temp_initial_gate])
 
-  def generate_goal_gate(self, constraints_extract, goal_step):
+  def generate_goal_gate(self, constraints_extract, goal_step, splitvars_flag):
     self.encoding.append(['# Goal gate:'])
     base_predicates = list(constraints_extract.predicates)
     temp_goal_gate = []
@@ -114,16 +128,25 @@ class UngroundedEncoding():
           zero_then_gate.append(self.predicates[goal_step][base_predicates.index(predicate)])
         elif [predicate] in goal_state[1]:
           zero_then_gate.append(-self.predicates[goal_step][base_predicates.index(predicate)])
-      zero_if_gate = []
-      for var in self.split_forall_vars:
-        zero_if_gate.append(-var)
-      [if_output_gate] = self.var_dis.get_vars(1)
+
+      if (splitvars_flag == 1):
+        zero_if_gate = []
+        for var in self.split_forall_vars:
+          zero_if_gate.append(-var)
+        [if_output_gate] = self.var_dis.get_vars(1)
+        self.encoding.append(['and', if_output_gate, zero_if_gate])
+
       [then_output_gate] = self.var_dis.get_vars(1)
-      [if_then_output_gate] = self.var_dis.get_vars(1)
-      self.encoding.append(['and', if_output_gate, zero_if_gate])
       self.encoding.append(['and', then_output_gate, zero_then_gate])
-      self.encoding.append(['or', if_then_output_gate, [-if_output_gate, then_output_gate]])
+      [if_then_output_gate] = self.var_dis.get_vars(1)
+
+      # Only if spplit variable are present, we consider if block:
+      if (splitvars_flag == 1):
+        self.encoding.append(['or', if_then_output_gate, [-if_output_gate, then_output_gate]])
+      else:
+        self.encoding.append(['and', if_then_output_gate, [then_output_gate]])
       temp_goal_gate.append(if_then_output_gate)
+
     for i in range(1, constraints_extract.max_predicate_args+1):
       step_all_predicate_gates = []
       if i in constraints_extract.predicate_dict.keys():
@@ -202,18 +225,25 @@ class UngroundedEncoding():
             step_all_predicate_gates.append(if_param_list_neg_gate)
         [step_then_output_gate] = self.var_dis.get_vars(1)
         self.encoding.append(['and', step_then_output_gate, step_all_predicate_gates])
-        bin_string = format(i,'0' + str(len(self.split_forall_vars)) + 'b')
-        temp_condition = []
-        for k in range(len(self.split_forall_vars)):
-          if bin_string[k] == '0':
-            temp_condition.append(-self.split_forall_vars[k])
-          else:
-            temp_condition.append(self.split_forall_vars[k])
-        [step_if_output_gate] = self.var_dis.get_vars(1)
-        self.encoding.append(['and', step_if_output_gate, temp_condition])
+
+        if (splitvars_flag == 1):
+          bin_string = format(i,'0' + str(len(self.split_forall_vars)) + 'b')
+          temp_condition = []
+          for k in range(len(self.split_forall_vars)):
+            if bin_string[k] == '0':
+              temp_condition.append(-self.split_forall_vars[k])
+            else:
+              temp_condition.append(self.split_forall_vars[k])
+          [step_if_output_gate] = self.var_dis.get_vars(1)
+          self.encoding.append(['and', step_if_output_gate, temp_condition])
         [step_if_then_output_gate] = self.var_dis.get_vars(1)
-        self.encoding.append(['or', step_if_then_output_gate, [-step_if_output_gate,step_then_output_gate]])
+        # Same as above, if condition is only considered if splitvars are used:
+        if (splitvars_flag == 1):
+          self.encoding.append(['or', step_if_then_output_gate, [-step_if_output_gate,step_then_output_gate]])
+        else:
+          self.encoding.append(['and', step_if_then_output_gate, [step_then_output_gate]])
         temp_goal_gate.append(step_if_then_output_gate)
+
     # Generating goal gate variable:
     [self.goal_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['and', self.goal_output_gate, temp_goal_gate])
@@ -242,7 +272,7 @@ class UngroundedEncoding():
     [self.final_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['and', self.final_output_gate, temp_final_list])
 
-  def generate_quantifier_blocks(self, k):
+  def generate_quantifier_blocks(self, k, splitvars_flag):
     self.quantifier_block.append(['# Action variables :'])
     for i in range(k):
       self.quantifier_block.append(['# Time step' + str(i) + ' :'])
@@ -255,8 +285,10 @@ class UngroundedEncoding():
         for parameter in action_parameters:
           self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in parameter) + ')'])
     self.quantifier_block.append(['# Split forall variables :'])
-    self.quantifier_block.append(['forall(' + ', '.join(str(x) for x in self.split_forall_vars) + ')'])
-
+    if (splitvars_flag == 1):
+      self.quantifier_block.append(['forall(' + ', '.join(str(x) for x in self.split_forall_vars) + ')'])
+    else:
+      self.quantifier_block.append(['# forall(' + ', '.join(str(x) for x in self.split_forall_vars) + ')'])
     self.quantifier_block.append(['# Object forall variables :'])
     for obj_type_vars in self.forall_vars:
       for obj_vars in obj_type_vars:
@@ -330,7 +362,7 @@ class UngroundedEncoding():
       self.forall_vars_map[obj_type] = temp_var_list
 
 
-  def __init__(self, constraints_extract, tfun, k):
+  def __init__(self, constraints_extract, tfun, k, splitvars_flag):
     self.var_dis = vd()
     self.quantifier_block = []
     self.encoding = []
@@ -354,9 +386,9 @@ class UngroundedEncoding():
 
     self.generate_k_transitions(tfun, k)
 
-    self.generate_initial_gate(constraints_extract)
-    self.generate_goal_gate(constraints_extract, k)
+    self.generate_initial_gate(constraints_extract, splitvars_flag)
+    self.generate_goal_gate(constraints_extract, k, splitvars_flag)
 
     self.generate_final_gate()
 
-    self.generate_quantifier_blocks(k)
+    self.generate_quantifier_blocks(k, splitvars_flag)
