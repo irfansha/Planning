@@ -43,13 +43,13 @@ if __name__ == '__main__':
                                               more memory required due to grounding'''),default = 1)
   parser.add_argument("--splitvars", type=int, help="Turn split forall vars on: [0 = No 1 = Yes]",default = 0)
   parser.add_argument("--encoding_out", help="output encoding file",default = 'encoding.qcir')
-  parser.add_argument("--encoding_type", type=int, help="Encoding type: [1 = QCIR14 2 = QDIMACS]",default = 1)
+  parser.add_argument("--encoding_type", type=int, help="Encoding type: [1 = QCIR14 2 = QDIMACS]",default = 2)
   parser.add_argument("--solver_out", help="solver output file",default = 'solver_output.txt')
   parser.add_argument("--solver_type", type=int, help=textwrap.dedent('''
                                        Solver type:
                                        0 = custom
                                        1 = quabs
-                                       2 = caqe'''),default = 1)
+                                       2 = caqe'''),default = 2)
   parser.add_argument("--custom_solver_path", help="custom solver path",default = './solvers/qbf/quabs')
   args = parser.parse_args()
 
