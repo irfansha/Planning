@@ -5,6 +5,11 @@ from state_gen import StateGen as sg
 from gates_gen import StateGatesGen as sgg
 import math
 
+'''
+Todos:
+1. Extraction is wrong and giving different answers, to be updated.
+'''
+
 class CTEncoding():
 
   def generate_initial_gate(self, constraints_extract):
