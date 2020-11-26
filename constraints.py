@@ -88,11 +88,10 @@ class Constraints():
     # Updating incorrect parsed types:
     self.update_types_and_objects(parser.types)
 
-    parser.objects = dict(self.updated_objects)
     # Grounding process
     ground_actions = []
     for action in parser.actions:
-      for act in action.groundify(parser.objects):
+      for act in action.groundify(self.updated_objects):
         ground_actions.append(act)
     # Appending grounded actions:
     for act in ground_actions:
