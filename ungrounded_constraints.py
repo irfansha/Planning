@@ -8,6 +8,57 @@ from collections import Counter
 
 class UngroundedConstraints():
 
+  def find_objects(self, obj_type):
+    if obj_type in self.objects:
+      return self.objects[obj_type]
+    else:
+      next_obj_types = self.type_hierarchy_dict[obj_type]
+      object_list = []
+      for next_obj_type in next_obj_types:
+        objects = self.find_objects(next_obj_type)
+        object_list.extend(objects)
+      return object_list
+
+  def update_types_objects(self, types):
+
+    temp_list = []
+    copy_types = list(types)
+    while(copy_types):
+      temp_type = copy_types.pop(0)
+      if (temp_type == '-'):
+        # types list is not empty, so the super type is specified:
+        if(copy_types):
+          temp_super_type = copy_types.pop(0)
+        else:
+          temp_super_type = 'object'
+        if temp_super_type in self.type_hierarchy_dict:
+          self.type_hierarchy_dict[temp_super_type].extend(temp_list)
+        else:
+          self.type_hierarchy_dict[temp_super_type] = temp_list
+        temp_list = []
+      else:
+        temp_list.append(temp_type)
+    if (temp_list):
+      self.type_hierarchy_dict['object'] = temp_list
+
+    # Generating new type list from hierarchy:
+    for super_type, sub_types in self.type_hierarchy_dict.items():
+      if super_type not in self.types:
+        self.types.append(super_type)
+      for sub_type in sub_types:
+        if sub_type not in self.types:
+          self.types.append(sub_type)
+    # object is the default type:
+    if "object" not in self.types:
+      self.types.append("object")
+
+    # Now generating new object list:
+    for obj_type in self.types:
+      objects = self.find_objects(obj_type)
+      self.updated_objects[obj_type] = objects
+      #print(obj_type)
+      #print(objects)
+
   #-------------------------------------------------------------------------------------------
   # extraction from pddl domain and problem:
   #-------------------------------------------------------------------------------------------
@@ -34,18 +85,17 @@ class UngroundedConstraints():
     goal_not = parser.negative_goals
     self.goal_state = [goal_pos, goal_not]
 
-    # XXX handle if there are no objects:
-    if (len(parser.types) == 0):
-      # Adding default object type:
-      parser.types.append("object")
+    self.objects = dict(parser.objects)
+    self.predicates = parser.predicates
+
+    # Updating incorrect parsed types:
+    self.update_types_objects(parser.types)
 
     #Adding No-op to the actions:
     parser.actions.append(ap('noop', [], [], [], [], [], []))
 
-    self.types = parser.types
     self.actions = parser.actions
-    self.predicates = parser.predicates
-    self.objects = parser.objects
+
 
 
 
@@ -60,7 +110,7 @@ class UngroundedConstraints():
     self.action_list = []
 
     for action in parser.actions:
-      for act in action.groundify(parser.objects):
+      for act in action.groundify(self.updated_objects):
         ground_actions.append(act)
     # Appending grounded actions:
     for act in ground_actions:
@@ -191,8 +241,9 @@ class UngroundedConstraints():
       self.action_vars.append((action.name, tuple(action.parameters)))
 
   def gen_bin_var_object_types(self):
+    print(self.types)
     for obj_type in self.types:
-      obj_length = len(self.objects[obj_type])
+      obj_length = len(self.updated_objects[obj_type])
       num_binary_vars = math.ceil(math.log2(obj_length))
       # handling log(1) = 0:
       if (num_binary_vars == 0):
@@ -216,6 +267,13 @@ class UngroundedConstraints():
     self.max_predicate_args = -1 # max predicate arguments can never be -1
 
     self.predicate_split_action_list = []
+
+    self.type_hierarchy_dict = {}
+
+    self.types = []
+
+    self.updated_objects = {}
+
 
     # generating constraint for the pddl problem:
     self.extract(domain, problem)
