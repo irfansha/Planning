@@ -6,13 +6,21 @@ Todos:
 '''
 
 
-def test_plan(plan, constraints):
+def test_plan(plan, constraints, encoding):
+  if (encoding == 'UE'):
+    initial_state = constraints.test_initial_state
+    goal_state = constraints.test_goal_state
+    action_list = constraints.test_action_list
+  else:
+    initial_state = constraints.initial_state
+    goal_state = constraints.goal_state
+    action_list = constraints.action_list
   print("\nTesting plan: ")
   current_state = []
   temp_pos_var = []
   temp_neg_var = []
   for state_var in constraints.state_vars:
-    if state_var in constraints.initial_state:
+    if state_var in initial_state:
       temp_pos_var.append(state_var)
     else:
       temp_neg_var.append(state_var)
@@ -20,7 +28,7 @@ def test_plan(plan, constraints):
   current_state.append(temp_neg_var)
 
   for cur_action in plan:
-    for action in constraints.action_list:
+    for action in action_list:
       if (action.name == cur_action[0] and tuple(action.parameters) == cur_action[1]):
         # precondition must satisfy:
         for pos_pre_cond in action.positive_preconditions:
@@ -43,11 +51,11 @@ def test_plan(plan, constraints):
           if del_state in current_state[0]:
             current_state[0].remove(del_state)
   # Testing if current state is goal state:
-  for pos_state in constraints.goal_state[0]:
+  for pos_state in goal_state[0]:
     if pos_state not in current_state[0]:
       print("Error! goal state not reached, positive conditions not present")
       exit()
-  for neg_state in constraints.goal_state[1]:
+  for neg_state in goal_state[1]:
     if neg_state not in current_state[1]:
       print("Error! goal state not reached")
       exit()

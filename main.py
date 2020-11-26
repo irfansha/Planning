@@ -84,6 +84,6 @@ if __name__ == '__main__':
           plan_extract.extract_qr_plan(encoding_gen.encoding.states_gen.states, constraints_extract, args.k)
         plan_extract.print_plan()
         if (args.testing == 1):
-          pt.test_plan(plan_extract.plan, constraints_extract)
+          pt.test_plan(plan_extract.plan, constraints_extract, args.e)
     else:
       print('plan not found')
