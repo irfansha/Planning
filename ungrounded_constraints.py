@@ -56,8 +56,76 @@ class UngroundedConstraints():
     for obj_type in self.types:
       objects = self.find_objects(obj_type)
       self.updated_objects[obj_type] = objects
-      #print(obj_type)
-      #print(objects)
+
+  def gen_predicate_name(self, cond, action_parameters):
+        cond_name = cond[0]
+        cond_parameters = cond[1:]
+        temp_parameter_type_map = {}
+        count = 0
+        temp_parameter_type_string = ''
+        for cond_parameter in cond_parameters:
+          for action_parameter in action_parameters:
+            if (cond_parameter == action_parameter[0]):
+              new_key = '?' + str(count)
+              count += 1
+              temp_parameter_type_map[new_key]= action_parameter[1]
+              temp_parameter_type_string += '_' + action_parameter[1]
+        return cond_name + temp_parameter_type_string, temp_parameter_type_map
+
+  def gen_new_predicates(self, actions):
+    for action in actions:
+      #print(action.parameters)
+      for cond in action.positive_preconditions:
+        predicate_new_name, parameter_map = self.gen_predicate_name(cond, action.parameters)
+        if predicate_new_name not in self.predicates:
+          self.predicates[predicate_new_name] = parameter_map
+        cond[0] = predicate_new_name
+      for cond in action.negative_preconditions:
+        predicate_new_name, parameter_map = self.gen_predicate_name(cond, action.parameters)
+        if predicate_new_name not in self.predicates:
+          self.predicates[predicate_new_name] = parameter_map
+        cond[0] = predicate_new_name
+      for cond in action.add_effects:
+        predicate_new_name, parameter_map = self.gen_predicate_name(cond, action.parameters)
+        if predicate_new_name not in self.predicates:
+          self.predicates[predicate_new_name] = parameter_map
+        cond[0] = predicate_new_name
+      for cond in action.del_effects:
+        predicate_new_name, parameter_map = self.gen_predicate_name(cond, action.parameters)
+        if predicate_new_name not in self.predicates:
+          self.predicates[predicate_new_name] = parameter_map
+        cond[0] = predicate_new_name
+
+  def gen_initial_state(self, state):
+    for prop in state:
+      prop_name = prop[0]
+      prop_parameters = prop[1:]
+      for prop_parameter in prop_parameters:
+        for obj_type, objects in self.objects.items():
+          if (prop_parameter) in objects:
+            prop_name += '_' + obj_type
+      prop[0] = prop_name
+      self.initial_state.append(prop)
+
+  def gen_goal_state(self, positive_goals, negative_goals):
+    for prop in positive_goals:
+      prop_name = prop[0]
+      prop_parameters = prop[1:]
+      for prop_parameter in prop_parameters:
+        for obj_type, objects in self.objects.items():
+          if (prop_parameter) in objects:
+            prop_name += '_' + obj_type
+      prop[0] = prop_name
+
+    for prop in negative_goals:
+      prop_name = prop[0]
+      prop_parameters = prop[1:]
+      for prop_parameter in prop_parameters:
+        for obj_type, objects in self.objects.items():
+          if (prop_parameter) in objects:
+            prop_name += '_' + obj_type
+      prop[0] = prop_name
+    self.goal_state = [positive_goals, negative_goals]
 
   #-------------------------------------------------------------------------------------------
   # extraction from pddl domain and problem:
@@ -78,25 +146,33 @@ class UngroundedConstraints():
     parser.parse_problem(problem)
 
     state = parser.state
-    # Initial state gate, ASSUMING no negative initial conditions:
-    self.initial_state = list(state)
 
-    goal_pos = parser.positive_goals
-    goal_not = parser.negative_goals
-    self.goal_state = [goal_pos, goal_not]
+
 
     self.objects = dict(parser.objects)
-    self.predicates = parser.predicates
 
     # Updating incorrect parsed types:
     self.update_types_objects(parser.types)
+
+    self.gen_new_predicates(parser.actions)
+
+    #self.predicates = parser.predicates
 
     #Adding No-op to the actions:
     parser.actions.append(ap('noop', [], [], [], [], [], []))
 
     self.actions = parser.actions
 
+    #for action in self.actions:
+    #  print(action)
+    # Initial state gate, ASSUMING no negative initial conditions:
+    self.gen_initial_state(state)
+    #self.initial_state = list(state)
 
+
+    #print(goal_pos, goal_not)
+    self.gen_goal_state(parser.positive_goals, parser.negative_goals)
+    #self.goal_state = [goal_pos, goal_not]
 
 
   # Only for testing purposes, grounded action lists required:
@@ -107,25 +183,35 @@ class UngroundedConstraints():
     parser.parse_problem(problem)
     # Grounding process
     ground_actions = []
-    self.action_list = []
+    self.test_action_list = []
+
+
+    state = parser.state
+    # Initial state gate, ASSUMING no negative initial conditions:
+    self.test_initial_state = list(state)
+
+    goal_pos = parser.positive_goals
+    goal_not = parser.negative_goals
+    self.test_goal_state = [goal_pos, goal_not]
+
 
     for action in parser.actions:
       for act in action.groundify(self.updated_objects):
         ground_actions.append(act)
     # Appending grounded actions:
     for act in ground_actions:
-      self.action_list.append(act)
+      self.test_action_list.append(act)
 
-    for var in self.initial_state:
+    for var in self.test_initial_state:
       if var not in self.state_vars:
         self.state_vars.append(var)
 
-    for var_list in self.goal_state:
+    for var_list in self.test_goal_state:
       for var in var_list:
         if var not in self.state_vars:
           self.state_vars.append(var)
 
-    for constraint in self.action_list:
+    for constraint in self.test_action_list:
       for cond in constraint.positive_preconditions:
         if cond not in self.state_vars:
           self.state_vars.append(cond)
@@ -142,6 +228,7 @@ class UngroundedConstraints():
 
   def gen_predicate_list(self):
     for predicate, parameters in self.predicates.items():
+      #print(predicate, parameters)
       args_num = len(parameters)
       if (args_num > self.max_predicate_args):
         self.max_predicate_args = args_num
@@ -241,7 +328,6 @@ class UngroundedConstraints():
       self.action_vars.append((action.name, tuple(action.parameters)))
 
   def gen_bin_var_object_types(self):
-    print(self.types)
     for obj_type in self.types:
       obj_length = len(self.updated_objects[obj_type])
       num_binary_vars = math.ceil(math.log2(obj_length))
@@ -263,8 +349,12 @@ class UngroundedConstraints():
           self.forall_variables_type_dict[obj_type] = count
 
   def __init__(self, domain, problem, testing):
+    self.initial_state = []
+    self.goal_state = []
     self.predicate_dict = {}
     self.max_predicate_args = -1 # max predicate arguments can never be -1
+
+    self.predicates = {}
 
     self.predicate_split_action_list = []
 
@@ -284,6 +374,7 @@ class UngroundedConstraints():
 
     # separating predicates based on number of arguments:
     self.gen_predicate_list()
+
 
     # splitting actions based on predicates:
     self.gen_predicate_split_action_list()
