@@ -172,6 +172,7 @@ class UngroundedConstraints():
 
     #print(goal_pos, goal_not)
     self.gen_goal_state(parser.positive_goals, parser.negative_goals)
+    #print(self.goal_state)
     #self.goal_state = [goal_pos, goal_not]
 
 
@@ -284,9 +285,18 @@ class UngroundedConstraints():
     return temp_parameter_dict, max_parameter_length
 
 
+  def gen_action_parameter_type_dict(self, action):
+    temp_dict = {}
+    for parameter in action.parameters:
+      if parameter[0] not in temp_dict:
+        temp_dict[parameter[0]] = parameter[1]
+    return temp_dict
+
   def gen_predicate_split_action_list(self):
     for action in self.actions:
       temp_parameter_dict, max_parameter_length =  self.get_unique_parameters(action)
+      parameter_type_dict = self.gen_action_parameter_type_dict(action)
+      #print("paramete_type_dict",parameter_type_dict)
       for i in range(max_parameter_length+1):
         if i in temp_parameter_dict.keys():
           for temp_parameter in temp_parameter_dict[i]:
@@ -315,10 +325,21 @@ class UngroundedConstraints():
               if (temp_parameter == del_eff_param):
                 new_del_effects.append(del_eff[0])
             untouched_predicates = []
+            # Generating parameter type:
+            cur_parameter_type = []
+            for cur_parameter in temp_parameter:
+              cur_parameter_type.append(parameter_type_dict[cur_parameter])
             # Generating untouched clauses after splitting:
             for predicate in self.predicate_dict[i]:
-              if predicate not in new_add_effects and predicate not in new_del_effects:
-                untouched_predicates.append(predicate)
+              predicate_values = list(self.predicates[predicate].values())
+              flag = 1
+              for j in range(i):
+                if (cur_parameter_type[j] != predicate_values[j]):
+                  flag = 0
+                  break
+              if (flag):
+                if predicate not in new_add_effects and predicate not in new_del_effects:
+                  untouched_predicates.append(predicate)
             self.predicate_split_action_list.append(ap(action.name, [i, temp_parameter], new_positive_preconditions, new_negative_preconditions, new_add_effects, new_del_effects, untouched_predicates))
     # Handling noop operation:
     self.predicate_split_action_list.append(ap(self.actions[-1].name, [0, []], [], [], [], [], list(self.predicates)))
@@ -343,6 +364,7 @@ class UngroundedConstraints():
       self.forall_variables_type_dict[obj_type] = 0
 
     for predicate, predicate_type in self.predicates.items():
+      #print(predicate, predicate_type)
       values = list(predicate_type.values())
       for obj_type, count in Counter(values).items():
         if (self.forall_variables_type_dict[obj_type] < count):
@@ -375,9 +397,14 @@ class UngroundedConstraints():
     # separating predicates based on number of arguments:
     self.gen_predicate_list()
 
+    #print("predicates",self.predicates)
 
     # splitting actions based on predicates:
     self.gen_predicate_split_action_list()
+
+    #for action in self.predicate_split_action_list:
+    #  print(action)
+
 
     self.action_vars = []
     # Extracting action variables:
@@ -387,5 +414,19 @@ class UngroundedConstraints():
     self.bin_object_type_vars_dict = {}
     self.gen_bin_var_object_types()
 
+    #print(self.bin_object_type_vars_dict)
+
     self.forall_variables_type_dict = {}
     self.gen_forall_variables_types()
+
+    #print(self.forall_variables_type_dict)
+
+
+    #print("predicates",self.predicates)
+
+    #for action in self.actions:
+    #  print(action)
+    #print(self.forall_variables_type_dict)
+
+    #print(self.initial_state)
+    #print(self.goal_state)
