@@ -159,7 +159,7 @@ class UngroundedConstraints():
     #self.predicates = parser.predicates
 
     #Adding No-op to the actions:
-    parser.actions.append(ap('noop', [], [], [], [], [], []))
+    parser.actions.append(ap('noop', [], [], [], [], [], [], []))
 
     self.actions = parser.actions
 
@@ -229,6 +229,12 @@ class UngroundedConstraints():
 
   def gen_predicate_list(self):
     for predicate, parameters in self.predicates.items():
+      temp_parameter_type_list = []
+      for parameter, parameter_type in parameters.items():
+        temp_parameter_type_list.append(parameter_type)
+      if tuple(temp_parameter_type_list) not in self.predicate_types:
+        self.predicate_types.append(tuple(temp_parameter_type_list))
+      # For noop:
       #print(predicate, parameters)
       args_num = len(parameters)
       if (args_num > self.max_predicate_args):
@@ -237,6 +243,8 @@ class UngroundedConstraints():
         self.predicate_dict[args_num].append(predicate)
       else:
         self.predicate_dict[args_num] = [predicate]
+    self.predicate_types.append(())
+
 
   def get_unique_parameters(self,action):
     temp_parameter_dict = {}
@@ -325,6 +333,7 @@ class UngroundedConstraints():
               if (temp_parameter == del_eff_param):
                 new_del_effects.append(del_eff[0])
             untouched_predicates = []
+            all_untouched_predicates = []
             # Generating parameter type:
             cur_parameter_type = []
             for cur_parameter in temp_parameter:
@@ -338,11 +347,12 @@ class UngroundedConstraints():
                   flag = 0
                   break
               if (flag):
+                all_untouched_predicates.append(predicate)
                 if predicate not in new_add_effects and predicate not in new_del_effects:
                   untouched_predicates.append(predicate)
-            self.predicate_split_action_list.append(ap(action.name, [i, temp_parameter], new_positive_preconditions, new_negative_preconditions, new_add_effects, new_del_effects, untouched_predicates))
+            self.predicate_split_action_list.append(ap(action.name, [i, temp_parameter], new_positive_preconditions, new_negative_preconditions, new_add_effects, new_del_effects, untouched_predicates, all_untouched_predicates))
     # Handling noop operation:
-    self.predicate_split_action_list.append(ap(self.actions[-1].name, [0, []], [], [], [], [], list(self.predicates)))
+    self.predicate_split_action_list.append(ap(self.actions[-1].name, [0, []], [], [], [], [], list(self.predicates), list(self.predicates)))
 
   def extract_action_vars(self):
     for action in self.actions:
@@ -383,6 +393,7 @@ class UngroundedConstraints():
     self.type_hierarchy_dict = {}
 
     self.types = []
+    self.predicate_types = []
 
     self.updated_objects = {}
 
@@ -397,13 +408,15 @@ class UngroundedConstraints():
     # separating predicates based on number of arguments:
     self.gen_predicate_list()
 
-    #print("predicates",self.predicates)
+    print("predicates",self.predicate_dict)
+
+    print("predicate types: ", self.predicate_types)
 
     # splitting actions based on predicates:
     self.gen_predicate_split_action_list()
 
-    #for action in self.predicate_split_action_list:
-    #  print(action)
+    for action in self.predicate_split_action_list:
+      print(action)
 
 
     self.action_vars = []

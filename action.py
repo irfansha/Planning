@@ -63,7 +63,7 @@ class Action:
 
 class ActionWithUntouchedPredicates:
 
-    def __init__(self, name, parameters, positive_preconditions, negative_preconditions, add_effects, del_effects, untouched_predicates):
+    def __init__(self, name, parameters, positive_preconditions, negative_preconditions, add_effects, del_effects, untouched_predicates, all_untouched_predicates):
         self.name = name
         self.parameters = parameters
         self.positive_preconditions = positive_preconditions
@@ -71,6 +71,7 @@ class ActionWithUntouchedPredicates:
         self.add_effects = add_effects
         self.del_effects = del_effects
         self.untouched_predicates = untouched_predicates
+        self.all_untouched_predicates = all_untouched_predicates
 
     def __str__(self):
         return 'action: ' + self.name + \
@@ -79,4 +80,5 @@ class ActionWithUntouchedPredicates:
         '\n  negative_preconditions: ' + str(self.negative_preconditions) + \
         '\n  add_effects: ' + str(self.add_effects) + \
         '\n  del_effects: ' + str(self.del_effects) + \
-        '\n  untouched_predicates: ' + str(self.untouched_predicates) + '\n'
+        '\n  untouched_predicates: ' + str(self.untouched_predicates) + \
+        '\n  all untouched_predicates: ' + str(self.all_untouched_predicates) + '\n'
