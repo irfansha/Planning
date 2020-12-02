@@ -464,58 +464,81 @@ class UngroundedTransitionGatesGen():
         if (splitvars_flag == 1):
           self.gen_split_predicate_if_gate(i, tfun.split_predicates_forall_vars)
           split_predicate_if_gate = self.output_gate
-        step_parameter_output_gates = []
         step_output_gates = []
+        all_untouched_predicates_pairs = []
         for base_parameter_type in tfun.predicate_types:
+          step_type_output_gates = []
+          step_type_parameter_output_gates = []
+          untouched_predicate_pairs = []
           #print(base_parameter_type)
           # Finding split actions and generating if then gates,
           # along if conditions on parameters:
           for action in tfun.integer_tfun:
             if (tfun.av_inv_map[ref_action[0]] == action[0][0] and i == action[0][1]):
+              #print(action)
               parameter_vars = action[0][2]
               temp_parameter_type_list = []
               for parameter_var in parameter_vars:
                 temp_parameter_type_list.append(tfun.parameter_map[tuple(parameter_var)])
               if (base_parameter_type == tuple(temp_parameter_type_list)):
+                # Generating all untouched propagation pairs:
+                for cur_untouched_pair in action[3]:
+                  if cur_untouched_pair not in all_untouched_predicates_pairs:
+                    all_untouched_predicates_pairs.append(cur_untouched_pair)
                 #print(base_parameter_type, tuple(temp_parameter_type_list))
                 then_list = action[1]
+                then_all_prop_list = []
+                #print(untouched_predicate_pairs, action[3])
+                untouched_predicate_pairs = list(action[3])
                 for untouched_prop in action[2]:
                   then_list.append(self.untouched_prop_map[untouched_prop])
                 if (parameter_vars):
                   forall_vars = self.get_forall_vars_for_parameters(action[0], tfun.parameter_map, tfun.obj_forall_vars)
                   self.gen_parameter_forall_gates(forall_vars, parameter_vars)
-                  step_parameter_output_gates.append(self.output_gate)
+                  step_type_parameter_output_gates.append(self.output_gate)
                   if_parameter_output_gate = self.output_gate
-                  self.if_then_gate(if_parameter_output_gate, then_list)
-                  step_output_gates.append(self.output_gate)
                 else:
                   self.and_gate(then_list)
-                  step_output_gates.append(self.output_gate)
-
-          # If none of the parameters satisfy, we propogate the predicates:
+                  step_type_output_gates.append(self.output_gate)
           if (i != 0):
-            self.or_gate(step_parameter_output_gates)
+            self.or_gate(step_type_parameter_output_gates)
             if_output_gate = self.output_gate
             then_list = []
-            for predicate in tfun.predicate_dict[i]:
+            for predicate_pair in untouched_predicate_pairs:
               # Fetching untoched propagation gate:
-              then_list.append(self.untouched_prop_map[(tfun.sv_pre_inv_map[predicate], tfun.sv_post_inv_map[predicate])])
+              then_list.append(self.untouched_prop_map[predicate_pair])
             # We propagate only when no parameter is satisfied, hence, negative:
             self.if_then_gate(-if_output_gate, then_list)
-            step_output_gates.append(self.output_gate)
-          # Second main if block for each split branch :
-          if(step_output_gates):
-            if (splitvars_flag == 1):
-              self.if_then_gate(split_predicate_if_gate, step_output_gates)
-            else:
-              self.and_gate(step_output_gates)
-            split_condition_output_gates.append(self.output_gate)
+            step_type_output_gates.append(self.output_gate)
+          self.and_gate(step_type_output_gates)
+          step_output_gates.append(self.output_gate)
+
+        # If none of the parameters satisfy, we propogate the predicates:
+        if (i != 0):
+          then_list = []
+          for predicate in tfun.predicate_dict[i]:
+            base_predicate_pair = (tfun.sv_pre_inv_map[predicate], tfun.sv_post_inv_map[predicate])
+            if base_predicate_pair not in all_untouched_predicates_pairs:
+              #print(ref_action, base_predicate_pair)
+              # Fetching untoched propagation gate:
+              then_list.append(self.untouched_prop_map[base_predicate_pair])
+          # We propagate only when no parameter is satisfied, hence, negative:
+          self.and_gate(then_list)
+          step_output_gates.append(self.output_gate)
+        # Second main if block for each split branch :
+        if(step_output_gates):
+          if (splitvars_flag == 1):
+            self.if_then_gate(split_predicate_if_gate, step_output_gates)
+          else:
+            self.and_gate(step_output_gates)
+          split_condition_output_gates.append(self.output_gate)
       # Main if block for each action variable:
       self.if_then_gate(main_action_if_var, split_condition_output_gates)
       aux_action_gates.append(self.output_gate)
     self.transition_gates.append(['# final output action gate:'])
     self.and_gate(aux_action_gates)
     self.final_action_gate = self.output_gate
+
 
 
   # XXX there is a problem with propagation when some parameter is true and the action does not touch all the predicates
