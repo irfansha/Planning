@@ -456,10 +456,12 @@ class UngroundedTransitionGatesGen():
   def temp_add_action_gates(self, tfun, splitvars_flag):
     aux_action_gates = []
     for ref_action in tfun.action_vars:
+      self.transition_gates.append(['# Gate for action ' + ref_action[0] + str(ref_action[1]) + ':'])
       # if gate variable:
       main_action_if_var = tfun.av_inv_map[ref_action[0]]
       split_condition_output_gates = []
       for i in range(tfun.max_predicate_args+1):
+        self.transition_gates.append(['# Split action with ' + str(i) + ' parameters:'])
         # split forall predicate if gate:
         if (splitvars_flag == 1):
           self.gen_split_predicate_if_gate(i, tfun.split_predicates_forall_vars)
@@ -481,6 +483,7 @@ class UngroundedTransitionGatesGen():
               for parameter_var in parameter_vars:
                 temp_parameter_type_list.append(tfun.parameter_map[tuple(parameter_var)])
               if (base_parameter_type == tuple(temp_parameter_type_list)):
+                self.transition_gates.append(['# Split action with parameters of ' + str(base_parameter_type) + ' type:'])
                 # Generating all untouched propagation pairs:
                 for cur_untouched_pair in action[3]:
                   if cur_untouched_pair not in all_untouched_predicates_pairs:
@@ -500,10 +503,11 @@ class UngroundedTransitionGatesGen():
                 else:
                   self.and_gate(then_list)
                   step_type_output_gates.append(self.output_gate)
-          if (i != 0):
+          if (i != 0 and untouched_predicate_pairs):
             self.or_gate(step_type_parameter_output_gates)
             if_output_gate = self.output_gate
             then_list = []
+            print("--------------->",untouched_predicate_pairs)
             for predicate_pair in untouched_predicate_pairs:
               # Fetching untoched propagation gate:
               then_list.append(self.untouched_prop_map[predicate_pair])
@@ -512,7 +516,7 @@ class UngroundedTransitionGatesGen():
             step_type_output_gates.append(self.output_gate)
           self.and_gate(step_type_output_gates)
           step_output_gates.append(self.output_gate)
-
+        print(all_untouched_predicates_pairs)
         # If none of the parameters satisfy, we propogate the predicates:
         if (i != 0):
           then_list = []
@@ -655,6 +659,9 @@ class UngroundedTransitionGatesGen():
     # Adding final transition gate:
     self.add_final_gate()
     self.total_gates = self.output_gate
+
+    for gate in self.transition_gates:
+      print(gate)
 
   # XXX to be tested:
   def new_gate_gen(self, encoding, first_name, second_name, first_predicates, second_predicates, action_vars_list, forall_vars, split_forall_vars, aux_vars):

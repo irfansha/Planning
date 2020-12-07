@@ -53,6 +53,7 @@ class UngroundedTransitionFunction():
 
   def forall_vars_gen(self, forall_variables_type_dict, bin_object_type_vars_dict, max_predicate_args):
     for obj_type, count in forall_variables_type_dict.items():
+      #print(obj_type, count)
       assert(count != -1)
       obj_bin_vars = []
       for i in range(count):
@@ -70,15 +71,22 @@ class UngroundedTransitionFunction():
   def __init__(self, constraints_extract, splitvars_flag):
     self.var_dis = vd()
     self.sv_pre_map, self.sv_pre_inv_map = self.pre_map_gen(constraints_extract.predicates)
+    print(self.sv_pre_map)
     self.sv_post_map, self.sv_post_inv_map = self.post_map_gen(constraints_extract.predicates)
+    print(self.sv_post_map)
     self.num_predicates = len(constraints_extract.predicates)
     self.action_vars = constraints_extract.action_vars
     self.predicate_dict = constraints_extract.predicate_dict
+    self.predicate_types = constraints_extract.predicate_types
     self.max_predicate_args = constraints_extract.max_predicate_args
     self.av_map, self.av_inv_map, self.parameter_map = self.action_map_gen(len(constraints_extract.predicates), constraints_extract.action_vars, constraints_extract.bin_object_type_vars_dict)
+    print(self.av_map)
+    print(self.av_inv_map)
+    print(self.parameter_map)
     self.obj_forall_vars = {}
     self.split_predicates_forall_vars = []
     self.forall_vars_gen(constraints_extract.forall_variables_type_dict, constraints_extract.bin_object_type_vars_dict, constraints_extract.max_predicate_args)
+    #print(self.obj_forall_vars)
     [self.next_gate_var] = self.var_dis.get_vars(1)
     self.integer_tfun = self.integer_tfun_gen(constraints_extract.predicate_split_action_list, constraints_extract.predicates)
     self.gates_gen = gg(self, splitvars_flag)
@@ -86,6 +94,7 @@ class UngroundedTransitionFunction():
 
   def integer_tfun_gen(self, action_list, predicates):
     int_tfun = []
+    int_tfun_dict = {}
     n = len(predicates)
     for i in range(len(action_list)):
       #print(action_list[i])
@@ -112,9 +121,20 @@ class UngroundedTransitionFunction():
       for ut_pred in action_list[i].untouched_predicates:
         untouched_propagate_pairs.append((self.sv_pre_inv_map[ut_pred], self.sv_post_inv_map[ut_pred]))
 
+      all_untouched_propagate_pairs = []
+      for all_ut_pred in action_list[i].all_untouched_predicates:
+        all_untouched_propagate_pairs.append((self.sv_pre_inv_map[all_ut_pred], self.sv_post_inv_map[all_ut_pred]))
+
+
       cur_parameters = []
       for parameter in action_list[i].parameters[1]:
         cur_parameters.append(self.av_inv_map[(action_list[i].name, parameter)])
 
-      int_tfun.append([(self.av_inv_map[action_list[i].name], action_list[i].parameters[0] ,cur_parameters), current_predicates, untouched_propagate_pairs])
+
+      int_tfun.append([(self.av_inv_map[action_list[i].name], action_list[i].parameters[0] ,cur_parameters), current_predicates, untouched_propagate_pairs, all_untouched_propagate_pairs])
+
+    for clause in int_tfun:
+      print(clause)
+
+
     return int_tfun
