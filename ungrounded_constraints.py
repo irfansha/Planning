@@ -243,7 +243,8 @@ class UngroundedConstraints():
         self.predicate_dict[args_num].append(predicate)
       else:
         self.predicate_dict[args_num] = [predicate]
-    self.predicate_types.append(())
+    if (() not in self.predicate_types):
+      self.predicate_types.append(())
 
 
   def get_unique_parameters(self,action):
@@ -408,15 +409,15 @@ class UngroundedConstraints():
     # separating predicates based on number of arguments:
     self.gen_predicate_list()
 
-    print("predicates",self.predicate_dict)
+    #print("predicates",self.predicate_dict)
 
-    print("predicate types: ", self.predicate_types)
+    #print("predicate types: ", self.predicate_types)
 
     # splitting actions based on predicates:
     self.gen_predicate_split_action_list()
 
-    for action in self.predicate_split_action_list:
-      print(action)
+    #for action in self.predicate_split_action_list:
+    #  print(action)
 
 
     self.action_vars = []

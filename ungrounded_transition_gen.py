@@ -71,18 +71,18 @@ class UngroundedTransitionFunction():
   def __init__(self, constraints_extract, splitvars_flag):
     self.var_dis = vd()
     self.sv_pre_map, self.sv_pre_inv_map = self.pre_map_gen(constraints_extract.predicates)
-    print(self.sv_pre_map)
+    #print(self.sv_pre_map)
     self.sv_post_map, self.sv_post_inv_map = self.post_map_gen(constraints_extract.predicates)
-    print(self.sv_post_map)
+    #print(self.sv_post_map)
     self.num_predicates = len(constraints_extract.predicates)
     self.action_vars = constraints_extract.action_vars
     self.predicate_dict = constraints_extract.predicate_dict
     self.predicate_types = constraints_extract.predicate_types
     self.max_predicate_args = constraints_extract.max_predicate_args
     self.av_map, self.av_inv_map, self.parameter_map = self.action_map_gen(len(constraints_extract.predicates), constraints_extract.action_vars, constraints_extract.bin_object_type_vars_dict)
-    print(self.av_map)
-    print(self.av_inv_map)
-    print(self.parameter_map)
+    #print(self.av_map)
+    #print(self.av_inv_map)
+    #print(self.parameter_map)
     self.obj_forall_vars = {}
     self.split_predicates_forall_vars = []
     self.forall_vars_gen(constraints_extract.forall_variables_type_dict, constraints_extract.bin_object_type_vars_dict, constraints_extract.max_predicate_args)
@@ -132,9 +132,6 @@ class UngroundedTransitionFunction():
 
 
       int_tfun.append([(self.av_inv_map[action_list[i].name], action_list[i].parameters[0] ,cur_parameters), current_predicates, untouched_propagate_pairs, all_untouched_propagate_pairs])
-
-    for clause in int_tfun:
-      print(clause)
 
 
     return int_tfun
