@@ -500,23 +500,25 @@ class UngroundedTransitionGatesGen():
                   self.gen_parameter_forall_gates(forall_vars, parameter_vars)
                   step_type_parameter_output_gates.append(self.output_gate)
                   if_parameter_output_gate = self.output_gate
+                  self.and_gate(then_list)
+                  then_output_gate = self.output_gate
+                  self.if_then_gate(if_parameter_output_gate, then_output_gate)
+                  step_type_output_gates.append(self.output_gate)
                 else:
                   self.and_gate(then_list)
                   step_type_output_gates.append(self.output_gate)
           if (i != 0 and untouched_predicate_pairs):
             self.or_gate(step_type_parameter_output_gates)
             if_output_gate = self.output_gate
-            then_list = []
-            print("--------------->",untouched_predicate_pairs)
+            out_then_list = []
             for predicate_pair in untouched_predicate_pairs:
               # Fetching untoched propagation gate:
-              then_list.append(self.untouched_prop_map[predicate_pair])
+              out_then_list.append(self.untouched_prop_map[predicate_pair])
             # We propagate only when no parameter is satisfied, hence, negative:
-            self.if_then_gate(-if_output_gate, then_list)
+            self.if_then_gate(-if_output_gate, out_then_list)
             step_type_output_gates.append(self.output_gate)
           self.and_gate(step_type_output_gates)
           step_output_gates.append(self.output_gate)
-        print(all_untouched_predicates_pairs)
         # If none of the parameters satisfy, we propogate the predicates:
         if (i != 0):
           then_list = []
@@ -659,9 +661,6 @@ class UngroundedTransitionGatesGen():
     # Adding final transition gate:
     self.add_final_gate()
     self.total_gates = self.output_gate
-
-    for gate in self.transition_gates:
-      print(gate)
 
   # XXX to be tested:
   def new_gate_gen(self, encoding, first_name, second_name, first_predicates, second_predicates, action_vars_list, forall_vars, split_forall_vars, aux_vars):
