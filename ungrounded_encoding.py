@@ -3,6 +3,7 @@
 from variable_dispatcher import VarDispatcher as vd
 from pddl import PDDL_Parser
 import copy
+import math
 
 class UngroundedEncoding():
 
@@ -264,6 +265,7 @@ class UngroundedEncoding():
   def generate_final_gate(self):
     temp_final_list = []
     temp_final_list.append(self.initial_output_gate)
+    temp_final_list.append(-self.if_existential_output_gate)
     temp_final_list.extend(self.transition_step_output_gates)
     temp_final_list.append(self.goal_output_gate)
     self.encoding.append(['# Final gate:'])
@@ -361,6 +363,37 @@ class UngroundedEncoding():
       self.forall_vars.append(temp_var_list)
       self.forall_vars_map[obj_type] = temp_var_list
 
+  def gen_if_existential_gate(self, updated_objects, base_action_vars, k):
+    if_existential_output_list = []
+    for i in range(k):
+      for j in range(len(self.action_with_parameter_vars[i])):
+        action_vars = self.action_with_parameter_vars[i][j]
+        main_action_var = action_vars[0]
+        num_action_parameters = len(action_vars[1])
+        for k in range(num_action_parameters):
+          parameter = action_vars[1][k]
+          # Extracting parameter type crudely:
+          parameter_type = base_action_vars[j][1][k][1]
+          num_objects = len(updated_objects[parameter_type])
+          upper_bound = int(math.pow(2, len(parameter)))
+          bin_len = len(parameter)
+          for obj_num in range(num_objects+1, upper_bound+1):
+            # Due to binary represetation:
+            cur_obj = obj_num -1
+            bin_string = format(cur_obj,'0' + str(bin_len) + 'b')
+            temp_condition = []
+            for j in range(bin_len):
+              if bin_string[j] == '0':
+                temp_condition.append(-parameter[j])
+              else:
+                temp_condition.append(parameter[j])
+            [temp_gate] = self.var_dis.get_vars(1)
+            self.encoding.append(['and', temp_gate, temp_condition])
+            if_existential_output_list.append(temp_gate)
+    self.encoding.append(['# Gates for avoiding extra objects in parameters:'])
+    [self.if_existential_output_gate] = self.var_dis.get_vars(1)
+    self.encoding.append(['or', self.if_existential_output_gate, if_existential_output_list])
+
 
   def __init__(self, constraints_extract, tfun, k, splitvars_flag):
     self.var_dis = vd()
@@ -369,6 +402,7 @@ class UngroundedEncoding():
     self.initial_output_gate = 0 # initial output gate can never be 0
     self.goal_output_gate = 0 # goal output gate can never be 0
     self.transition_step_output_gates = []
+    self.if_existential_output_gate = 0 # existential final gate can never be 0
     self.final_output_gate = 0 # final output gate can never be 0
 
     self.predicates = []
@@ -388,6 +422,8 @@ class UngroundedEncoding():
 
     self.generate_initial_gate(constraints_extract, splitvars_flag)
     self.generate_goal_gate(constraints_extract, k, splitvars_flag)
+
+    self.gen_if_existential_gate(constraints_extract.updated_objects, constraints_extract.action_vars, k)
 
     self.generate_final_gate()
 
