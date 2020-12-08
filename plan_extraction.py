@@ -34,7 +34,7 @@ class ExtractPlan():
               else:
                 temp += '1'
             obj_num = int(temp, 2)
-            obj_parameter_list.append(constraints.objects[base_parameter_type][obj_num])
+            obj_parameter_list.append(constraints.updated_objects[base_parameter_type][obj_num])
           self.plan.append([action_name, tuple(obj_parameter_list)])
 
   def extract_qr_plan(self, states, constraints, k):
