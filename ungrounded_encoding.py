@@ -266,7 +266,8 @@ class UngroundedEncoding():
     temp_final_list = []
     temp_final_list.append(self.initial_output_gate)
     temp_final_list.append(-self.if_existential_output_gate)
-    temp_final_list.extend(self.transition_step_output_gates)
+    temp_final_list.append(self.final_transition_gate)
+    #temp_final_list.extend(self.transition_step_output_gates)
     temp_final_list.append(self.goal_output_gate)
     self.encoding.append(['# Final gate:'])
 
@@ -394,6 +395,41 @@ class UngroundedEncoding():
     [self.if_existential_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['or', self.if_existential_output_gate, if_existential_output_list])
 
+  def gen_conditional_transition_gates(self, updated_objects):
+    forall_condition_gate_list = []
+    for forall_var_type, vars_list in self.forall_vars_map.items():
+      num_objects = len(updated_objects[forall_var_type])
+      for var_list in vars_list:
+        bin_len = len(var_list)
+        if (len(vars_list) != 0):
+          upper_bound = int(math.pow(2, bin_len))
+          for i in range(num_objects+1, upper_bound+1):
+            # Due to binary represetation:
+            cur_obj = i -1
+            bin_string = format(cur_obj,'0' + str(bin_len) + 'b')
+            temp_condition = []
+            for j in range(bin_len):
+              if bin_string[j] == '0':
+                temp_condition.append(-var_list[j])
+              else:
+                temp_condition.append(var_list[j])
+            [temp_gate] = self.var_dis.get_vars(1)
+            self.encoding.append(['and', temp_gate, temp_condition])
+            forall_condition_gate_list.append(temp_gate)
+    self.encoding.append(['# If condition gates for extra objects:'])
+
+    # Generating final gate variable:
+    [if_condition_gate] = self.var_dis.get_vars(1)
+    self.encoding.append(['or', if_condition_gate, forall_condition_gate_list])
+
+    self.encoding.append(['# All transition gates:'])
+    [then_final_transition_output_gate] = self.var_dis.get_vars(1)
+    self.encoding.append(['and', then_final_transition_output_gate, self.transition_step_output_gates])
+
+    self.encoding.append(['# Final if not then gate for transition gates:'])
+    [self.final_transition_gate] = self.var_dis.get_vars(1)
+    self.encoding.append(['or',self.final_transition_gate, [if_condition_gate, then_final_transition_output_gate]])
+
 
   def __init__(self, constraints_extract, tfun, k, splitvars_flag):
     self.var_dis = vd()
@@ -403,6 +439,7 @@ class UngroundedEncoding():
     self.goal_output_gate = 0 # goal output gate can never be 0
     self.transition_step_output_gates = []
     self.if_existential_output_gate = 0 # existential final gate can never be 0
+    self.final_transition_gate = 0 # final transition gate can never be 0
     self.final_output_gate = 0 # final output gate can never be 0
 
     self.predicates = []
@@ -422,6 +459,8 @@ class UngroundedEncoding():
 
     self.generate_initial_gate(constraints_extract, splitvars_flag)
     self.generate_goal_gate(constraints_extract, k, splitvars_flag)
+
+    self.gen_conditional_transition_gates(constraints_extract.updated_objects)
 
     self.gen_if_existential_gate(constraints_extract.updated_objects, constraints_extract.action_vars, k)
 
