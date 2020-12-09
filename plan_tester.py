@@ -4,7 +4,7 @@
 Todos:
   1. For Ungrounded planning, it is possible to test without grounding
 '''
-
+import os
 
 def test_plan(plan, constraints, encoding):
   if (encoding == 'UE'):
@@ -53,11 +53,18 @@ def test_plan(plan, constraints, encoding):
   # Testing if current state is goal state:
   for pos_state in goal_state[0]:
     if pos_state not in current_state[0]:
-      print("Error! goal state not reached, positive conditions not present")
+      print("Error! goal state not reached, positive conditions not present \n")
       exit()
   for neg_state in goal_state[1]:
     if neg_state not in current_state[1]:
-      print("Error! goal state not reached")
+      print("Error! goal state not reached \n")
       exit()
 
-  print("Test successful! plan is accurate")
+  print("Test successful! plan is accurate \n")
+
+
+def test_plan_with_val(domain, problem, plan):
+  print("Testing with VAL: \n")
+  Val_path = './VAL_plan_validator/Validate'
+  command = Val_path + ' ' + domain + ' ' + problem + ' ' + plan
+  os.system(command)

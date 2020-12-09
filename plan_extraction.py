@@ -85,6 +85,27 @@ class ExtractPlan():
     for action in self.plan:
       print(action)
 
-  def __init__(self, sol_map):
+  def print_updated_plan(self):
+    for action in self.updated_format_plan:
+      print(action)
+
+  def print_to_file(self):
+    f = open(self.file_path, 'w')
+    for step_plan in self.updated_format_plan:
+      f.write( step_plan + '\n')
+
+  def update_format(self):
+    count = 0
+    for i in range(len(self.plan)):
+      if (self.plan[i][0] != 'noop'):
+        step_plan = self.plan[i]
+        temp_string = str(count) + ': (' + step_plan[0] + ' '
+        temp_list_string = ' '.join(list(step_plan[1]))
+        self.updated_format_plan.append(temp_string + temp_list_string + ')')
+        count += 1
+
+  def __init__(self, sol_map, file_path):
     self.sol_map = sol_map
+    self.file_path = file_path
     self.plan = []
+    self.updated_format_plan = []

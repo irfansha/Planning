@@ -22,6 +22,7 @@ if __name__ == '__main__':
   parser.add_argument("-V", "--version", help="show program version", action="store_true")
   parser.add_argument("-d", help="domain file path", default = 'testcases/dinner/dinner.pddl')
   parser.add_argument("-p", help="problem file path", default = 'testcases/dinner/pb1.pddl')
+  parser.add_argument("--plan_out", help="plan output file path", default = 'cur_plan.txt')
   parser.add_argument("-k", type=int, help="path length",default = 4)
   parser.add_argument("-e", help=textwrap.dedent('''
                                   encoding types:
@@ -75,15 +76,18 @@ if __name__ == '__main__':
     if run_qs.sat:
       print("Plan found")
       if (args.run == 2):
-        plan_extract = pe(run_qs.sol_map)
+        plan_extract = pe(run_qs.sol_map, args.plan_out)
         if (args.e == 'CTE' or args.e == 'FE'):
           plan_extract.extract_action_based_plan(encoding_gen.encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
         elif(args.e == 'UE'):
           plan_extract.extract_ungrounded_plan(encoding_gen.encoding.action_with_parameter_vars, constraints_extract, args.k)
         else:
           plan_extract.extract_qr_plan(encoding_gen.encoding.states_gen.states, constraints_extract, args.k)
-        plan_extract.print_plan()
+        plan_extract.update_format()
+        plan_extract.print_updated_plan()
+        plan_extract.print_to_file()
         if (args.testing == 1):
           pt.test_plan(plan_extract.plan, constraints_extract, args.e)
+          pt.test_plan_with_val(args.d, args.p, args.plan_out)
     else:
       print('plan not found')
