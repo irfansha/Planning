@@ -40,8 +40,8 @@ if __name__ == '__main__':
                                2 = extract the plan in found'''),default = 2)
   parser.add_argument("--testing", type=int, help=textwrap.dedent('''
                                           0 = no testing
-                                          1 = testing enabled,
-                                              more memory required due to grounding'''),default = 1)
+                                          1 = internal testing with direct grounding, more memory required
+                                          2 = external testing with VAL'''),default = 2)
   parser.add_argument("--splitvars", type=int, help="Turn split forall vars on: [0 = No 1 = Yes]",default = 0)
   parser.add_argument("--encoding_out", help="output encoding file",default = 'encoding.qcir')
   parser.add_argument("--encoding_type", type=int, help="Encoding type: [1 = QCIR14 2 = QDIMACS]",default = 2)
@@ -88,6 +88,8 @@ if __name__ == '__main__':
         plan_extract.print_to_file()
         if (args.testing == 1):
           pt.test_plan(plan_extract.plan, constraints_extract, args.e)
+          pt.test_plan_with_val(args.d, args.p, args.plan_out)
+        if (args.testing == 2):
           pt.test_plan_with_val(args.d, args.p, args.plan_out)
     else:
       print('plan not found')

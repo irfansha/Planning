@@ -402,7 +402,7 @@ class UngroundedConstraints():
     # generating constraint for the pddl problem:
     self.extract(domain, problem)
 
-    if (testing):
+    if (testing == 1):
       self.state_vars = []
       self.extract_state_vars(domain, problem)
 

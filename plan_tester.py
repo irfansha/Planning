@@ -64,7 +64,7 @@ def test_plan(plan, constraints, encoding):
 
 
 def test_plan_with_val(domain, problem, plan):
-  print("Testing with VAL: \n")
+  print("\nTesting with VAL: \n")
   Val_path = './tools/Validate'
   command = Val_path + ' ' + domain + ' ' + problem + ' ' + plan
   os.system(command)
