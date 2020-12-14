@@ -177,8 +177,9 @@ class UngroundedConstraints():
 
 
   # Only for testing purposes, grounded action lists required:
-  def extract_state_vars(self, domain, problem):
-    print("Caution! grounding (use only for testing purposes)")
+  def extract_state_vars(self, domain, problem, verbosity):
+    if (verbosity != 0):
+      print("Caution! grounding (use only for testing purposes)")
     parser = PDDL_Parser()
     parser.parse_domain(domain)
     parser.parse_problem(problem)
@@ -381,7 +382,7 @@ class UngroundedConstraints():
         if (self.forall_variables_type_dict[obj_type] < count):
           self.forall_variables_type_dict[obj_type] = count
 
-  def __init__(self, domain, problem, testing):
+  def __init__(self, domain, problem, testing, verbosity):
     self.initial_state = []
     self.goal_state = []
     self.predicate_dict = {}
@@ -404,7 +405,7 @@ class UngroundedConstraints():
 
     if (testing == 1):
       self.state_vars = []
-      self.extract_state_vars(domain, problem)
+      self.extract_state_vars(domain, problem, verbosity)
 
     # separating predicates based on number of arguments:
     self.gen_predicate_list()

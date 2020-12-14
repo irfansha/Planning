@@ -48,11 +48,14 @@ class EncodingGen():
 
     if (args.encoding_type == 1):
       self.encoding.print_encoding_tofile(args.encoding_out)
-      print("QCIR Encoding generated")
+      if (args.verbosity_level != 0):
+        print("QCIR Encoding generated")
 
     if (args.encoding_type == 2):
       temp_file_path = './intermediate_qcir_encoding.qcir'
       self.encoding.print_encoding_tofile(temp_file_path)
-      print("Intermediate QCIR Encoding generated")
+      if (args.verbosity_level != 0):
+        print("Intermediate QCIR Encoding generated")
       os.system('./tools/qcir2qdimacs ' + temp_file_path + ' > ' + args.encoding_out)
-      print("QDIMACS Encoding generated")
+      if (args.verbosity_level != 0):
+        print("QDIMACS Encoding generated")

@@ -6,7 +6,7 @@ Todos:
 '''
 import os
 
-def test_plan(plan, constraints, encoding):
+def test_plan(plan, constraints, encoding, verbosity):
   if (encoding == 'UE'):
     initial_state = constraints.test_initial_state
     goal_state = constraints.test_goal_state
@@ -15,7 +15,8 @@ def test_plan(plan, constraints, encoding):
     initial_state = constraints.initial_state
     goal_state = constraints.goal_state
     action_list = constraints.action_list
-  print("\nTesting plan: ")
+  if (verbosity != 0):
+    print("\nTesting plan: ")
   current_state = []
   temp_pos_var = []
   temp_neg_var = []
@@ -63,8 +64,9 @@ def test_plan(plan, constraints, encoding):
   print("Test successful! plan is accurate \n")
 
 
-def test_plan_with_val(domain, problem, plan):
-  print("\nTesting with VAL: \n")
+def test_plan_with_val(domain, problem, plan, verbosity):
+  if (verbosity != 0):
+    print("\nTesting with VAL: \n")
   Val_path = './tools/Validate'
   command = Val_path + ' ' + domain + ' ' + problem + ' ' + plan
   os.system(command)

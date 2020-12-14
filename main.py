@@ -52,6 +52,10 @@ if __name__ == '__main__':
                                        1 = quabs
                                        2 = caqe'''),default = 2)
   parser.add_argument("--custom_solver_path", help="custom solver path",default = './solvers/qbf/quabs')
+  parser.add_argument("--verbosity_level", type=int, help=textwrap.dedent('''
+                               Levels of verbosity:
+                               0 = For testing, states if plan is correct.
+                               1 = verbose'''),default = 1)
   args = parser.parse_args()
 
 
@@ -66,7 +70,7 @@ if __name__ == '__main__':
   if (args.e != 'UE'):
     constraints_extract = cs(args.d, args.p)
   else:
-    constraints_extract = ucs(args.d, args.p, args.testing)
+    constraints_extract = ucs(args.d, args.p, args.testing, args.verbosity_level)
 
   encoding_gen = eg(constraints_extract, args)
 
@@ -84,12 +88,13 @@ if __name__ == '__main__':
         else:
           plan_extract.extract_qr_plan(encoding_gen.encoding.states_gen.states, constraints_extract, args.k)
         plan_extract.update_format()
-        plan_extract.print_updated_plan()
+        if (args.verbosity_level != 0):
+          plan_extract.print_updated_plan()
         plan_extract.print_to_file()
         if (args.testing == 1):
-          pt.test_plan(plan_extract.plan, constraints_extract, args.e)
-          pt.test_plan_with_val(args.d, args.p, args.plan_out)
+          pt.test_plan(plan_extract.plan, constraints_extract, args.e,  args.verbosity_level)
+          pt.test_plan_with_val(args.d, args.p, args.plan_out, args.verbosity_level)
         if (args.testing == 2):
-          pt.test_plan_with_val(args.d, args.p, args.plan_out)
+          pt.test_plan_with_val(args.d, args.p, args.plan_out,  args.verbosity_level)
     else:
       print('plan not found')
