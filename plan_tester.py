@@ -2,7 +2,7 @@
 
 '''
 Todos:
-  1. For Ungrounded planning, it is possible to test without grounding
+  1. XXX
 '''
 import os
 

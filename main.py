@@ -14,6 +14,7 @@ from generate_encoding import EncodingGen as eg
 from run_solver import RunSolver as qs
 from plan_extraction import ExtractPlan as pe
 import plan_tester as pt
+import ue_testing as uet
 
 # Main:
 if __name__ == '__main__':
@@ -56,45 +57,54 @@ if __name__ == '__main__':
                                Levels of verbosity:
                                0 = For testing, states if plan is correct.
                                1 = verbose'''),default = 1)
+  parser.add_argument("--run_tests", type=int, help=textwrap.dedent('''
+                               Levels running tests:
+                               0 = no tests
+                               1 = essential tests
+                               2 = complete tests (may take a while!)'''),default = 0)
   args = parser.parse_args()
 
 
   if args.version:
     print("Version 0.8.6")
 
-  # If not extracting plan, we dont test by default:
-  if (args.run < 2):
-    args.testing = 0
-
-  # Extracting constraints from problem:
-  if (args.e != 'UE'):
-    constraints_extract = cs(args.d, args.p)
+  # If run tests enabled:
+  if (args.run_tests != 0):
+    uet.run_tests(args.plan_out)
   else:
-    constraints_extract = ucs(args.d, args.p, args.testing, args.verbosity_level)
+    # If not extracting plan, we dont test by default:
+    if (args.run < 2):
+      args.testing = 0
 
-  encoding_gen = eg(constraints_extract, args)
-
-  if (int(args.run) >= 1):
-    run_qs = qs(args.encoding_out, args.solver_out, args.solver_type, args.custom_solver_path)
-    run_qs.run()
-    if run_qs.sat:
-      print("Plan found")
-      if (args.run == 2):
-        plan_extract = pe(run_qs.sol_map, args.plan_out)
-        if (args.e == 'CTE' or args.e == 'FE'):
-          plan_extract.extract_action_based_plan(encoding_gen.encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
-        elif(args.e == 'UE'):
-          plan_extract.extract_ungrounded_plan(encoding_gen.encoding.action_with_parameter_vars, constraints_extract, args.k)
-        else:
-          plan_extract.extract_qr_plan(encoding_gen.encoding.states_gen.states, constraints_extract, args.k)
-        plan_extract.update_format()
-        if (args.verbosity_level != 0):
-          plan_extract.print_updated_plan()
-        plan_extract.print_to_file()
-        if (args.testing == 1):
-          pt.test_plan(plan_extract.plan, constraints_extract, args.e,  args.verbosity_level)
-          pt.test_plan_with_val(args.d, args.p, args.plan_out, args.verbosity_level)
-        if (args.testing == 2):
-          pt.test_plan_with_val(args.d, args.p, args.plan_out,  args.verbosity_level)
+    # Extracting constraints from problem:
+    if (args.e != 'UE'):
+      constraints_extract = cs(args.d, args.p)
     else:
-      print('plan not found')
+      constraints_extract = ucs(args.d, args.p, args.testing, args.verbosity_level)
+
+    encoding_gen = eg(constraints_extract, args)
+
+    if (int(args.run) >= 1):
+      run_qs = qs(args.encoding_out, args.solver_out, args.solver_type, args.custom_solver_path)
+      run_qs.run()
+      if run_qs.sat:
+        print("Plan found")
+        if (args.run == 2):
+          plan_extract = pe(run_qs.sol_map, args.plan_out)
+          if (args.e == 'CTE' or args.e == 'FE'):
+            plan_extract.extract_action_based_plan(encoding_gen.encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
+          elif(args.e == 'UE'):
+            plan_extract.extract_ungrounded_plan(encoding_gen.encoding.action_with_parameter_vars, constraints_extract, args.k)
+          else:
+            plan_extract.extract_qr_plan(encoding_gen.encoding.states_gen.states, constraints_extract, args.k)
+          plan_extract.update_format()
+          if (args.verbosity_level != 0):
+            plan_extract.print_updated_plan()
+          plan_extract.print_to_file()
+          if (args.testing == 1):
+            pt.test_plan(plan_extract.plan, constraints_extract, args.e,  args.verbosity_level)
+            pt.test_plan_with_val(args.d, args.p, args.plan_out, args.verbosity_level)
+          if (args.testing == 2):
+            pt.test_plan_with_val(args.d, args.p, args.plan_out,  args.verbosity_level)
+      else:
+        print('plan not found')
