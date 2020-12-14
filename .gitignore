@@ -125,5 +125,12 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# vscode
+.vscode/launch.json
+
+# intermediate files
+*.txt
+*.qcir
+
 # Pyre type checker
 .pyre/
