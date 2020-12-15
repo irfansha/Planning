@@ -368,13 +368,16 @@ class UngroundedEncoding():
     if_existential_output_list = []
     for i in range(k):
       for j in range(len(self.action_with_parameter_vars[i])):
+        cur_base_action_vars = base_action_vars[j]
         action_vars = self.action_with_parameter_vars[i][j]
         main_action_var = action_vars[0]
+        cur_base_main_action_var = cur_base_action_vars[0]
         num_action_parameters = len(action_vars[1])
         for k in range(num_action_parameters):
           parameter = action_vars[1][k]
+          base_parameter = cur_base_action_vars[1][k]
           # Extracting parameter type crudely:
-          parameter_type = base_action_vars[j][1][k][1]
+          parameter_type = base_parameter[1]
           num_objects = len(updated_objects[parameter_type])
           upper_bound = int(math.pow(2, len(parameter)))
           bin_len = len(parameter)
