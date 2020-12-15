@@ -244,6 +244,9 @@ class UngroundedConstraints():
         self.predicate_dict[args_num].append(predicate)
       else:
         self.predicate_dict[args_num] = [predicate]
+    for i in range(self.max_predicate_args+1):
+      if (i not in self.predicate_dict):
+        self.predicate_dict[i] = []
     if (() not in self.predicate_types):
       self.predicate_types.append(())
 
