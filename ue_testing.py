@@ -3,8 +3,11 @@ import os
 
 sat_list = [("./testcases/IPC1/gripper/domain.pddl", "./testcases/IPC1/gripper/prob01.pddl", 11),
             ("./testcases/IPC1/movie/domain.pddl", "./testcases/IPC1/movie/prob01.pddl", 7),
+            ("./testcases/IPC1/movie/domain.pddl", "./testcases/IPC1/movie/prob02.pddl", 7),
             ("./testcases/IPC2/Blocks/domain.pddl", "./testcases/IPC2/Blocks/prob01.pddl", 6),
-            ("./testcases/IPC2/Elevator/domain.pddl", "./testcases/IPC2/Elevator/prob01.pddl", 4)]
+            ("./testcases/IPC2/Blocks/domain.pddl", "./testcases/IPC2/Blocks/prob02.pddl",12),
+            ("./testcases/IPC2/Elevator/domain.pddl", "./testcases/IPC2/Elevator/prob01.pddl", 4),
+            ("./testcases/IPC2/Elevator/domain.pddl", "./testcases/IPC2/Elevator/prob02.pddl", 10)]
 
 def run_tests(plan_out):
     count = 0
