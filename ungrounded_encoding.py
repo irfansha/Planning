@@ -7,6 +7,21 @@ import math
 
 class UngroundedEncoding():
 
+  def test_predicate(self, predicate, predicate_type_list, obj_dict, state):
+    if (len(predicate_type_list) + 1 == len(state)):
+      temp_name = state[0]
+      for i in range(len(predicate_type_list)):
+        if (state[i+1] not in obj_dict[predicate_type_list[i]]):
+          return False
+        else:
+          temp_name += '_' + predicate_type_list[i]
+      if (predicate == temp_name):
+        return True
+      else:
+        return False
+    else:
+      return False
+
   def generate_initial_gate(self, constraints_extract, splitvars_flag):
     self.encoding.append(['# Initial gate:'])
     base_predicates = list(constraints_extract.predicates)
@@ -46,14 +61,13 @@ class UngroundedEncoding():
       if i in constraints_extract.predicate_dict.keys():
         self.encoding.append(['# Step ' + str(i) + ' predicate gates:'])
         for predicate in constraints_extract.predicate_dict[i]:
+          predicate_type_list = list(constraints_extract.predicates[predicate].values())
           param_list = []
-          for state in initial_state:
-            if (predicate == state[0]):
-              assert(len(state[1:]) == i)
+          for state in constraints_extract.base_initial_state:
+            if (self.test_predicate(predicate, predicate_type_list, constraints_extract.updated_objects, state)):
               param_list.append(state[1:])
           temp_forall_vars_map = copy.deepcopy(self.forall_vars_map)
           predicate_forall_vars = []
-          predicate_type_list = list(constraints_extract.predicates[predicate].values())
           for predicate_type in predicate_type_list:
             temp_forall_vars = temp_forall_vars_map[predicate_type].pop(0)
             predicate_forall_vars.append(temp_forall_vars)
@@ -153,16 +167,15 @@ class UngroundedEncoding():
       if i in constraints_extract.predicate_dict.keys():
         self.encoding.append(['# Step ' + str(i) + ' predicate gates:'])
         for predicate in constraints_extract.predicate_dict[i]:
+          predicate_type_list = list(constraints_extract.predicates[predicate].values())
           pos_param_list = []
           neg_param_list = []
-          for state in goal_state[0]:
-            if (predicate == state[0]):
-              assert(len(state[1:]) == i)
+          for state in constraints_extract.base_goal_state[0]:
+            if (self.test_predicate(predicate, predicate_type_list, constraints_extract.updated_objects, state)):
               pos_param_list.append(state[1:])
           # Handling negative goals:
-          for state in goal_state[1]:
-            if (predicate == state[0]):
-              assert(len(state[1:]) == i)
+          for state in constraints_extract.base_goal_state[1]:
+            if (self.test_predicate(predicate, predicate_type_list, constraints_extract.updated_objects, state)):
               neg_param_list.append(state[1:])
           temp_forall_vars_map = copy.deepcopy(self.forall_vars_map)
           predicate_forall_vars = []

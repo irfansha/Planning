@@ -74,7 +74,6 @@ class UngroundedConstraints():
 
   def gen_new_predicates(self, actions):
     for action in actions:
-      #print(action.parameters)
       for cond in action.positive_preconditions:
         predicate_new_name, parameter_map = self.gen_predicate_name(cond, action.parameters)
         if predicate_new_name not in self.predicates:
@@ -104,10 +103,15 @@ class UngroundedConstraints():
         for obj_type, objects in self.objects.items():
           if (prop_parameter) in objects:
             prop_name += '_' + obj_type
+      old_name_list = []
+      old_name_list.append(prop[0])
+      old_name_list.extend(list(prop_parameters))
       prop[0] = prop_name
       self.initial_state.append(prop)
+      self.base_initial_state.append(old_name_list)
 
   def gen_goal_state(self, positive_goals, negative_goals):
+    old_positive_goals = []
     for prop in positive_goals:
       prop_name = prop[0]
       prop_parameters = prop[1:]
@@ -115,8 +119,14 @@ class UngroundedConstraints():
         for obj_type, objects in self.objects.items():
           if (prop_parameter) in objects:
             prop_name += '_' + obj_type
+      old_name_list = []
+      old_name_list.append(prop[0])
+      old_name_list.extend(list(prop_parameters))
+      old_positive_goals.append(old_name_list)
       prop[0] = prop_name
 
+
+    old_negative_goals = []
     for prop in negative_goals:
       prop_name = prop[0]
       prop_parameters = prop[1:]
@@ -124,8 +134,13 @@ class UngroundedConstraints():
         for obj_type, objects in self.objects.items():
           if (prop_parameter) in objects:
             prop_name += '_' + obj_type
+      old_name_list = []
+      old_name_list.append(prop[0])
+      old_name_list.extend(list(prop_parameters))
+      old_negative_goals.append(old_name_list)
       prop[0] = prop_name
     self.goal_state = [positive_goals, negative_goals]
+    self.base_goal_state = [old_positive_goals, old_negative_goals]
 
   #-------------------------------------------------------------------------------------------
   # extraction from pddl domain and problem:
@@ -145,7 +160,7 @@ class UngroundedConstraints():
     parser.parse_domain(domain)
     parser.parse_problem(problem)
 
-    state = parser.state
+    state = list(parser.state)
 
 
 
@@ -167,13 +182,12 @@ class UngroundedConstraints():
     #  print(action)
     # Initial state gate, ASSUMING no negative initial conditions:
     self.gen_initial_state(state)
-    #self.initial_state = list(state)
 
 
     #print(goal_pos, goal_not)
     self.gen_goal_state(parser.positive_goals, parser.negative_goals)
     #print(self.goal_state)
-    #self.goal_state = [goal_pos, goal_not]
+
 
 
   # Only for testing purposes, grounded action lists required:
@@ -387,7 +401,10 @@ class UngroundedConstraints():
 
   def __init__(self, domain, problem, testing, verbosity):
     self.initial_state = []
+    self.base_initial_state = []
     self.goal_state = []
+    self.base_goal_state = []
+
     self.predicate_dict = {}
     self.max_predicate_args = -1 # max predicate arguments can never be -1
 
@@ -413,7 +430,7 @@ class UngroundedConstraints():
     # separating predicates based on number of arguments:
     self.gen_predicate_list()
 
-    #print("predicates",self.predicate_dict)
+    #print("predicates",self.predicates)
 
     #print("predicate types: ", self.predicate_types)
 
