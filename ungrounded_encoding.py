@@ -61,7 +61,7 @@ class UngroundedEncoding():
           for param in param_list:
             param_gate = []
             for j in range(len(param)):
-              obj_position = constraints_extract.objects[predicate_type_list[j]].index(param[j])
+              obj_position = constraints_extract.updated_objects[predicate_type_list[j]].index(param[j])
               bin_string = format(obj_position,'0' + str(len(predicate_forall_vars[j])) + 'b')
               temp_condition = []
               for k in range(len(predicate_forall_vars[j])):
@@ -175,7 +175,7 @@ class UngroundedEncoding():
           for param in pos_param_list:
             param_gate = []
             for j in range(len(param)):
-              obj_position = constraints_extract.objects[predicate_type_list[j]].index(param[j])
+              obj_position = constraints_extract.updated_objects[predicate_type_list[j]].index(param[j])
               bin_string = format(obj_position,'0' + str(len(predicate_forall_vars[j])) + 'b')
               temp_condition = []
               for k in range(len(predicate_forall_vars[j])):
@@ -194,7 +194,7 @@ class UngroundedEncoding():
           for param in neg_param_list:
             param_gate = []
             for j in range(len(param)):
-              obj_position = constraints_extract.objects[predicate_type_list[j]].index(param[j])
+              obj_position = constraints_extract.updated_objects[predicate_type_list[j]].index(param[j])
               bin_string = format(obj_position,'0' + str(len(predicate_forall_vars[j])) + 'b')
               temp_condition = []
               for k in range(len(predicate_forall_vars[j])):
