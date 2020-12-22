@@ -1,5 +1,10 @@
 # Irfansha Shaik, 15.11.2020, Aarhus
 
+'''
+Todo:
+Logistics test case failing, reasons seems to be due to hierarchial predicates.
+'''
+
 from variable_dispatcher import VarDispatcher as vd
 from pddl import PDDL_Parser
 import copy
