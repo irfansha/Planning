@@ -7,7 +7,11 @@ sat_list = [("./testcases/IPC1/gripper/domain.pddl", "./testcases/IPC1/gripper/p
             ("./testcases/IPC2/Blocks/domain.pddl", "./testcases/IPC2/Blocks/prob01.pddl", 6),
             ("./testcases/IPC2/Blocks/domain.pddl", "./testcases/IPC2/Blocks/prob02.pddl",12),
             ("./testcases/IPC2/Elevator/domain.pddl", "./testcases/IPC2/Elevator/prob01.pddl", 4),
-            ("./testcases/IPC2/Elevator/domain.pddl", "./testcases/IPC2/Elevator/prob02.pddl", 10)]
+            ("./testcases/IPC2/Elevator/domain.pddl", "./testcases/IPC2/Elevator/prob02.pddl", 10),
+            ("./testcases/IPC3/DriverLog/domain.pddl", "./testcases/IPC3/DriverLog/prob01.pddl", 7),
+            ("./testcases/IPC3/ZenoTravel/domain.pddl", "./testcases/IPC3/ZenoTravel/prob01.pddl", 1),
+            ("./testcases/IPC3/ZenoTravel/domain.pddl", "./testcases/IPC3/ZenoTravel/prob02.pddl", 6)
+            ]
 
 def run_tests(plan_out):
     count = 0
