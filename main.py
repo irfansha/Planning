@@ -63,6 +63,7 @@ if __name__ == '__main__':
                                0 = no tests
                                1 = essential tests
                                2 = complete tests (may take a while!)'''),default = 0)
+  parser.add_argument("--time_limit", type=int, help="Time limit (excluding encoding time) in seconds, default 1800 seconds",default = 1800)
   args = parser.parse_args()
 
 
@@ -86,8 +87,10 @@ if __name__ == '__main__':
     encoding_gen = eg(constraints_extract, args)
 
     if (int(args.run) >= 1):
-      run_qs = qs(args.encoding_out, args.solver_out, args.solver_type, args.custom_solver_path)
+      run_qs = qs(args.encoding_out, args.solver_out, args.solver_type, args.custom_solver_path, args.time_limit)
       run_qs.run()
+      if run_qs.timed_out:
+        exit()
       if run_qs.sat:
         print("Plan found")
         if (args.run == 2):

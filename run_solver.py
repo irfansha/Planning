@@ -1,27 +1,38 @@
 # Irfansha Shaik, 01.10.2020, Aarhus.
 
-import os
+import subprocess
+
 
 class RunSolver():
 
   def run(self):
     if (self.solver_type == 1):
       self.run_quabs()
-      self.parse_quabs_output()
+      if not self.timed_out:
+        self.parse_quabs_output()
     elif(self.solver_type == 2):
       self.run_caqe()
-      self.parse_caqe_output()
+      if not self.timed_out:
+        self.parse_caqe_output()
     else:
       print("Work in progress!")
 
 
   def run_quabs(self):
     command = self.solver_path + " --partial-assignment " + self.input_file_path + " > " + self.output_file_path
-    os.system(command)
+    try:
+      subprocess.run([command], shell = True, timeout=self.time_limit)
+    except subprocess.TimeoutExpired:
+      self.timed_out = True
+      print("Time out after " + str(self.time_limit)+ " seconds.")
 
   def run_caqe(self):
     command = self.solver_path + " --qdo " + self.input_file_path + " > " + self.output_file_path
-    os.system(command)
+    try:
+      subprocess.run([command], shell = True, timeout=self.time_limit)
+    except subprocess.TimeoutExpired:
+      self.timed_out = True
+      print("Time out after " + str(self.time_limit)+ " seconds.")
 
   # parsing the quabs solver output:
   def parse_quabs_output(self):
@@ -62,10 +73,13 @@ class RunSolver():
       self.sat = 0
 
 
-  def __init__(self, input_file_path, output_file_path, solver_type, solver_path):
+  def __init__(self, input_file_path, output_file_path, solver_type, solver_path, time_limit):
     self.input_file_path = input_file_path
     self.output_file_path = output_file_path
     self.solver_type = solver_type
+    self.time_limit = time_limit
+    # By default timeout not occured yet:
+    self.timed_out = False
     if (self.solver_type == 1):
       self.solver_path = './solvers/qbf/quabs'
     elif(self.solver_type == 2):
