@@ -2,9 +2,10 @@
 
 '''
 Todos:
-  1. Extraction in FE and CTE seems slow down the execution, perhaps
+  1. Update printing information, allows options printing for data analysis.
+  2. Extraction in FE and CTE seems slow down the execution, perhaps
      it is possible to actually make it faster (by allowing to solve from both directions)
-  2. Use operator splitting for SAT encoding (and other grounded encodings)
+  3. Use operator splitting for SAT encoding (and other grounded encodings)
 '''
 
 import argparse, textwrap
