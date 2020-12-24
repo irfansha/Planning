@@ -45,8 +45,6 @@ def run(args):
     files_list = glob.glob(args.dir + "*")
     files_list.sort(key=natural_keys)
 
-    print(files_list)
-
     domain_filepath = args.dir + "domain.pddl"
 
 
