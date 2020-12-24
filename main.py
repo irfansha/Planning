@@ -16,6 +16,7 @@ from run_solver import RunSolver as qs
 from plan_extraction import ExtractPlan as pe
 import plan_tester as pt
 import ue_testing as uet
+import run_benchmarks as rb
 
 # Main:
 if __name__ == '__main__':
@@ -24,6 +25,7 @@ if __name__ == '__main__':
   parser.add_argument("-V", "--version", help="show program version", action="store_true")
   parser.add_argument("-d", help="domain file path", default = 'testcases/dinner/dinner.pddl')
   parser.add_argument("-p", help="problem file path", default = 'testcases/dinner/pb1.pddl')
+  parser.add_argument("--dir", help="Benchmarks directory path", default = 'Final_Benchmarks/IPC2/Elevator/')
   parser.add_argument("--plan_out", help="plan output file path", default = 'cur_plan.txt')
   parser.add_argument("-k", type=int, help="path length",default = 4)
   parser.add_argument("-e", help=textwrap.dedent('''
@@ -63,16 +65,20 @@ if __name__ == '__main__':
                                0 = no tests
                                1 = essential tests
                                2 = complete tests (may take a while!)'''),default = 0)
+  parser.add_argument("--run_benchmarks", type=int, help="Run benchmarks, specify benchmarks directory using --dir", default=0)
   parser.add_argument("--time_limit", type=float, help="Time limit (excluding encoding time) in seconds, default 1800 seconds",default = 1800)
   args = parser.parse_args()
 
 
   if args.version:
-    print("Version 0.8.6")
+    print("Version 0.9")
 
   # If run tests enabled:
   if (args.run_tests != 0):
     uet.run_tests(args.plan_out)
+  # If run benchmarks enabled:
+  elif (args.run_benchmarks != 0):
+    rb.run(args)
   else:
     # If not extracting plan, we dont test by default:
     if (args.run < 2):
