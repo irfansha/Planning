@@ -17,6 +17,7 @@ from plan_extraction import ExtractPlan as pe
 import plan_tester as pt
 import ue_testing as uet
 import run_benchmarks as rb
+import time
 
 # Main:
 if __name__ == '__main__':
@@ -83,6 +84,8 @@ if __name__ == '__main__':
     # If not extracting plan, we dont test by default:
     if (args.run < 2):
       args.testing = 0
+    # --------------------------------------- Timing the encoding ----------------------------------------
+    start_encoding_time = time.perf_counter()
 
     # Extracting constraints from problem:
     if (args.e != 'UE'):
@@ -92,9 +95,20 @@ if __name__ == '__main__':
 
     encoding_gen = eg(constraints_extract, args)
 
+    encoding_time = time.perf_counter() - start_encoding_time
+
+    print("Encoding time: " + str(encoding_time))
+
+    # ----------------------------------------------------------------------------------------------------
+
     if (int(args.run) >= 1):
       run_qs = qs(args.encoding_out, args.solver_out, args.solver_type, args.custom_solver_path, args.time_limit)
+      # --------------------------------------- Timing the solver run ----------------------------------------
+      start_run_time = time.perf_counter()
       run_qs.run()
+      solving_time = time.perf_counter() - start_run_time
+      print("Solving time: " + str(solving_time))
+      # ------------------------------------------------------------------------------------------------------
       if run_qs.timed_out:
         exit()
       if run_qs.sat:
