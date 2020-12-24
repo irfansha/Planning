@@ -25,7 +25,7 @@ if __name__ == '__main__':
   parser.add_argument("-V", "--version", help="show program version", action="store_true")
   parser.add_argument("-d", help="domain file path", default = 'testcases/dinner/dinner.pddl')
   parser.add_argument("-p", help="problem file path", default = 'testcases/dinner/pb1.pddl')
-  parser.add_argument("--dir", help="Benchmarks directory path", default = 'Final_Benchmarks/IPC2/Elevator/')
+  parser.add_argument("--dir", help="Benchmarks directory path", default = 'final_benchmarks/IPC2/Elevator/')
   parser.add_argument("--plan_out", help="plan output file path", default = 'cur_plan.txt')
   parser.add_argument("-k", type=int, help="path length",default = 4)
   parser.add_argument("-e", help=textwrap.dedent('''
