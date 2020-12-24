@@ -42,8 +42,10 @@ def run(args):
     if not Path(args.dir).is_dir():
       print("Invalid directory path: " + args.dir)
       exit
-    files_list = glob.glob(args.dir + "*.pddl")
+    files_list = glob.glob(args.dir + "*")
     files_list.sort(key=natural_keys)
+
+    print(files_list)
 
     domain_filepath = args.dir + "domain.pddl"
 
