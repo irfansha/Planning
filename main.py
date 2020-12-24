@@ -63,7 +63,7 @@ if __name__ == '__main__':
                                0 = no tests
                                1 = essential tests
                                2 = complete tests (may take a while!)'''),default = 0)
-  parser.add_argument("--time_limit", type=int, help="Time limit (excluding encoding time) in seconds, default 1800 seconds",default = 1800)
+  parser.add_argument("--time_limit", type=float, help="Time limit (excluding encoding time) in seconds, default 1800 seconds",default = 1800)
   args = parser.parse_args()
 
 
