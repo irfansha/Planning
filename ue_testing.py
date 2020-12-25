@@ -27,6 +27,7 @@ def run_tests(plan_out):
       print("\n--------------------------------------------------------------------------------")
       print("testcase" + str(count) + " :")
       print(testcase)
+      print(plan_status)
       if ('Plan found' in plan_status):
         # Validating the plan generated:
         Val_path = './tools/Validate'
