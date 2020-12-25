@@ -2,7 +2,7 @@
 
 '''
 Todos:
-  1. XXX
+  1. It might be possible to reuse the and, or, equality gates.
 '''
 
 import math
@@ -401,6 +401,10 @@ class UngroundedTransitionGatesGen():
 
   # Takes lists of gates of two object vars and generates equality gate:
   def eq_forall_vars_gate(self, first_vars, second_vars):
+    key = (tuple(first_vars), tuple(second_vars))
+    if key in self.eq_forall_vars_gate_dict:
+      self.output_gate = self.eq_forall_vars_gate_dict[key]
+      return
     assert(len(first_vars) == len(second_vars))
     self.transition_gates.append(['# forall vars equality gates:'])
     self.transition_gates.append(['# vars : (' + ', '.join(str(x) for x in first_vars) + ')'])
@@ -410,6 +414,7 @@ class UngroundedTransitionGatesGen():
       self.eq_forall_var_gate(first_vars[i], second_vars[i])
       step_output_gates.append(self.output_gate)
     self.and_gate(step_output_gates)
+    self.eq_forall_vars_gate_dict[key] = self.output_gate
 
 
   def add_untouched_prop_gates(self, tfun):
@@ -646,6 +651,8 @@ class UngroundedTransitionGatesGen():
     self.output_gate = 0 # output gate will never be zero
     self.next_gate = tfun.next_gate_var
     self.untouched_prop_map = {}
+    self.eq_forall_var_gate_dict = {}
+    self.eq_forall_vars_gate_dict = {}
     self.final_action_gate = 0 # final action gate will never be zero
     self.final_amoalo_gate = 0 # final amo alo gate will never be zero
     self.final_transition_gate = 0 # final transition gate will never be zero
