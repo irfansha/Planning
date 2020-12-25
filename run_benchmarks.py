@@ -21,18 +21,22 @@ def run_instance(domain_filepath, problem_filepath, args):
       k = k*2
       command = 'python3 main.py -d ' + domain_filepath + ' -p ' + problem_filepath + ' -e ' + args.e + ' --run 2 -k ' + str(k) + ' --testing ' + str(args.testing) + ' --verbosity_level 0 --time_limit ' + str(args.time_limit)
       plan_status = os.popen(command).read()
+      ls = plan_status.strip("\n").split("\n")
+      for line in ls:
+        if ("Encoding time" in line or "Solving time" in line):
+          print(line)
       if ("Plan found" in plan_status):
           print("Plan found for length: " + str(k))
           if (args.testing != 0):
             if ("Plan valid" in plan_status):
-              print("Plan valid")
+              print("Plan valid\n")
             else:
-              print("Plan invalid! Error. <---------------------------------------")
+              print("Plan invalid! Error. <---------------------------------------\n")
           return 0
       else:
-          print("Plan not found for length: " + str(k))
+          print("Plan not found for length: " + str(k) + "\n")
           if ('Time out' in plan_status):
-              print("Time out occured")
+              print("Time out occured\n")
               return 1
 
 
