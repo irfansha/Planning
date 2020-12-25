@@ -353,6 +353,8 @@ class UngroundedTransitionGatesGen():
   # Takes list and current list of gates
   # generates AND gate:
   def and_gate(self, current_list):
+    if (len(current_list) == 1 and current_list[0] == self.output_gate):
+      return
     temp_gate = ['and', self.next_gate, current_list]
     self.transition_gates.append(temp_gate)
     self.output_gate = self.next_gate
