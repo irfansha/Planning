@@ -517,8 +517,9 @@ class UngroundedTransitionGatesGen():
             # We propagate only when no parameter is satisfied, hence, negative:
             self.if_then_gate(-if_output_gate, out_then_list)
             step_type_output_gates.append(self.output_gate)
-          self.and_gate(step_type_output_gates)
-          step_output_gates.append(self.output_gate)
+          if (len(step_type_output_gates) != 0):
+            self.and_gate(step_type_output_gates)
+            step_output_gates.append(self.output_gate)
         # If none of the parameters satisfy, we propogate the predicates:
         if (i != 0):
           then_list = []
@@ -529,14 +530,16 @@ class UngroundedTransitionGatesGen():
               # Fetching untoched propagation gate:
               then_list.append(self.untouched_prop_map[base_predicate_pair])
           # We propagate only when no parameter is satisfied, hence, negative:
-          self.and_gate(then_list)
-          step_output_gates.append(self.output_gate)
+          if (len(then_list) != 0):
+            self.and_gate(then_list)
+            step_output_gates.append(self.output_gate)
         # Second main if block for each split branch :
         if(step_output_gates):
           if (splitvars_flag == 1):
             self.if_then_gate(split_predicate_if_gate, step_output_gates)
           else:
             self.and_gate(step_output_gates)
+          self.transition_gates.append(['# split condition output gates:'])
           split_condition_output_gates.append(self.output_gate)
       # Main if block for each action variable:
       self.if_then_gate(main_action_if_var, split_condition_output_gates)
