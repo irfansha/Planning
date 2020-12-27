@@ -93,8 +93,8 @@
  :precondition (and (at ?r ?x)(at_lander ?l ?y)(have_soil_analysis ?r ?p) 
                    (visible ?x ?y)(available ?r)(channel_free ?l)
             )
- :effect (and (not (available ?r))(not (channel_free ?l))(channel_free ?l)
-		(communicated_soil_data ?p)(available ?r)
+;; :effect (and (not (available ?r))(not (channel_free ?l))(channel_free ?l) (communicated_soil_data ?p)(available ?r)
+:effect (and (channel_free ?l) (communicated_soil_data ?p)(available ?r) ;; Change by Irfan: we do not use parallel plans
 	)
 )
 
@@ -103,7 +103,8 @@
  :precondition (and (at ?r ?x)(at_lander ?l ?y)(have_rock_analysis ?r ?p)
                    (visible ?x ?y)(available ?r)(channel_free ?l)
             )
- :effect (and (not (available ?r))(not (channel_free ?l))(channel_free ?l)(communicated_rock_data ?p)(available ?r)
+;; :effect (and (not (available ?r))(not (channel_free ?l))(channel_free ?l)(communicated_rock_data ?p)(available ?r)
+ :effect (and (channel_free ?l)(communicated_rock_data ?p)(available ?r) ;; Change by Irfan: we do not use parallel plans
           )
 )
 
@@ -112,8 +113,8 @@
  :parameters (?r - rover ?l - lander ?o - objective ?m - mode ?x - waypoint ?y - waypoint)
  :precondition (and (at ?r ?x)(at_lander ?l ?y)(have_image ?r ?o ?m)(visible ?x ?y)(available ?r)(channel_free ?l)
             )
- :effect (and (not (available ?r))(not (channel_free ?l))(channel_free ?l)(communicated_image_data ?o ?m)(available ?r)
+;; :effect (and (not (available ?r))(not (channel_free ?l))(channel_free ?l)(communicated_image_data ?o ?m)(available ?r)
+ :effect (and (channel_free ?l)(communicated_image_data ?o ?m)(available ?r) ;; Change by Irfan: we do not use parallel plans
           )
 )
-
 )
