@@ -12,7 +12,9 @@ sat_list = [("./testcases/IPC1/gripper/domain.pddl", "./testcases/IPC1/gripper/p
             ("./testcases/IPC3/ZenoTravel/domain.pddl", "./testcases/IPC3/ZenoTravel/prob01.pddl", 1),
             ("./testcases/IPC3/ZenoTravel/domain.pddl", "./testcases/IPC3/ZenoTravel/prob02.pddl", 6),
             ("./testcases/IPC4/Satellite/domain.pddl", "./testcases/IPC4/Satellite/prob01.pddl", 9),
-            ("./testcases/IPC4/Satellite/domain.pddl", "./testcases/IPC4/Satellite/prob02.pddl", 13)
+            ("./testcases/IPC4/Satellite/domain.pddl", "./testcases/IPC4/Satellite/prob02.pddl", 13),
+            ("./testcases/IPC5/Rovers/domain.pddl", "./testcases/IPC5/Rovers/prob01.pddl", 10),
+            ("./testcases/IPC5/Rovers/domain.pddl", "./testcases/IPC5/Rovers/prob02.pddl", 8)
             ]
 
 def run_tests(args):
