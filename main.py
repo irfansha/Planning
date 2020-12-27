@@ -15,7 +15,7 @@ from generate_encoding import EncodingGen as eg
 from run_solver import RunSolver as qs
 from plan_extraction import ExtractPlan as pe
 import plan_tester as pt
-import ue_testing as uet
+import run_tests as rt
 import run_benchmarks as rb
 import time
 
@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
   # If run tests enabled:
   if (args.run_tests != 0):
-    uet.run_tests(args.plan_out, args.e)
+    rt.run_tests(args.plan_out, args.e)
   # If run benchmarks enabled:
   elif (args.run_benchmarks != 0):
     rb.run(args)
