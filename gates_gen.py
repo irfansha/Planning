@@ -355,10 +355,15 @@ class UngroundedTransitionGatesGen():
   def and_gate(self, current_list):
     if (len(current_list) == 1 and current_list[0] == self.output_gate):
       return
+    key = tuple(current_list)
+    if key in self.and_dict:
+      self.output_gate = self.and_dict[key]
+      return
     temp_gate = ['and', self.next_gate, current_list]
     self.transition_gates.append(temp_gate)
     self.output_gate = self.next_gate
     self.next_gate = self.next_gate + 1
+    self.and_dict[key] = self.output_gate
 
   # Takes list and current list of gates
   # generates if then gate i.e., if x then y -> y' = AND(y) and OR(-x, y'):
@@ -651,6 +656,7 @@ class UngroundedTransitionGatesGen():
     self.output_gate = 0 # output gate will never be zero
     self.next_gate = tfun.next_gate_var
     self.untouched_prop_map = {}
+    self.and_dict = {}
     self.eq_forall_var_gate_dict = {}
     self.eq_forall_vars_gate_dict = {}
     self.final_action_gate = 0 # final action gate will never be zero
