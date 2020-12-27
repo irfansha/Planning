@@ -80,6 +80,7 @@ class QIEncoding():
 
     tfun.gates_gen.new_gate_gen(self.encoding, 'X1', 'X2', self.transition_first_state, self.transition_second_state, self.action_vars, aux_vars)
 
+
   def generate_final_gate(self):
     temp_final_list = []
     temp_final_list.append(self.initial_output_gate)
@@ -149,7 +150,9 @@ class QIEncoding():
     self.states_gen = sg(self.var_dis, tfun.num_state_vars, k)
 
     self.log_k = int(math.log2(k))
-    assert(math.pow(2,self.log_k) == k)
+    # If k not a power of 2, one more bit needed:
+    if (math.pow(2,self.log_k) != k):
+      self.log_k = self.log_k + 1
 
     self.forall_vars = self.var_dis.get_vars(self.log_k)
 
