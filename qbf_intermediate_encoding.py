@@ -2,8 +2,8 @@
 
 '''
 Todos:
-1. If slow, perhaps we add not gate to disallow processesing transition function
-   in all (unnecessary) forall branches.
+1. Experiment with the transition function not conditional gates for forall variables,
+   there seems to be great difference in time taken.
 '''
 
 from variable_dispatcher import VarDispatcher as vd
@@ -41,8 +41,9 @@ class QIEncoding():
     [self.goal_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['and', self.goal_output_gate, temp_goal_gate])
 
-  def generate_k_conditions(self, n, k):
+  def generate_k_conditions(self, n, k, prune):
     states_gg = sgg(n)
+    temp_if_conditions_list = []
     for i in range(k):
       bin_string = format(i,'0' + str(self.log_k) + 'b')
       temp_condition = []
@@ -52,6 +53,7 @@ class QIEncoding():
         else:
           temp_condition.append(self.forall_vars[j])
       [if_condition_gate] = self.var_dis.get_vars(1)
+      temp_if_conditions_list.append(if_condition_gate)
 
       first_aux_vars = self.var_dis.get_vars(states_gg.aux_vars)
       states_gg.new_gate_gen(self.encoding, 'X1', 'S'+ str(i), self.transition_first_state, self.states_gen.states[i], first_aux_vars)
@@ -74,7 +76,13 @@ class QIEncoding():
       self.encoding.append(['or', second_if_then_gate, [-if_condition_gate, second_gate]])
       self.condition_output_gates.append(second_if_then_gate)
 
-  def generate_transition_function(self, tfun):
+    if (prune):
+      # output gate for all if conditions:
+      [self.if_conditions_output_gate] = self.var_dis.get_vars(1)
+      self.encoding.append(['or', self.if_conditions_output_gate, temp_if_conditions_list])
+
+
+  def generate_transition_function(self, tfun, prune):
     # First generating transition function:
     self.action_vars = self.var_dis.get_vars(tfun.num_action_vars)
 
@@ -85,13 +93,20 @@ class QIEncoding():
     self.transition_output_gate = aux_vars[-1]
 
     tfun.gates_gen.new_gate_gen(self.encoding, 'X1', 'X2', self.transition_first_state, self.transition_second_state, self.action_vars, aux_vars)
+    if (prune):
+      [self.final_conditional_transition_gate] = self.var_dis.get_vars(1)
+      self.encoding.append(['or', self.final_conditional_transition_gate, [-self.if_conditions_output_gate, self.transition_output_gate]])
 
 
-  def generate_final_gate(self):
+  def generate_final_gate(self, prune):
     temp_final_list = []
     temp_final_list.append(self.initial_output_gate)
     temp_final_list.extend(self.condition_output_gates)
-    temp_final_list.append(self.transition_output_gate)
+    # If pruning not used, transition gate to be added directly:
+    if (prune == 0):
+      temp_final_list.append(self.transition_output_gate)
+    else:
+      temp_final_list.append(self.final_conditional_transition_gate)
     temp_final_list.append(self.goal_output_gate)
     self.encoding.append(['# Final gate:'])
 
@@ -141,15 +156,17 @@ class QIEncoding():
     for gate in self.encoding:
       self.print_gate(gate)
 
-  def __init__(self, constraints_extract, tfun, k):
+  def __init__(self, constraints_extract, tfun, k, prune):
     self.var_dis = vd()
     self.action_vars = []
     self.quantifier_block = []
     self.encoding = []
     self.initial_output_gate = 0 # initial output gate can never be 0
     self.goal_output_gate = 0 # goal output gate can never be 0
+    self.if_conditions_output_gate = 0 # if conditions gate can never be 0
     self.condition_output_gates = []
     self.transition_output_gate = 0 # transition output gate can never be 0
+    self.final_conditional_transition_gate = 0 # never 0 if pruning is turned on
     self.final_output_gate = 0 # final output gate can never be 0
 
     # generating k+1 states, since k steps:
@@ -168,12 +185,12 @@ class QIEncoding():
 
     self.generate_initial_gate(constraints_extract)
 
-    self.generate_k_conditions(tfun.num_state_vars, k)
+    self.generate_k_conditions(tfun.num_state_vars, k, prune)
 
-    self.generate_transition_function(tfun)
+    self.generate_transition_function(tfun, prune)
 
     self.generate_goal_gate(constraints_extract, k)
 
-    self.generate_final_gate()
+    self.generate_final_gate(prune)
 
     self.generate_quantifier_blocks()

@@ -29,7 +29,7 @@ class EncodingGen():
     elif (args.e == 'RE2'):
       self.encoding = qr(constraints_extract, tfun, args.k)
     elif (args.e == 'RE1'):
-      self.encoding = qi(constraints_extract, tfun, args.k)
+      self.encoding = qi(constraints_extract, tfun, args.k, args.forall_pruning)
     elif (args.e == 'UE'):
       self.encoding = ue(constraints_extract, tfun, args.k, args.splitvars)
     elif (args.e == 'CTE'):

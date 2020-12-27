@@ -68,6 +68,7 @@ if __name__ == '__main__':
                                2 = complete tests (may take a while!)'''),default = 0)
   parser.add_argument("--run_benchmarks", type=int, help="Run benchmarks, specify benchmarks directory using --dir", default=0)
   parser.add_argument("--time_limit", type=float, help="Time limit (excluding encoding time) in seconds, default 1800 seconds",default = 1800)
+  parser.add_argument("--forall_pruning",type =int, help="[0/1]Avoiding search in unnecessary forall branches", default=0)
   args = parser.parse_args()
 
 
@@ -76,7 +77,7 @@ if __name__ == '__main__':
 
   # If run tests enabled:
   if (args.run_tests != 0):
-    rt.run_tests(args.plan_out, args.e)
+    rt.run_tests(args)
   # If run benchmarks enabled:
   elif (args.run_benchmarks != 0):
     rb.run(args)
