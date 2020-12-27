@@ -26,9 +26,9 @@ class EncodingGen():
 
     if (args.e == 'SAT'):
       self.encoding = se(constraints_extract, tfun, args.k)
-    elif (args.e == 'QR'):
+    elif (args.e == 'RE2'):
       self.encoding = qr(constraints_extract, tfun, args.k)
-    elif (args.e == 'QI'):
+    elif (args.e == 'RE1'):
       self.encoding = qi(constraints_extract, tfun, args.k)
     elif (args.e == 'UE'):
       self.encoding = ue(constraints_extract, tfun, args.k, args.splitvars)

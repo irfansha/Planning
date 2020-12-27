@@ -32,11 +32,11 @@ if __name__ == '__main__':
   parser.add_argument("-e", help=textwrap.dedent('''
                                   encoding types:
                                   SAT = Satisfiability
-                                  QI  = QBF Intermediate
-                                  QR  = QBF Reachability
+                                  RE1  = Reachability Encoding 1
+                                  RE2  = Reachability Encoding 2
                                   FE  = Flat Encoding
                                   CTE = Compact Tree Encoding
-                                  UE = Ungrounded Encoding'''),default = 'QI')
+                                  UE = Ungrounded Encoding'''),default = 'UE')
   parser.add_argument("-t", help="transition function with binary or linear action variables: [b l]",default = 'b')
   parser.add_argument("--run", type=int, help=textwrap.dedent('''
                                Three levels of execution:
