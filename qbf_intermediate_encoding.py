@@ -1,5 +1,11 @@
 # Irfansha Shaik, 21.10.2020, Aarhus
 
+'''
+Todos:
+1. If slow, perhaps we add not gate to disallow processesing transition function
+   in all (unnecessary) forall branches.
+'''
+
 from variable_dispatcher import VarDispatcher as vd
 from state_gen import StateGen as sg
 from gates_gen import StateGatesGen as sgg
