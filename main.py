@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
   # If run tests enabled:
   if (args.run_tests != 0):
-    uet.run_tests(args.plan_out)
+    uet.run_tests(args.plan_out, args.e)
   # If run benchmarks enabled:
   elif (args.run_benchmarks != 0):
     rb.run(args)

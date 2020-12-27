@@ -15,14 +15,14 @@ sat_list = [("./testcases/IPC1/gripper/domain.pddl", "./testcases/IPC1/gripper/p
             ("./testcases/IPC4/Satellite/domain.pddl", "./testcases/IPC4/Satellite/prob02.pddl", 13)
             ]
 
-def run_tests(plan_out):
+def run_tests(plan_out, encoding_type):
     count = 0
     all_success = 1
     # Running testcases that have a plan:
     for testcase in sat_list:
       count += 1
       # Running testcase and generating plan (if available):
-      command = 'python3 main.py -d ' + testcase[0] + ' -p ' + testcase[1] + ' -e UE --run 2 -k ' + str(testcase[2]) + ' --testing 0 --verbosity_level 0'
+      command = 'python3 main.py -d ' + testcase[0] + ' -p ' + testcase[1] + ' -e ' + str(encoding_type) + ' --run 2 -k ' + str(testcase[2]) + ' --testing 0 --verbosity_level 0'
       plan_status = os.popen(command).read()
       print("\n--------------------------------------------------------------------------------")
       print("testcase" + str(count) + " :")
