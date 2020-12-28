@@ -16,7 +16,7 @@ from action import Action
 
 class PDDL_Parser:
 
-    SUPPORTED_REQUIREMENTS = [':strips', ':negative-preconditions', ':typing']
+    SUPPORTED_REQUIREMENTS = [':strips', ':negative-preconditions', ':typing', 'constants']
 
     # ------------------------------------------
     # Tokens
@@ -59,6 +59,7 @@ class PDDL_Parser:
             self.requirements = []
             self.types = []
             self.actions = []
+            self.constants = []
             self.predicates = {}
             while tokens:
                 group = tokens.pop(0)
@@ -76,6 +77,8 @@ class PDDL_Parser:
                     self.types = group
                 elif t == ':action':
                     self.parse_action(group)
+                elif t == ':constants':
+                    self.constants.append(group)
                 else: print(str(t) + ' is not recognized in domain')
         else:
             raise Exception('File ' + domain_filename + ' does not match domain pattern')

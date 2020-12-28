@@ -160,8 +160,21 @@ class UngroundedConstraints():
     parser.parse_domain(domain)
     parser.parse_problem(problem)
 
-    state = list(parser.state)
+    for constant_list in parser.constants:
+      temp_constants = []
+      while(constant_list):
+        cur_constant = constant_list.pop(0)
+        if (cur_constant == '-'):
+          constant_type = constant_list.pop(0)
+          if constant_type not in parser.objects:
+            parser.objects[constant_type] = temp_constants
+          else:
+            parser.objects[constant_type].extend(temp_constants)
+        else:
+          temp_constants.append(cur_constant)
 
+
+    state = list(parser.state)
 
 
     self.objects = dict(parser.objects)
