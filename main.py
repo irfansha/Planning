@@ -38,7 +38,7 @@ if __name__ == '__main__':
                                   FE  = Flat Encoding
                                   CTE = Compact Tree Encoding
                                   UE = Ungrounded Encoding'''),default = 'UE')
-  parser.add_argument("-t", help="transition function with binary or linear action variables: [b l]",default = 'l')
+  parser.add_argument("-t", help="transition function with binary or linear action variables: [b l]",default = 'b')
   parser.add_argument("--run", type=int, help=textwrap.dedent('''
                                Three levels of execution:
                                0 = only generate encoding
@@ -75,7 +75,7 @@ if __name__ == '__main__':
                                        0 = off
                                        1 = bloqqer (version 37)'''),default = 1)
   parser.add_argument("--preprocessed_encoding_out", help="File path to preprocessed encoding file", default = "preprocessed_encoding")
-  parser.add_argument("--preprocessing_time_limit", type=float, help="Time limit in seconds, default 900 seconds",default = 900)
+  parser.add_argument("--preprocessing_time_limit", type=int, help="Time limit in seconds, default 900 seconds",default = 900)
   args = parser.parse_args()
 
 
@@ -111,7 +111,8 @@ if __name__ == '__main__':
 
     # Preprocessing:
     if (args.preprocessing != 0):
-      pre.preprocess(args)
+      # Hanlding, if preprocessor runs out of time:
+      args.preprocessing = pre.preprocess(args)
 
     if (int(args.run) >= 1):
       if (args.preprocessing != 0):

@@ -23,12 +23,12 @@ def run_tests(args):
     # Running testcases that have a plan:
     for testcase in sat_list:
       count += 1
-      # Running testcase and generating plan (if available):
-      command = 'python3 main.py -d ' + testcase[0] + ' -p ' + testcase[1] + ' -e ' + args.e + ' --forall_pruning ' + str(args.forall_pruning) + ' --run 2 -k ' + str(testcase[2]) + ' --testing 0 --verbosity_level 0 --run ' + str(args.run) + ' --preprocessing ' + str(args.preprocessing)
-      plan_status = os.popen(command).read()
       print("\n--------------------------------------------------------------------------------")
       print("testcase" + str(count) + " :")
       print(testcase)
+      # Running testcase and generating plan (if available):
+      command = 'python3 main.py -d ' + testcase[0] + ' -p ' + testcase[1] + ' -e ' + args.e + ' --forall_pruning ' + str(args.forall_pruning) + ' --run 2 -k ' + str(testcase[2]) + ' --testing 0 --verbosity_level 0 --run ' + str(args.run) + ' --preprocessing ' + str(args.preprocessing) + ' --preprocessing_time_limit ' + str(args.preprocessing_time_limit) + ' --time_limit ' + str(args.time_limit)
+      plan_status = os.popen(command).read()
       print(plan_status)
       if (args.run == 1):
         print("Testing only existence")

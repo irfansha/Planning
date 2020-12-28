@@ -65,7 +65,6 @@ class RunSolver():
     if (result != 'c Unsatisfiable'):
       self.sat = 1
       if (self.plan_extract == 1):
-        print("here")
         return
       for line in lines:
         temp = line.split(" ")
