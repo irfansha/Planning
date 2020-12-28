@@ -17,6 +17,7 @@ from plan_extraction import ExtractPlan as pe
 import plan_tester as pt
 import run_tests as rt
 import run_benchmarks as rb
+import preprocess  as pre
 import time
 
 # Main:
@@ -48,7 +49,7 @@ if __name__ == '__main__':
                                           1 = internal testing with direct grounding, more memory required
                                           2 = external testing with VAL'''),default = 2)
   parser.add_argument("--splitvars", type=int, help="Turn split forall vars on: [0 = No 1 = Yes]",default = 0)
-  parser.add_argument("--encoding_out", help="output encoding file",default = 'encoding.qcir')
+  parser.add_argument("--encoding_out", help="output encoding file",default = 'encoding')
   parser.add_argument("--encoding_type", type=int, help="Encoding type: [1 = QCIR14 2 = QDIMACS]",default = 2)
   parser.add_argument("--solver_out", help="solver output file",default = 'solver_output.txt')
   parser.add_argument("--solver_type", type=int, help=textwrap.dedent('''
@@ -69,6 +70,12 @@ if __name__ == '__main__':
   parser.add_argument("--run_benchmarks", type=int, help="Run benchmarks, specify benchmarks directory using --dir", default=0)
   parser.add_argument("--time_limit", type=float, help="Time limit (excluding encoding time) in seconds, default 1800 seconds",default = 1800)
   parser.add_argument("--forall_pruning",type =int, help="[0/1]Avoiding search in unnecessary forall branches", default=0)
+  parser.add_argument("--preprocessing", type = int, help=textwrap.dedent('''
+                                       Preprocessing:
+                                       0 = off
+                                       1 = bloqqer (version 37)'''),default = 1)
+  parser.add_argument("--preprocessed_encoding_out", help="File path to preprocessed encoding file", default = "preprocessed_encoding")
+  parser.add_argument("--preprocessing_time_limit", type=float, help="Time limit in seconds, default 900 seconds",default = 900)
   args = parser.parse_args()
 
 
@@ -102,8 +109,15 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------
 
+    # Preprocessing:
+    if (args.preprocessing != 0):
+      pre.preprocess(args)
+
     if (int(args.run) >= 1):
-      run_qs = qs(args.encoding_out, args.solver_out, args.solver_type, args.custom_solver_path, args.time_limit)
+      if (args.preprocessing != 0):
+        run_qs = qs(args.preprocessed_encoding_out, args.solver_out, args.solver_type, args.custom_solver_path, args.time_limit, args.run)
+      else:
+        run_qs = qs(args.encoding_out, args.solver_out, args.solver_type, args.custom_solver_path, args.time_limit, args.run)
       # --------------------------------------- Timing the solver run ----------------------------------------
       start_run_time = time.perf_counter()
       run_qs.run()

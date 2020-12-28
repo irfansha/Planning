@@ -24,13 +24,21 @@ def run_tests(args):
     for testcase in sat_list:
       count += 1
       # Running testcase and generating plan (if available):
-      command = 'python3 main.py -d ' + testcase[0] + ' -p ' + testcase[1] + ' -e ' + args.e + ' --forall_pruning ' + str(args.forall_pruning) + ' --run 2 -k ' + str(testcase[2]) + ' --testing 0 --verbosity_level 0'
+      command = 'python3 main.py -d ' + testcase[0] + ' -p ' + testcase[1] + ' -e ' + args.e + ' --forall_pruning ' + str(args.forall_pruning) + ' --run 2 -k ' + str(testcase[2]) + ' --testing 0 --verbosity_level 0 --run ' + str(args.run) + ' --preprocessing ' + str(args.preprocessing)
       plan_status = os.popen(command).read()
       print("\n--------------------------------------------------------------------------------")
       print("testcase" + str(count) + " :")
       print(testcase)
       print(plan_status)
-      if ('Plan found' in plan_status):
+      if (args.run == 1):
+        print("Testing only existence")
+        if ('Plan found' in plan_status):
+          print("success")
+        else:
+          # plan failed:
+          all_success = 0
+          print("failed! plan must exist")
+      elif ('Plan found' in plan_status):
         # Validating the plan generated:
         Val_path = './tools/Validate'
         command = Val_path + ' ' + testcase[0] + ' ' + testcase[1] + ' ' + args.plan_out

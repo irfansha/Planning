@@ -57,10 +57,16 @@ class RunSolver():
     f = open(self.output_file_path, 'r')
     lines = f.readlines()
     lines.pop(0)
-    lines.pop(0)
+    early_result = lines.pop(0)
+    if ('c Unsatisfiable' in early_result):
+      self.sat = 0
+      return
     result = lines.pop().strip("\n")
     if (result != 'c Unsatisfiable'):
       self.sat = 1
+      if (self.plan_extract == 1):
+        print("here")
+        return
       for line in lines:
         temp = line.split(" ")
         if (temp != ['\n']):
@@ -73,11 +79,12 @@ class RunSolver():
       self.sat = 0
 
 
-  def __init__(self, input_file_path, output_file_path, solver_type, solver_path, time_limit):
+  def __init__(self, input_file_path, output_file_path, solver_type, solver_path, time_limit, plan_extract):
     self.input_file_path = input_file_path
     self.output_file_path = output_file_path
     self.solver_type = solver_type
     self.time_limit = time_limit
+    self.plan_extract = plan_extract
     # By default timeout not occured yet:
     self.timed_out = False
     if (self.solver_type == 1):
