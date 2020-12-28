@@ -75,6 +75,20 @@ class Constraints():
     parser.parse_domain(domain)
     parser.parse_problem(problem)
 
+    for constant_list in parser.constants:
+      temp_constants = []
+      while(constant_list):
+        cur_constant = constant_list.pop(0)
+        if (cur_constant == '-'):
+          constant_type = constant_list.pop(0)
+          if constant_type not in parser.objects:
+            parser.objects[constant_type] = temp_constants
+          else:
+            parser.objects[constant_type].extend(temp_constants)
+        else:
+          temp_constants.append(cur_constant)
+
+
     state = parser.state
     # Initial state gate, ASSUMING no negative initial conditions:
     self.initial_state = list(state)
@@ -159,3 +173,8 @@ class Constraints():
     self.num_state_vars = len(self.state_vars)
     # Extracting action variables:
     self.extract_action_vars()
+
+    #print(self.updated_objects)
+
+    #for action in self.action_list:
+    #  print(action)
