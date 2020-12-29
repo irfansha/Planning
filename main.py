@@ -57,7 +57,8 @@ if __name__ == '__main__':
                                        Solver type:
                                        0 = custom
                                        1 = quabs
-                                       2 = caqe'''),default = 2)
+                                       2 = caqe
+                                       3 = dep-qbf'''),default = 2)
   parser.add_argument("--custom_solver_path", help="custom solver path",default = './solvers/qbf/quabs')
   parser.add_argument("--verbosity_level", type=int, help=textwrap.dedent('''
                                Levels of verbosity:

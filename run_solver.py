@@ -14,6 +14,10 @@ class RunSolver():
       self.run_caqe()
       if not self.timed_out:
         self.parse_caqe_output()
+    elif(self.solver_type == 3):
+      self.run_depqbf()
+      if not self.timed_out:
+        self.parse_depqbf_output()
     else:
       print("Work in progress!")
 
@@ -28,6 +32,14 @@ class RunSolver():
 
   def run_caqe(self):
     command = self.solver_path + " --qdo " + self.input_file_path + " > " + self.output_file_path
+    try:
+      subprocess.run([command], shell = True, timeout=self.time_limit)
+    except subprocess.TimeoutExpired:
+      self.timed_out = True
+      print("Time out after " + str(self.time_limit)+ " seconds.")
+
+  def run_depqbf(self):
+    command = self.solver_path + " --qdo --no-dynamic-nenofex " + self.input_file_path + " > " + self.output_file_path
     try:
       subprocess.run([command], shell = True, timeout=self.time_limit)
     except subprocess.TimeoutExpired:
@@ -77,6 +89,27 @@ class RunSolver():
     else:
       self.sat = 0
 
+  # parsing the caqe solver output:
+  def parse_depqbf_output(self):
+    f = open(self.output_file_path, 'r')
+    lines = f.readlines()
+    header = lines.pop(0)
+    parsed_header = header.split(" ")
+    if (parsed_header[2] == '0'):
+      self.sat = 0
+      return
+    else:
+      self.sat = 1
+      if (self.plan_extract == 1):
+        return
+      for line in lines:
+        temp = line.split(" ")
+        if (temp != ['\n']):
+          literal = temp[1]
+        if int(literal) > 0:
+          self.sol_map[int(literal)] = 1
+        else:
+          self.sol_map[-int(literal)] = -1
 
   def __init__(self, input_file_path, output_file_path, solver_type, solver_path, time_limit, plan_extract):
     self.input_file_path = input_file_path
@@ -90,6 +123,8 @@ class RunSolver():
       self.solver_path = './solvers/qbf/quabs'
     elif(self.solver_type == 2):
       self.solver_path = './solvers/qbf/caqe'
+    elif(self.solver_type == 3):
+      self.solver_path = './solvers/qbf/depqbf'
     else:
       self.solver_path = solver_path
     self.sol_map = {}

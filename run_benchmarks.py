@@ -21,7 +21,7 @@ def run_instance(domain_filepath, problem_filepath, args):
     k = 0
     while(1):
       k = k + 5
-      command = 'python3 main.py -d ' + domain_filepath + ' -p ' + problem_filepath + ' -e ' + args.e + ' --run ' + str(args.run) + ' -k ' + str(k) + ' --testing ' + str(args.testing) + ' --verbosity_level 0 --time_limit ' + str(args.time_limit) + ' --preprocessing ' + str(args.preprocessing)
+      command = 'python3 main.py -d ' + domain_filepath + ' -p ' + problem_filepath + ' -e ' + args.e + ' --run ' + str(args.run) + ' -k ' + str(k) + ' --testing ' + str(args.testing) + ' --verbosity_level 0 --time_limit ' + str(args.time_limit) + ' --preprocessing ' + str(args.preprocessing) + ' --parameters_overlap ' + str(args.parameters_overlap) + ' --solver_type ' + str(args.solver_type)
       plan_status = os.popen(command).read()
       ls = plan_status.strip("\n").split("\n")
       for line in ls:
