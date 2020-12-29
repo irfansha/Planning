@@ -31,7 +31,7 @@ class EncodingGen():
     elif (args.e == 'RE1'):
       self.encoding = qi(constraints_extract, tfun, args.k, args.forall_pruning)
     elif (args.e == 'UE'):
-      self.encoding = ue(constraints_extract, tfun, args.k, args.splitvars)
+      self.encoding = ue(constraints_extract, tfun, args.k, args.splitvars, args.parameters_overlap)
     elif (args.e == 'CTE'):
       if (args.run == 2):
         self.encoding = cte(constraints_extract, tfun, args.k, 1)

@@ -49,6 +49,7 @@ if __name__ == '__main__':
                                           1 = internal testing with direct grounding, more memory required
                                           2 = external testing with VAL'''),default = 2)
   parser.add_argument("--splitvars", type=int, help="Turn split forall vars on: [0 = No 1 = Yes]",default = 0)
+  parser.add_argument("--parameters_overlap", type=int, help="Turn reusing parameter vars for actions on: [0 = No 1 = Yes]",default = 0)
   parser.add_argument("--encoding_out", help="output encoding file",default = 'encoding')
   parser.add_argument("--encoding_type", type=int, help="Encoding type: [1 = QCIR14 2 = QDIMACS]",default = 2)
   parser.add_argument("--solver_out", help="solver output file",default = 'solver_output.txt')
@@ -73,7 +74,7 @@ if __name__ == '__main__':
   parser.add_argument("--preprocessing", type = int, help=textwrap.dedent('''
                                        Preprocessing:
                                        0 = off
-                                       1 = bloqqer (version 37)'''),default = 1)
+                                       1 = bloqqer (version 37)'''),default = 0)
   parser.add_argument("--preprocessed_encoding_out", help="File path to preprocessed encoding file", default = "preprocessed_encoding")
   parser.add_argument("--preprocessing_time_limit", type=int, help="Time limit in seconds, default 900 seconds",default = 900)
   args = parser.parse_args()
@@ -134,7 +135,10 @@ if __name__ == '__main__':
           if (args.e == 'CTE' or args.e == 'FE'):
             plan_extract.extract_action_based_plan(encoding_gen.encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
           elif(args.e == 'UE'):
-            plan_extract.extract_ungrounded_plan(encoding_gen.encoding.action_with_parameter_vars, constraints_extract, args.k)
+            if (args.parameters_overlap == 0):
+              plan_extract.extract_ungrounded_plan(encoding_gen.encoding.action_with_parameter_vars, constraints_extract, args.k)
+            else:
+              plan_extract.extract_ungrounded_plan(encoding_gen.encoding.action_with_parameter_vars_with_overlap, constraints_extract, args.k)
           else:
             plan_extract.extract_qr_plan(encoding_gen.encoding.states_gen.states, constraints_extract, args.k)
           plan_extract.update_format()

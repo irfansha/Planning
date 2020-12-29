@@ -15,19 +15,21 @@ def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 def run_instance(domain_filepath, problem_filepath, args):
+    print("---------------------------------------------------------------------------------------------")
     print("Running " + problem_filepath)
-    k = 2
+    print("---------------------------------------------------------------------------------------------")
+    k = 0
     while(1):
-      k = k*2
-      command = 'python3 main.py -d ' + domain_filepath + ' -p ' + problem_filepath + ' -e ' + args.e + ' --run 2 -k ' + str(k) + ' --testing ' + str(args.testing) + ' --verbosity_level 0 --time_limit ' + str(args.time_limit)
+      k = k + 5
+      command = 'python3 main.py -d ' + domain_filepath + ' -p ' + problem_filepath + ' -e ' + args.e + ' --run ' + str(args.run) + ' -k ' + str(k) + ' --testing ' + str(args.testing) + ' --verbosity_level 0 --time_limit ' + str(args.time_limit) + ' --preprocessing ' + str(args.preprocessing)
       plan_status = os.popen(command).read()
       ls = plan_status.strip("\n").split("\n")
       for line in ls:
-        if ("Encoding time" in line or "Solving time" in line):
+        if ("Encoding time" in line or "Solving time" in line or 'Preprocessing' in line):
           print(line)
       if ("Plan found" in plan_status):
           print("Plan found for length: " + str(k))
-          if (args.testing != 0):
+          if (args.testing != 0 and args.run == 2):
             if ("Plan valid" in plan_status):
               print("Plan valid\n")
             else:

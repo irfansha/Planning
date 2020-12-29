@@ -269,7 +269,7 @@ class UngroundedEncoding():
 
 
 
-  def generate_k_transitions(self, tfun, k):
+  def generate_k_transitions(self, tfun, k, actions_overlap_flag):
     # Generating transition function for each step:
     for i in range(k):
       # Generating auxilary vars:
@@ -277,8 +277,10 @@ class UngroundedEncoding():
       # Appending transition output gates:
       self.transition_step_output_gates.append(step_aux_vars[-1])
 
-      tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.predicates[i], self.predicates[i+1], self.action_with_parameter_vars[i], self.forall_vars, self.split_forall_vars, step_aux_vars)
-
+      if (actions_overlap_flag):
+        tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.predicates[i], self.predicates[i+1], self.action_with_parameter_vars_with_overlap[i], self.forall_vars, self.split_forall_vars, step_aux_vars)
+      else:
+        tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.predicates[i], self.predicates[i+1], self.action_with_parameter_vars[i], self.forall_vars, self.split_forall_vars, step_aux_vars)
 
   def generate_final_gate(self):
     temp_final_list = []
@@ -293,18 +295,28 @@ class UngroundedEncoding():
     [self.final_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['and', self.final_output_gate, temp_final_list])
 
-  def generate_quantifier_blocks(self, k, splitvars_flag):
+  def generate_quantifier_blocks(self, k, splitvars_flag, actions_overlap_flag):
     self.quantifier_block.append(['# Action variables :'])
     for i in range(k):
       self.quantifier_block.append(['# Time step' + str(i) + ' :'])
-      for action_vars in self.action_with_parameter_vars[i]:
-        main_action_var = action_vars[0]
-        self.quantifier_block.append(['# Main action variable :'])            # XXX add name directly later
-        self.quantifier_block.append(['exists(' + str(main_action_var) + ')'])
-        action_parameters = action_vars[1]
-        self.quantifier_block.append(['# Parameter variables :'])
-        for parameter in action_parameters:
-          self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in parameter) + ')'])
+      if (actions_overlap_flag):
+        for action_vars in self.action_with_parameter_vars_with_overlap[i]:
+          overlap_main_action_var = action_vars[0]
+          self.quantifier_block.append(['# Main action variable :'])            # XXX add name directly later
+          self.quantifier_block.append(['exists(' + str(overlap_main_action_var) + ')'])
+        for overlap_parameters in self.base_parameter_vars_with_overlap[i]:
+          self.quantifier_block.append(['# Parameter variables :'])
+          for overlap_parameter in overlap_parameters:
+            self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in overlap_parameter) + ')'])
+      else:
+        for action_vars in self.action_with_parameter_vars[i]:
+          main_action_var = action_vars[0]
+          self.quantifier_block.append(['# Main action variable :'])            # XXX add name directly later
+          self.quantifier_block.append(['exists(' + str(main_action_var) + ')'])
+          action_parameters = action_vars[1]
+          self.quantifier_block.append(['# Parameter variables :'])
+          for parameter in action_parameters:
+            self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in parameter) + ')'])
     self.quantifier_block.append(['# Split forall variables :'])
     if (splitvars_flag == 1):
       self.quantifier_block.append(['forall(' + ', '.join(str(x) for x in self.split_forall_vars) + ')'])
@@ -366,6 +378,29 @@ class UngroundedEncoding():
     #    print(action)
     #  print("\n")
 
+  def gen_action_with_parameter_vars_with_overlap(self, object_type_dict, overlap_dict, action_vars, tfun, k):
+    for i in range(k):
+      base_parameter_vars_dict = {}
+      base_parameter_vars_list = []
+      for parameter_type,count  in overlap_dict.items():
+        step_parameter_vars = []
+        if (count != 0):
+          for count_i in range(count):
+            step_parameter_vars.append(self.var_dis.get_vars(object_type_dict[parameter_type]))
+          base_parameter_vars_dict[parameter_type] = step_parameter_vars
+          base_parameter_vars_list.append(step_parameter_vars)
+      self.base_parameter_vars_with_overlap.append(base_parameter_vars_list)
+      step_action_with_parameter_vars = []
+      for action_var in action_vars:
+        temp_vars_dict = copy.deepcopy(base_parameter_vars_dict)
+        [action_name_var] = self.var_dis.get_vars(1)
+        parameter_vars = []
+        for parameter in action_var[1]:
+          parameter_vars.append(temp_vars_dict[parameter[1]].pop(0))
+        step_action_with_parameter_vars.append([action_name_var, parameter_vars])
+      self.action_with_parameter_vars_with_overlap.append(step_action_with_parameter_vars)
+
+
   # Generating k+1 states for k steps:
   def gen_predicate_vars(self, tfun, k):
     for i in range(k+1):
@@ -382,17 +417,30 @@ class UngroundedEncoding():
       self.forall_vars.append(temp_var_list)
       self.forall_vars_map[obj_type] = temp_var_list
 
-  def gen_if_existential_gate(self, updated_objects, base_action_vars, k):
+  def gen_if_existential_gate(self, updated_objects, base_action_vars, actions_overlap_flag, k):
+    # Avoiding conditional gates for same parameters:
+    check_list = []
     if_existential_output_list = []
     for i in range(k):
-      for j in range(len(self.action_with_parameter_vars[i])):
+      if actions_overlap_flag == 0:
+        length = len(self.action_with_parameter_vars[i])
+      else:
+        length = len(self.action_with_parameter_vars_with_overlap[i])
+      for j in range(length):
         cur_base_action_vars = base_action_vars[j]
-        action_vars = self.action_with_parameter_vars[i][j]
+        if actions_overlap_flag == 0:
+          action_vars = self.action_with_parameter_vars[i][j]
+        else:
+          action_vars = self.action_with_parameter_vars_with_overlap[i][j]
         main_action_var = action_vars[0]
         cur_base_main_action_var = cur_base_action_vars[0]
         num_action_parameters = len(action_vars[1])
         for k in range(num_action_parameters):
           parameter = action_vars[1][k]
+          if (parameter in check_list):
+            continue
+          else:
+            check_list.append(parameter)
           base_parameter = cur_base_action_vars[1][k]
           # Extracting parameter type crudely:
           parameter_type = base_parameter[1]
@@ -452,7 +500,7 @@ class UngroundedEncoding():
     self.encoding.append(['or',self.final_transition_gate, [if_condition_gate, then_final_transition_output_gate]])
 
 
-  def __init__(self, constraints_extract, tfun, k, splitvars_flag):
+  def __init__(self, constraints_extract, tfun, k, splitvars_flag, actions_overlap_flag):
     self.var_dis = vd()
     self.quantifier_block = []
     self.encoding = []
@@ -466,8 +514,13 @@ class UngroundedEncoding():
     self.predicates = []
     self.gen_predicate_vars(tfun, k)
 
-    self.action_with_parameter_vars = []
-    self.gen_action_with_parameter_vars(constraints_extract.bin_object_type_vars_dict, constraints_extract.action_vars, tfun, k)
+    if (actions_overlap_flag == 0):
+      self.action_with_parameter_vars = []
+      self.gen_action_with_parameter_vars(constraints_extract.bin_object_type_vars_dict, constraints_extract.action_vars, tfun, k)
+    else:
+      self.base_parameter_vars_with_overlap = []
+      self.action_with_parameter_vars_with_overlap = []
+      self.gen_action_with_parameter_vars_with_overlap(constraints_extract.bin_object_type_vars_dict, constraints_extract.action_vars_overlap_dict, constraints_extract.action_vars, tfun, k)
 
     self.forall_vars = []
     self.forall_vars_map = {}
@@ -476,15 +529,15 @@ class UngroundedEncoding():
     self.split_forall_vars = self.var_dis.get_vars(len(tfun.split_predicates_forall_vars))
     #print(self.split_forall_vars)
 
-    self.generate_k_transitions(tfun, k)
+    self.generate_k_transitions(tfun, k, actions_overlap_flag)
 
     self.generate_initial_gate(constraints_extract, splitvars_flag)
     self.generate_goal_gate(constraints_extract, k, splitvars_flag)
 
     self.gen_conditional_transition_gates(constraints_extract.updated_objects)
 
-    self.gen_if_existential_gate(constraints_extract.updated_objects, constraints_extract.action_vars, k)
+    self.gen_if_existential_gate(constraints_extract.updated_objects, constraints_extract.action_vars, actions_overlap_flag, k)
 
     self.generate_final_gate()
 
-    self.generate_quantifier_blocks(k, splitvars_flag)
+    self.generate_quantifier_blocks(k, splitvars_flag, actions_overlap_flag)

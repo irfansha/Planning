@@ -401,7 +401,7 @@ class UngroundedConstraints():
 
   # XXX check if any difference in hierarchial types:
   def gen_forall_variables_types(self):
-    # Initializing forall_variables_type_dict with -1 for all types:
+    # Initializing forall_variables_type_dict with 0 for all types:
     for obj_type in self.types:
       self.forall_variables_type_dict[obj_type] = 0
 
@@ -411,6 +411,21 @@ class UngroundedConstraints():
       for obj_type, count in Counter(values).items():
         if (self.forall_variables_type_dict[obj_type] < count):
           self.forall_variables_type_dict[obj_type] = count
+
+  # Generating minimum required type variables for action arguments:
+  def gen_action_vars_overlap_dict(self):
+    for obj_type in self.types:
+      self.action_vars_overlap_dict[obj_type] = 0
+
+    for action in self.actions:
+      parameter_type_list = []
+      for parameter in action.parameters:
+        parameter_type_list.append(parameter[1])
+      for obj_type, count in Counter(parameter_type_list).items():
+        if (self.action_vars_overlap_dict[obj_type] < count):
+          self.action_vars_overlap_dict[obj_type] = count
+
+
 
   def __init__(self, domain, problem, testing, verbosity):
     self.initial_state = []
@@ -469,6 +484,8 @@ class UngroundedConstraints():
 
     #print(self.forall_variables_type_dict)
 
+    self.action_vars_overlap_dict = {}
+    self.gen_action_vars_overlap_dict()
 
     #print("predicates",self.predicates)
 
