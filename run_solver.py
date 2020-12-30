@@ -11,15 +11,20 @@ class RunSolver():
       if not self.timed_out:
         self.parse_quabs_output()
     elif(self.solver_type == 2):
-      self.run_caqe()
+      self.run_caqe(self.input_file_path)
       if not self.timed_out:
         self.parse_caqe_output()
+        if (self.preprocessing != 0 and self.sat != 0):
+          self.generate_encoding_with_solution()
+          self.run_caqe(self.preprocessed_extraction_file)
+          self.parse_caqe_output()
     elif(self.solver_type == 3):
       self.run_depqbf()
       if not self.timed_out:
         self.parse_depqbf_output()
     else:
       print("Work in progress!")
+
 
 
   def run_quabs(self):
@@ -30,8 +35,8 @@ class RunSolver():
       self.timed_out = True
       print("Time out after " + str(self.time_limit)+ " seconds.")
 
-  def run_caqe(self):
-    command = self.solver_path + " --qdo " + self.input_file_path + " > " + self.output_file_path
+  def run_caqe(self, input_file_path):
+    command = self.solver_path + " --qdo " + input_file_path + " > " + self.output_file_path
     try:
       subprocess.run([command], shell = True, timeout=self.time_limit)
     except subprocess.TimeoutExpired:
@@ -45,6 +50,60 @@ class RunSolver():
     except subprocess.TimeoutExpired:
       self.timed_out = True
       print("Time out after " + str(self.time_limit)+ " seconds.")
+
+
+
+  def generate_encoding_with_solution(self):
+    #print(self.sol_map)
+    f_read = open(self.unpreprocessed_input_file_path, 'r')
+    lines = f_read.readlines()
+    f_read.close()
+
+    split_line = lines[0].strip("\n").split(" ")
+
+
+    exists_vars = lines[1]
+
+    split_exists_vars = exists_vars.split(" ")
+
+    count = 0
+
+    for var, value in self.sol_map.items():
+      if (str(var) in split_exists_vars):
+        count = count + 1
+
+    # Updating clause count:
+    # ----------------------------------------------------------------
+    split_line[3] = str(int(split_line[3]) + count)
+
+    joined_line = ' '.join(split_line)
+
+    lines[0] = joined_line + "\n"
+    # ----------------------------------------------------------------
+
+    #print(exists_vars)
+
+    #print(split_exists_vars)
+
+    f_write = open(self.preprocessed_extraction_file, 'w+')
+
+    for line in lines:
+      # Avoiding empty line:
+      if (line != "\n"):
+        f_write.write(line)
+
+    for var, value in self.sol_map.items():
+      if (str(var) in split_exists_vars):
+        if value > 0:
+          clause = str(var) + " 0\n"
+        else:
+          clause = str(-var) + " 0\n"
+        f_write.write(clause)
+
+    f_write.close()
+
+
+
 
   # parsing the quabs solver output:
   def parse_quabs_output(self):
@@ -82,10 +141,10 @@ class RunSolver():
         temp = line.split(" ")
         if (temp != ['\n']):
           literal = temp[1]
-        if int(literal) > 0:
-          self.sol_map[int(literal)] = 1
-        else:
-          self.sol_map[-int(literal)] = -1
+          if int(literal) > 0:
+            self.sol_map[int(literal)] = 1
+          else:
+            self.sol_map[-int(literal)] = -1
     else:
       self.sat = 0
 
@@ -116,10 +175,13 @@ class RunSolver():
       self.input_file_path = args.encoding_out
     else:
       self.input_file_path = args.preprocessed_encoding_out
+      self.preprocessed_extraction_file = './intermediate_files/encoding_with_preprocessed_solution'
+    self.unpreprocessed_input_file_path = args.encoding_out
     self.output_file_path = args.solver_out
     self.solver_type = args.solver_type
     self.time_limit = args.time_limit
     self.plan_extract = args.run
+    self.preprocessing = args.preprocessing
     # By default timeout not occured yet:
     self.timed_out = False
     if (self.solver_type == 1):
