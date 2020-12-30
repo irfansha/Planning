@@ -117,10 +117,7 @@ if __name__ == '__main__':
       args.preprocessing = pre.preprocess(args)
 
     if (int(args.run) >= 1):
-      if (args.preprocessing != 0):
-        run_qs = qs(args.preprocessed_encoding_out, args.solver_out, args.solver_type, args.custom_solver_path, args.time_limit, args.run)
-      else:
-        run_qs = qs(args.encoding_out, args.solver_out, args.solver_type, args.custom_solver_path, args.time_limit, args.run)
+      run_qs = qs(args)
       # --------------------------------------- Timing the solver run ----------------------------------------
       start_run_time = time.perf_counter()
       run_qs.run()

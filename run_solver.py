@@ -111,12 +111,15 @@ class RunSolver():
         else:
           self.sol_map[-int(literal)] = -1
 
-  def __init__(self, input_file_path, output_file_path, solver_type, solver_path, time_limit, plan_extract):
-    self.input_file_path = input_file_path
-    self.output_file_path = output_file_path
-    self.solver_type = solver_type
-    self.time_limit = time_limit
-    self.plan_extract = plan_extract
+  def __init__(self, args):
+    if (args.preprocessing == 0):
+      self.input_file_path = args.encoding_out
+    else:
+      self.input_file_path = args.preprocessed_encoding_out
+    self.output_file_path = args.solver_out
+    self.solver_type = args.solver_type
+    self.time_limit = args.time_limit
+    self.plan_extract = args.run
     # By default timeout not occured yet:
     self.timed_out = False
     if (self.solver_type == 1):
@@ -126,6 +129,6 @@ class RunSolver():
     elif(self.solver_type == 3):
       self.solver_path = './solvers/qbf/depqbf'
     else:
-      self.solver_path = solver_path
+      self.solver_path = args.custom_solver_path
     self.sol_map = {}
     self.sat = -1 # sat value is never -1, either 1 or 0 for sat and unsat
