@@ -150,4 +150,4 @@ if __name__ == '__main__':
           if (args.testing == 2):
             pt.test_plan_with_val(args.d, args.p, args.plan_out,  args.verbosity_level)
       else:
-        print('plan not found')
+        print('Plan not found')
