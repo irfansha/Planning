@@ -36,7 +36,7 @@ class RunSolver():
       print("Time out after " + str(self.time_limit)+ " seconds.")
 
   def run_caqe(self, input_file_path):
-    command = self.solver_path + " --qdo " + input_file_path + " > " + self.output_file_path
+    command = self.solver_path + " --qdo --dependency-schemes " + str(self.dependency_schemes) + " " + input_file_path + " > " + self.output_file_path
     try:
       subprocess.run([command], shell = True, timeout=self.time_limit)
     except subprocess.TimeoutExpired:
@@ -182,6 +182,7 @@ class RunSolver():
     self.time_limit = args.time_limit
     self.plan_extract = args.run
     self.preprocessing = args.preprocessing
+    self.dependency_schemes = args.dependency_schemes
     # By default timeout not occured yet:
     self.timed_out = False
     if (self.solver_type == 1):
