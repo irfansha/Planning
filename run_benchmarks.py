@@ -57,7 +57,7 @@ def run(args):
     # Running each instances with time limit:
     for file_path in files_list:
         # Only considering problem files:
-        if ('domain' not in file_path):
+        if ('domain' not in file_path and '.py' not in file_path):
           timed_out = run_instance(domain_filepath, file_path, args)
           if (timed_out):
             continue
