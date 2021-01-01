@@ -132,5 +132,14 @@ dmypy.json
 *.txt
 *.qcir
 
+intermediate_files/*
+
+classical_ipc_benchmarks/*
+competition_benchmarks/*
+
+# intermediate encodings generated
+encoding
+preprocessed_encoding
+
 # Pyre type checker
 .pyre/
