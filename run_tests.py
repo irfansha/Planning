@@ -34,6 +34,32 @@ unsat_list = [("./testcases/IPC1/gripper/domain.pddl", "./testcases/IPC1/gripper
             ]
 
 
+def gen_new_arguments(domain, problem, k, args):
+  new_command = ''
+  for arg in vars(args):
+    # We set these separately:
+    if (arg == 'version'):
+      continue
+    elif (arg == 'd'):
+      new_command += ' -d ' + domain
+    elif(arg == 'p'):
+      new_command += ' -p ' + problem
+    elif(arg == 'k'):
+      new_command += ' -k ' + str(k)
+    elif(arg == "testing"):
+      new_command += ' --testing 0'
+    elif(arg == "verbosity_level"):
+      new_command += ' --verbosity_level 0'
+    elif( arg == "run_tests"):
+      new_command += ' --run_tests 0'
+    elif (len(arg) == 1):
+      new_command += ' -' + str(arg) + ' ' + str(getattr(args, arg))
+    else:
+      new_command += ' --' + str(arg) + ' ' + str(getattr(args, arg))
+  new_command += ' -d ' + domain + ' -p ' + problem + ' -k ' + str(k) + ' --testing 0 --verbosity_level 0 --run_tests 0'
+  return(new_command)
+
+
 def run_tests(args):
     count = 0
     all_success = 1
@@ -43,8 +69,10 @@ def run_tests(args):
       print("\n--------------------------------------------------------------------------------")
       print("testcase" + str(count) + " :")
       print(testcase)
+      # domain and problem files are new:
+      command_arguments = gen_new_arguments(testcase[0], testcase[1], testcase[2], args)
       # Running testcase and generating plan (if available):
-      command = 'python3 main.py -d ' + testcase[0] + ' -p ' + testcase[1] + ' -e ' + args.e + ' --forall_pruning ' + str(args.forall_pruning) + ' --run 2 -k ' + str(testcase[2]) + ' --testing 0 --verbosity_level 0 --run ' + str(args.run) + ' --preprocessing ' + str(args.preprocessing) + ' --preprocessing_time_limit ' + str(args.preprocessing_time_limit) + ' --time_limit ' + str(args.time_limit) + ' --parameters_overlap ' + str(args.parameters_overlap) + ' --solver_type ' + str(args.solver_type) + ' --dependency_schemes ' + str(args.dependency_schemes)
+      command = 'python3 main.py ' + command_arguments
       plan_status = os.popen(command).read()
       print(plan_status)
       if (args.run == 1):
@@ -79,8 +107,10 @@ def run_tests(args):
       print("\n--------------------------------------------------------------------------------")
       print("testcase" + str(count) + " :")
       print(testcase)
+      # domain and problem files are new:
+      command_arguments = gen_new_arguments(testcase[0], testcase[1], testcase[2], args)
       # Running testcase and generating plan (if available):
-      command = 'python3 main.py -d ' + testcase[0] + ' -p ' + testcase[1] + ' -e ' + args.e + ' --forall_pruning ' + str(args.forall_pruning) + ' --run 2 -k ' + str(testcase[2]) + ' --testing 0 --verbosity_level 0 --run ' + str(args.run) + ' --preprocessing ' + str(args.preprocessing) + ' --preprocessing_time_limit ' + str(args.preprocessing_time_limit) + ' --time_limit ' + str(args.time_limit) + ' --parameters_overlap ' + str(args.parameters_overlap) + ' --solver_type ' + str(args.solver_type)
+      command = 'python3 main.py ' + command_arguments
       plan_status = os.popen(command).read()
       print(plan_status)
       if ('Plan not found' in plan_status):
