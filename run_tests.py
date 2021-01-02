@@ -56,7 +56,6 @@ def gen_new_arguments(domain, problem, k, args):
       new_command += ' -' + str(arg) + ' ' + str(getattr(args, arg))
     else:
       new_command += ' --' + str(arg) + ' ' + str(getattr(args, arg))
-  new_command += ' -d ' + domain + ' -p ' + problem + ' -k ' + str(k) + ' --testing 0 --verbosity_level 0 --run_tests 0'
   return(new_command)
 
 
@@ -69,7 +68,7 @@ def run_tests(args):
       print("\n--------------------------------------------------------------------------------")
       print("testcase" + str(count) + " :")
       print(testcase)
-      # domain and problem files are new:
+      # domain and problem files (and k) are new:
       command_arguments = gen_new_arguments(testcase[0], testcase[1], testcase[2], args)
       # Running testcase and generating plan (if available):
       command = 'python3 main.py ' + command_arguments
