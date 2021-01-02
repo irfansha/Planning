@@ -60,7 +60,6 @@ if __name__ == '__main__':
                                        1 = quabs
                                        2 = caqe
                                        3 = dep-qbf'''),default = 2)
-  parser.add_argument("--custom_solver_path", help="custom solver path",default = './solvers/qbf/quabs')
   parser.add_argument("--verbosity_level", type=int, help=textwrap.dedent('''
                                Levels of verbosity:
                                0 = For testing, states if plan is correct.
@@ -82,6 +81,9 @@ if __name__ == '__main__':
   parser.add_argument("--preprocessing_time_limit", type=int, help="Time limit in seconds, default 900 seconds",default = 900)
   args = parser.parse_args()
 
+
+
+  print(args)
 
   if args.version:
     print("Version 0.9")

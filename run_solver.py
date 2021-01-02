@@ -191,7 +191,5 @@ class RunSolver():
       self.solver_path = './solvers/qbf/caqe'
     elif(self.solver_type == 3):
       self.solver_path = './solvers/qbf/depqbf'
-    else:
-      self.solver_path = args.custom_solver_path
     self.sol_map = {}
     self.sat = -1 # sat value is never -1, either 1 or 0 for sat and unsat
