@@ -14,6 +14,28 @@ def atoi(text):
 def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
+def gen_new_arguments(domain, problem, k, args):
+  new_command = ''
+  for arg in vars(args):
+    # We set these separately:
+    if (arg == 'version'):
+      continue
+    elif (arg == 'd'):
+      new_command += ' -d ' + domain
+    elif(arg == 'p'):
+      new_command += ' -p ' + problem
+    elif(arg == 'k'):
+      new_command += ' -k ' + str(k)
+    elif(arg == "verbosity_level"):
+      new_command += ' --verbosity_level 0'
+    elif( arg == "run_benchmarks"):
+      new_command += ' --run_benchmarks 0'
+    elif (len(arg) == 1):
+      new_command += ' -' + str(arg) + ' ' + str(getattr(args, arg))
+    else:
+      new_command += ' --' + str(arg) + ' ' + str(getattr(args, arg))
+  return(new_command)
+
 def run_instance(domain_filepath, problem_filepath, args):
     print("---------------------------------------------------------------------------------------------")
     print("Running " + problem_filepath)
@@ -21,11 +43,14 @@ def run_instance(domain_filepath, problem_filepath, args):
     k = 0
     while(1):
       k = k + 5
-      command = 'python3 main.py -d ' + domain_filepath + ' -p ' + problem_filepath + ' -e ' + args.e + ' --run ' + str(args.run) + ' -k ' + str(k) + ' --testing ' + str(args.testing) + ' --verbosity_level 0 --time_limit ' + str(args.time_limit) + ' --preprocessing ' + str(args.preprocessing) + ' --parameters_overlap ' + str(args.parameters_overlap) + ' --solver_type ' + str(args.solver_type)
+      # domain and problem files are new:
+      command_arguments = gen_new_arguments(domain_filepath, problem_filepath, k, args)
+      # command = 'python3 main.py -d ' + domain_filepath + ' -p ' + problem_filepath + ' -e ' + args.e + ' --run ' + str(args.run) + ' -k ' + str(k) + ' --testing ' + str(args.testing) + ' --verbosity_level 0 --time_limit ' + str(args.time_limit) + ' --preprocessing ' + str(args.preprocessing) + ' --parameters_overlap ' + str(args.parameters_overlap) + ' --solver_type ' + str(args.solver_type)
+      command = 'python3 main.py ' + command_arguments
       plan_status = os.popen(command).read()
       ls = plan_status.strip("\n").split("\n")
       for line in ls:
-        if ("Encoding time" in line or "Solving time" in line or 'Preprocessing' in line):
+        if ("Encoding time" in line or "Solving time" in line or 'Preprocessing' in line or "Namespace" in line):
           print(line)
       if ("Plan found" in plan_status):
           print("Plan found for length: " + str(k))
