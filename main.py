@@ -72,10 +72,15 @@ if __name__ == '__main__':
   parser.add_argument("--run_benchmarks", type=int, help="Run benchmarks, specify benchmarks directory using --dir", default=0)
   parser.add_argument("--time_limit", type=float, help="Time limit (excluding encoding time) in seconds, default 1800 seconds",default = 1800)
   parser.add_argument("--forall_pruning",type =int, help="[0/1]Avoiding search in unnecessary forall branches", default=0)
-  parser.add_argument("--preprocessing", type = int, help=textwrap.dedent('''
+  parser.add_argument("--preprocessing", type = int, help="[0/1]preprocessing",default = 0)
+  parser.add_argument("--preprocess_order", help=textwrap.dedent('''
                                        Preprocessing:
-                                       0 = off
-                                       1 = bloqqer (version 37)'''),default = 0)
+                                       A = QxBF
+                                       D = HQSpre
+                                       B = bloqqer
+                                       Q = QRATPre+
+                                       [string of ADBQ] = custom order (mutiple calls possible), default = AQBD
+                                       '''), default= 'AQBD')
   parser.add_argument("--dependency_schemes",type =int, help="[0/1]enables dependency schemes if avaliable in solver", default=0)
   parser.add_argument("--preprocessed_encoding_out", help="File path to preprocessed encoding file", default = "preprocessed_encoding")
   parser.add_argument("--preprocessing_time_limit", type=int, help="Time limit in seconds, default 900 seconds",default = 900)
@@ -118,7 +123,12 @@ if __name__ == '__main__':
     # Preprocessing:
     if (args.preprocessing != 0):
       # Hanlding, if preprocessor runs out of time:
-      args.preprocessing = pre.preprocess(args)
+      status = pre.preprocess(args)
+      if (status == 0):
+        print("Solved by preprocessor")
+        exit()
+      else:
+        args.preprocessing = 1
 
     if (int(args.run) >= 1):
       run_qs = qs(args)
