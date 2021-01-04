@@ -14,12 +14,10 @@ class RunSolver():
       self.run_caqe(self.input_file_path)
       if not self.timed_out:
         self.parse_caqe_output()
-        '''
         if (self.preprocessing != 0 and self.sat != 0 and self.plan_extract == 2):
           self.generate_encoding_with_solution()
           self.run_caqe(self.preprocessed_extraction_file)
           self.parse_caqe_output()
-        '''
     elif(self.solver_type == 3):
       self.run_depqbf()
       if not self.timed_out:
@@ -177,6 +175,7 @@ class RunSolver():
       self.input_file_path = args.encoding_out
     else:
       self.input_file_path = args.preprocessed_encoding_out
+      self.preprocessed_extraction_file = './intermediate_files/encoding_with_preprocessed_solution'
     self.unpreprocessed_input_file_path = args.encoding_out
     self.output_file_path = args.solver_out
     self.solver_type = args.solver_type

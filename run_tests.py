@@ -74,9 +74,6 @@ def run_tests(args):
       command = 'python3 main.py ' + command_arguments
       plan_status = os.popen(command).read()
       print(plan_status)
-      if ('Solved by preprocessor' in plan_status):
-        print("success, no testing done")
-        continue
       if (args.run == 1):
         print("Testing only existence")
         if ('Plan found' in plan_status):
@@ -102,6 +99,7 @@ def run_tests(args):
           # plan failed:
           all_success = 0
       print("--------------------------------------------------------------------------------\n")
+
     # Running unsat testcases:
     for testcase in unsat_list:
       count += 1
@@ -114,9 +112,6 @@ def run_tests(args):
       command = 'python3 main.py ' + command_arguments
       plan_status = os.popen(command).read()
       print(plan_status)
-      if ('Solved by preprocessor' in plan_status):
-        print("success, no testing done")
-        continue
       if ('Plan not found' in plan_status):
         print("success")
       else:
