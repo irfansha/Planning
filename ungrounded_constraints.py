@@ -334,9 +334,13 @@ class UngroundedConstraints():
 
   def gen_predicate_split_action_list(self):
     for action in self.actions:
+      # Noop handled separately:
+      if (action.name == 'noop'):
+        continue
       temp_parameter_dict, max_parameter_length =  self.get_unique_parameters(action)
       parameter_type_dict = self.gen_action_parameter_type_dict(action)
       #print("paramete_type_dict",parameter_type_dict)
+      #print("paramete_dict",temp_parameter_dict)
       for i in range(max_parameter_length+1):
         if i in temp_parameter_dict.keys():
           for temp_parameter in temp_parameter_dict[i]:
@@ -383,6 +387,17 @@ class UngroundedConstraints():
                 if predicate not in new_add_effects and predicate not in new_del_effects:
                   untouched_predicates.append(predicate)
             self.predicate_split_action_list.append(ap(action.name, [i, temp_parameter], new_positive_preconditions, new_negative_preconditions, new_add_effects, new_del_effects, untouched_predicates, all_untouched_predicates))
+        else:
+          untouched_predicates = []
+          all_untouched_predicates = []
+          # Generating untouched clauses after splitting:
+          for predicate in self.predicate_dict[i]:
+            predicate_values = list(self.predicates[predicate].values())
+            all_untouched_predicates.append(predicate)
+            untouched_predicates.append(predicate)
+          # If parameter is non-empty, here might be the problem:
+          self.predicate_split_action_list.append(ap(action.name, [i, []], [], [], [], [], untouched_predicates, all_untouched_predicates))
+
     # Handling noop operation:
     self.predicate_split_action_list.append(ap(self.actions[-1].name, [0, []], [], [], [], [], list(self.predicates), list(self.predicates)))
 
