@@ -3,10 +3,17 @@
 '''
 Todos:
   1. Rearrange arguments.
-  2. Update printing information, allows options printing for data analysis.
-  3. Extraction in FE and CTE seems slow down the execution, perhaps
+  2. Extraction in FE and CTE seems slow down the execution, perhaps
      it is possible to actually make it faster (by allowing to solve from both directions)
-  4. Use operator splitting for SAT encoding (and other grounded encodings)
+  3. Use operator splitting for SAT encoding (and other grounded encodings)
+  4. Implement extraction for CTE, as it seems standard for QBF planning encodings.
+  5. No need to wait until, intermediate unsat problems are solved better to move on before (and come back if needed).
+  6. No need for external preprocessing with caqe as 2 preprocessors are internally available (thus removes extra steps in pipeline).
+  7. Experiment with different options for each solver to optimise the solving.
+  8. Handle equality requirement in the planning problems.
+  9. Collect statistics for each encoding and solver (when plan is being computed).
+  10. Implement explanatory frame axioms (including operator splitting) instead of classical frame axioms and add as an option.
+  11. Extraction based on multiple calls to solver to be added (as the other extraction is slowing down the computation).
 '''
 
 import argparse, textwrap
