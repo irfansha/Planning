@@ -7,7 +7,8 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=10
 #SBATCH --time=24:00:00
-
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=irfansha.shaik@cs.au.dk
 
 echo "========= Job started  at `date` =========="
 
