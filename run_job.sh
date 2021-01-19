@@ -15,7 +15,7 @@ echo "========= Job started  at `date` =========="
 cd $SLURM_SUBMIT_DIR
 
 # copy inputdata and the executable to the scratch-directory
-cp * /scratch/$SLURM_JOB_ID
+cp -r * /scratch/$SLURM_JOB_ID
 
 # change directory to the local scratch-directory, and run:
 cd /scratch/$SLURM_JOB_ID
