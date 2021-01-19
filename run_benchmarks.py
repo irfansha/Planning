@@ -78,11 +78,16 @@ def run(args):
 
     domain_filepath = args.dir + "domain.pddl"
 
+    count = 0
 
     # Running each instances with time limit:
     for file_path in files_list:
+        # We assume rest of the testcases are too big as well:
+        if (count > 4):
+          break
         # Only considering problem files:
         if ('domain' not in file_path and '.py' not in file_path):
           timed_out = run_instance(domain_filepath, file_path, args)
           if (timed_out):
+            count = count + 1
             continue
