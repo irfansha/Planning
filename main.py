@@ -33,8 +33,8 @@ if __name__ == '__main__':
   text = "A tool to encode PDDL (strips) problems to SAT/QBF encodings and compute a plan if exists"
   parser = argparse.ArgumentParser(description=text,formatter_class=argparse.RawTextHelpFormatter)
   parser.add_argument("-V", "--version", help="show program version", action="store_true")
-  parser.add_argument("-d", help="domain file path", default = 'testcases/IPC2/Blocks/domain.pddl')
-  parser.add_argument("-p", help="problem file path", default = 'testcases/IPC2/Blocks/prob01.pddl')
+  parser.add_argument("-d", help="domain file path", default = 'testcases/competition/IPC2/Blocks/domain.pddl')
+  parser.add_argument("-p", help="problem file path", default = 'testcases/competition/IPC2/Blocks/prob01.pddl')
   parser.add_argument("--dir", help="Benchmarks directory path", default = 'competition_benchmarks/IPC2/Elevator/')
   parser.add_argument("--plan_out", help="plan output file path", default = 'cur_plan.txt')
   parser.add_argument("-k", type=int, help="path length",default = 4)
