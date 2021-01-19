@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #SBATCH --job-name=Serialjob
 #SBATCH --partition=q40
