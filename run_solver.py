@@ -22,6 +22,11 @@ class RunSolver():
       self.run_depqbf()
       if not self.timed_out:
         self.parse_depqbf_output()
+    elif(self.solver_type == 4):
+      self.change_to_dimacs()
+      self.run_minisat()
+      if not self.timed_out:
+        self.parser_minisat_output()
     else:
       print("Work in progress!")
 
@@ -51,7 +56,34 @@ class RunSolver():
       self.timed_out = True
       print("Time out after " + str(self.time_limit)+ " seconds.")
 
+  def run_minisat(self):
+    command = self.solver_path + " " + self.input_file_path + " " + self.output_file_path
+    try:
+      subprocess.run([command], shell = True, timeout=self.time_limit)
+    except subprocess.TimeoutExpired:
+      self.timed_out = True
+      print("Time out after " + str(self.time_limit)+ " seconds.")
 
+
+
+  def change_to_dimacs(self):
+    f = open(self.input_file_path, 'r')
+    lines = f.readlines()
+    f.close()
+
+    # replacing lines without beginning e:
+    print(lines[1][:2])
+    assert("e " == lines[1][:2])
+    lines[1] = lines[1][2:-1]
+    assert("e " == lines[2][:2])
+    lines[2] = lines[2][2:]
+    lines[1] = lines[1]+lines[2]
+
+    f = open(self.input_file_path, 'w')
+    for i in range(len(lines)):
+      if (i != 2):
+        f.write(lines[i])
+    f.close()
 
   def generate_encoding_with_solution(self):
     #print(self.sol_map)
@@ -170,6 +202,25 @@ class RunSolver():
         else:
           self.sol_map[-int(literal)] = -1
 
+
+  def parser_minisat_output(self):
+    f = open(self.output_file_path, 'r')
+    lines = f.readlines()
+    header = lines.pop(0)
+    if (header != "SAT\n"):
+      self.sat = 0
+    else:
+      self.sat = 1
+      assignment = lines.pop(0)
+      vars = assignment.split(" ")
+      vars.pop()
+      for var in vars:
+        literal = var
+        if int(literal) > 0:
+          self.sol_map[int(literal)] = 1
+        else:
+          self.sol_map[-int(literal)] = -1
+
   def __init__(self, args):
     if (args.preprocessing == 0):
       self.input_file_path = args.encoding_out
@@ -191,5 +242,7 @@ class RunSolver():
       self.solver_path = './solvers/qbf/caqe'
     elif(self.solver_type == 3):
       self.solver_path = './solvers/qbf/depqbf'
+    elif(self.solver_type == 4):
+      self.solver_path = './solvers/sat/MiniSat_v1.14_linux'
     self.sol_map = {}
     self.sat = -1 # sat value is never -1, either 1 or 0 for sat and unsat
