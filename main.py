@@ -151,8 +151,8 @@ if __name__ == '__main__':
           else:
             plan_extract.extract_qr_plan(encoding_gen.encoding.states_gen.states, constraints_extract, args.k)
           plan_extract.update_format()
-          if (args.verbosity_level != 0):
-            plan_extract.print_updated_plan()
+          #if (args.verbosity_level != 0):
+          plan_extract.print_updated_plan()
           plan_extract.print_to_file()
           if (args.testing == 1):
             pt.test_plan(plan_extract.plan, constraints_extract, args.e,  args.verbosity_level)
