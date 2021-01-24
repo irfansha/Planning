@@ -56,7 +56,7 @@ if __name__ == '__main__':
         f.write("time python3 main.py --dir " + competition_domain_path + domain + " --run_benchmarks 1 --preprocessing 1 --parameters_overlap 1 --time_limit 5 > out_UG_" + domain_name + "\n")
         command = 'sbatch ' + "run_UG_"+ domain_name + ".sh"
       elif(encoding == 'SAT'):
-        f.write("time python3 main.py --dir " + competition_domain_path + domain + " --run_benchmarks 1 -e SAT --time_limit 5 > out_SAT_" + domain_name + "\n")
+        f.write("time python3 main.py --dir " + competition_domain_path + domain + " --run_benchmarks 1 -e SAT --time_limit 5 --solver_type 4 > out_SAT_" + domain_name + "\n")
         command = 'sbatch ' + "run_SAT_"+ domain_name + ".sh"
 
       f.write("\necho '========= Job finished at `date` =========='\n")
