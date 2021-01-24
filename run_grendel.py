@@ -53,3 +53,6 @@ if __name__ == '__main__':
 
     f.write("\necho '========= Job finished at `date` =========='\n")
     f.close()
+
+    command = 'sbatch ' + "run_UG_"+ domain_name + ".sh"
+    os.popen(command)
