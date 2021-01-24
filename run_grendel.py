@@ -22,37 +22,46 @@ if __name__ == '__main__':
 
   encodings = ["UG", "SAT"]
 
-  encoding = "UG"
 
-  for domain in competition_domains:
+  for encoding in encodings:
+    for domain in competition_domains:
 
-    competition_domain = domain.split("/")
-    domain_name = competition_domain[1]
+      competition_domain = domain.split("/")
+      domain_name = competition_domain[1]
 
-    # Generate batch script:
-    f = open("run_UG_"+ domain_name + ".sh", "w")
-
-    f.write("#!/bin/bash\n")
-    f.write("SBATCH --partition=" + args.partition + "\n")
-    f.write("SBATCH --nodes=" + args.nodes + "\n")
-    f.write("SBATCH --mem=" + args.mem + "\n")
-    # Exclusive flag:
-    f.write("SBATCH --exclusive\n")
-    f.write("SBATCH --time=" + args.time + ":10:00" + "\n")
-    f.write("SBATCH --mail-type=" + args.mail_type + "\n")
-    f.write("SBATCH --mail-user=" + args.mail_user + "\n\n")
-
-    f.write("echo '========= Job started  at `date` =========='\n\n")
-
-    f.write("cd $SLURM_SUBMIT_DIR\n\n")
+      # Generate batch script:
+      if (encoding == "UG"):
+        f = open("run_UG_"+ domain_name + ".sh", "w")
+      elif (encoding == "SAT"):
+        f = open("run_SAT_"+ domain_name + ".sh", "w")
 
 
+      f.write("#!/bin/bash\n")
+      f.write("SBATCH --partition=" + args.partition + "\n")
+      f.write("SBATCH --nodes=" + args.nodes + "\n")
+      f.write("SBATCH --mem=" + args.mem + "\n")
+      # Exclusive flag:
+      f.write("SBATCH --exclusive\n")
+      f.write("SBATCH --time=" + args.time + ":10:00" + "\n")
+      f.write("SBATCH --mail-type=" + args.mail_type + "\n")
+      f.write("SBATCH --mail-user=" + args.mail_user + "\n\n")
 
-    if (encoding == 'UG'):
-      f.write("time python3 main.py --dir " + competition_domain_path + domain + " --run_benchmarks 1 --preprocessing 1 --parameters_overlap 1 --time_limit 5 > out_UG_" + domain_name + "\n")
+      f.write("echo '========= Job started  at `date` =========='\n\n")
 
-    f.write("\necho '========= Job finished at `date` =========='\n")
-    f.close()
+      f.write("cd $SLURM_SUBMIT_DIR\n\n")
 
-    command = 'sbatch ' + "run_UG_"+ domain_name + ".sh"
-    os.popen(command)
+
+
+      if (encoding == 'UG'):
+        f.write("time python3 main.py --dir " + competition_domain_path + domain + " --run_benchmarks 1 --preprocessing 1 --parameters_overlap 1 --time_limit 5 > out_UG_" + domain_name + "\n")
+        command = 'sbatch ' + "run_UG_"+ domain_name + ".sh"
+      elif(encoding == 'SAT'):
+        f.write("time python3 main.py --dir " + competition_domain_path + domain + " --run_benchmarks 1 -e SAT --time_limit 5 > out_SAT_" + domain_name + "\n")
+        command = 'sbatch ' + "run_SAT_"+ domain_name + ".sh"
+
+      f.write("\necho '========= Job finished at `date` =========='\n")
+      f.close()
+
+
+      print(command)
+      #os.popen(command)
