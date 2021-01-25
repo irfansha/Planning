@@ -14,7 +14,7 @@ class RunSolver():
       self.run_caqe(self.input_file_path)
       if not self.timed_out:
         self.parse_caqe_output()
-        if (self.preprocessing != 0 and self.sat != 0 and self.plan_extract == 2):
+        if (self.preprocessing == 1 and self.sat != 0 and self.plan_extract == 2):
           self.generate_encoding_with_solution()
           self.run_caqe(self.preprocessed_extraction_file)
           self.parse_caqe_output()
@@ -41,7 +41,11 @@ class RunSolver():
       print("Time out after " + str(self.time_limit)+ " seconds.")
 
   def run_caqe(self, input_file_path):
-    command = self.solver_path + " --qdo --dependency-schemes " + str(self.dependency_schemes) + " " + input_file_path + " > " + self.output_file_path
+    if (self.preprocessing == 2):
+      assert(self.plan_extract != 2)
+      command = self.solver_path + " --preprocessor bloqqer " + input_file_path + " > " + self.output_file_path
+    else:
+      command = self.solver_path + " --qdo --dependency-schemes " + str(self.dependency_schemes) + " " + input_file_path + " > " + self.output_file_path
     try:
       subprocess.run([command], shell = True, timeout=self.time_limit)
     except subprocess.TimeoutExpired:
@@ -164,6 +168,9 @@ class RunSolver():
     if ('c Unsatisfiable' in early_result):
       self.sat = 0
       return
+    elif ('c Satisfiable' in early_result and self.plan_extract == 1):
+      self.sat = 1
+      return
     result = lines.pop().strip("\n")
     if (result != 'c Unsatisfiable'):
       self.sat = 1
@@ -222,7 +229,7 @@ class RunSolver():
           self.sol_map[-int(literal)] = -1
 
   def __init__(self, args):
-    if (args.preprocessing == 0):
+    if (args.preprocessing != 1):
       self.input_file_path = args.encoding_out
     else:
       self.input_file_path = args.preprocessed_encoding_out

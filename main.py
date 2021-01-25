@@ -83,7 +83,8 @@ if __name__ == '__main__':
   parser.add_argument("--preprocessing", type = int, help=textwrap.dedent('''
                                        Preprocessing:
                                        0 = off
-                                       1 = bloqqer (version 37)'''),default = 0)
+                                       1 = bloqqer (version 37)
+                                       2 = bloqqer-internal caqe (version 37)'''),default = 0)
   parser.add_argument("--dependency_schemes",type =int, help="[0/1]enables dependency schemes if avaliable in solver", default=0)
   parser.add_argument("--preprocessed_encoding_out", help="File path to preprocessed encoding file", default = "preprocessed_encoding")
   parser.add_argument("--preprocessing_time_limit", type=int, help="Time limit in seconds, default 900 seconds",default = 900)
@@ -124,7 +125,7 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------
 
     # Preprocessing:
-    if (args.preprocessing != 0):
+    if (args.preprocessing == 1):
       # Hanlding, if preprocessor runs out of time:
       args.preprocessing = pre.preprocess(args)
 

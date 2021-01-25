@@ -18,6 +18,8 @@ def run_bloqqer(args):
 def preprocess(args):
     if (args.preprocessing == 1):
         return (run_bloqqer(args))
+    elif (args.preprocessing == 2):
+        print("Internal preprocessing, bloqqer done")
     else:
         print("Work in progress for other preprocessors.")
         return 0
