@@ -60,6 +60,7 @@ if __name__ == '__main__':
         command = 'sbatch ' + "run_SAT_"+ domain_name + ".sh"
 
       f.write("\necho '========= Job finished at `date` =========='\n")
+      f.write("\nrm ./intermediate_files/* \n")
       f.close()
 
 
