@@ -16,7 +16,7 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   competition_domains = ["IPC2/Blocks/", "IPC2/Elevator/", "IPC3/DriverLog/",
-                         "IPC3/ZenoTravel/" , "IPC4/Satellite/", "IPC5/Rovers/"]
+                         "IPC3/ZenoTravel/" , "IPC4/SATELLITE/", "IPC5/rovers/"]
 
   competition_domain_path = "./competition_benchmarks/"
 
