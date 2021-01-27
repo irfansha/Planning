@@ -40,9 +40,9 @@ def run_instance(domain_filepath, problem_filepath, args):
     print("---------------------------------------------------------------------------------------------")
     print("Running " + problem_filepath)
     print("---------------------------------------------------------------------------------------------")
-    k = 4
+    k = 0
     while(1):
-      k = k * 2
+      k = k + 5
       # domain and problem files are new:
       command_arguments = gen_new_arguments(domain_filepath, problem_filepath, k, args)
       # command = 'python3 main.py -d ' + domain_filepath + ' -p ' + problem_filepath + ' -e ' + args.e + ' --run ' + str(args.run) + ' -k ' + str(k) + ' --testing ' + str(args.testing) + ' --verbosity_level 0 --time_limit ' + str(args.time_limit) + ' --preprocessing ' + str(args.preprocessing) + ' --parameters_overlap ' + str(args.parameters_overlap) + ' --solver_type ' + str(args.solver_type)
