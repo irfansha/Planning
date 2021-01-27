@@ -37,14 +37,14 @@ if __name__ == '__main__':
 
 
       f.write("#!/bin/bash\n")
-      f.write("SBATCH --partition=" + args.partition + "\n")
-      f.write("SBATCH --nodes=" + args.nodes + "\n")
-      f.write("SBATCH --mem=" + args.mem + "\n")
+      f.write("#SBATCH --partition=" + args.partition + "\n")
+      f.write("#SBATCH --nodes=" + args.nodes + "\n")
+      f.write("#SBATCH --mem=" + args.mem + "\n")
       # Exclusive flag:
-      f.write("SBATCH --exclusive\n")
-      f.write("SBATCH --time=" + args.time + ":00:00" + "\n")
-      f.write("SBATCH --mail-type=" + args.mail_type + "\n")
-      f.write("SBATCH --mail-user=" + args.mail_user + "\n\n")
+      f.write("#SBATCH --exclusive\n")
+      f.write("#SBATCH --time=" + args.time + ":00:00" + "\n")
+      f.write("#SBATCH --mail-type=" + args.mail_type + "\n")
+      f.write("#SBATCH --mail-user=" + args.mail_user + "\n\n")
 
       f.write("echo '========= Job started  at `date` =========='\n\n")
 
