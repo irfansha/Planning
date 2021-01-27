@@ -52,7 +52,7 @@ class EncodingGen():
         print("QCIR Encoding generated")
 
     if (args.encoding_type == 2):
-      temp_file_path = './intermediate_qcir_encoding.qcir'
+      temp_file_path = './intermediate_qcir_' + args.encoding_out + '.qcir'
       self.encoding.print_encoding_tofile(temp_file_path)
       if (args.verbosity_level != 0):
         print("Intermediate QCIR Encoding generated")

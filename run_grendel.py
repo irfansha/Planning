@@ -42,7 +42,7 @@ if __name__ == '__main__':
       f.write("SBATCH --mem=" + args.mem + "\n")
       # Exclusive flag:
       f.write("SBATCH --exclusive\n")
-      f.write("SBATCH --time=" + args.time + ":10:00" + "\n")
+      f.write("SBATCH --time=" + args.time + ":00:00" + "\n")
       f.write("SBATCH --mail-type=" + args.mail_type + "\n")
       f.write("SBATCH --mail-user=" + args.mail_user + "\n\n")
 
@@ -50,13 +50,13 @@ if __name__ == '__main__':
 
       f.write("cd $SLURM_SUBMIT_DIR\n\n")
 
-
+      default_file_names = ' --encoding_out /scratch/encoding_$SLURM_JOB_ID --solver_out /scratch/solver_out_$SLURM_JOB_ID --preprocessed_encoding_out /scratch/preprocessed_$SLURM_JOB_ID --plan_out /scratch/plan_$SLURM_JOB_ID'
 
       if (encoding == 'UG'):
-        f.write("time python3 main.py --dir " + competition_domain_path + domain + " --run_benchmarks 1 --preprocessing 1 --parameters_overlap 1 --time_limit 5 > out_UG_" + domain_name + "\n")
+        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --run_benchmarks 1 --time_limit 5 > out_UG_" + domain_name + "_$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_UG_"+ domain_name + ".sh"
       elif(encoding == 'SAT'):
-        f.write("time python3 main.py --dir " + competition_domain_path + domain + " --run_benchmarks 1 -e SAT --time_limit 5 --solver_type 4 > out_SAT_" + domain_name + "\n")
+        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --run_benchmarks 1 -e SAT --time_limit 5 --solver_type 4 > out_SAT_" + domain_name + "$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_SAT_"+ domain_name + ".sh"
 
       f.write("\necho '========= Job finished at `date` =========='\n")
