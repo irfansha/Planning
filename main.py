@@ -59,6 +59,7 @@ if __name__ == '__main__':
   parser.add_argument("--splitvars", type=int, help="Turn split forall vars on: [0 = No 1 = Yes]",default = 0)
   parser.add_argument("--parameters_overlap", type=int, help="Turn reusing parameter vars for actions on: [0 = No 1 = Yes]",default = 0)
   parser.add_argument("--encoding_out", help="output encoding file",default = 'encoding')
+  parser.add_argument("--encoding_intermediate_out", help="output encoding file",default = 'intermediate_encoding')
   parser.add_argument("--encoding_type", type=int, help="Encoding type: [1 = QCIR14 2 = QDIMACS]",default = 2)
   parser.add_argument("--solver_out", help="solver output file",default = 'solver_output.txt')
   parser.add_argument("--solver_type", type=int, help=textwrap.dedent('''
