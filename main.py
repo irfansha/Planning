@@ -68,7 +68,8 @@ if __name__ == '__main__':
                                        1 = quabs
                                        2 = caqe
                                        3 = dep-qbf
-                                       4 = minisat'''),default = 2)
+                                       4 = minisat
+                                       5 = cryptominisat'''),default = 2)
   parser.add_argument("--verbosity_level", type=int, help=textwrap.dedent('''
                                Levels of verbosity:
                                0 = For testing, states if plan is correct.
