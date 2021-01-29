@@ -90,14 +90,11 @@ class RunSolver():
 
     # replacing lines without beginning e:
     assert("e " == lines[1][:2])
-    lines[1] = lines[1][2:-1]
     assert("e " == lines[2][:2])
-    lines[2] = lines[2][2:]
-    lines[1] = lines[1]+lines[2]
 
     f = open(self.input_file_path, 'w')
     for i in range(len(lines)):
-      if (i != 2):
+      if (i != 2 and i!= 1):
         f.write(lines[i])
     f.close()
 
