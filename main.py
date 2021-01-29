@@ -27,6 +27,7 @@ import run_tests as rt
 import run_benchmarks as rb
 import preprocess  as pre
 import time
+import os
 
 # Main:
 if __name__ == '__main__':
@@ -138,6 +139,13 @@ if __name__ == '__main__':
       run_qs.run()
       solving_time = time.perf_counter() - start_run_time
       print("Solving time: " + str(solving_time))
+      # ------------------------------------------------------------------------------------------------------
+
+      # ------------------------------------- Printing memory stats of encodings -----------------------------
+      print("Encoding size (in KB): " + str(os.path.getsize(args.encoding_out)/1000))
+      if (args.preprocessing == 1):
+        print("Preprocessed encoding size (in KB): " + str(os.path.getsize(args.preprocessed_encoding_out)/1000))
+
       # ------------------------------------------------------------------------------------------------------
       if run_qs.timed_out:
         exit()
