@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
   competition_domain_path = "./competition_benchmarks/"
 
-  encodings = ["UG", "SAT"]
+  encodings = ["UG"]
 
 
   for encoding in encodings:
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
       # Generate batch script:
       if (encoding == "UG"):
-        f = open("run_UG_"+ domain_name + ".sh", "w")
+        f = open("run_UG_po_pre_"+ domain_name + ".sh", "w")
       elif (encoding == "SAT"):
         f = open("run_SAT_"+ domain_name + ".sh", "w")
 
@@ -50,19 +50,19 @@ if __name__ == '__main__':
 
       f.write("cd $SLURM_SUBMIT_DIR\n\n")
 
-      default_file_names = ' --encoding_out ./intermediate_files/encoding_$SLURM_JOB_ID --solver_out ./intermediate_files/solver_out_$SLURM_JOB_ID --preprocessed_encoding_out ./intermediate_files/preprocessed_$SLURM_JOB_ID --plan_out ./intermediate_files/plan_$SLURM_JOB_ID --encoding_intermediate_out ./intermediate_files/intermediate_$SLURM_JOB_ID '
+      default_file_names = ' --encoding_out /scratch/$SLURM_JOB_ID/encoding_$SLURM_JOB_ID --solver_out /scratch/$SLURM_JOB_ID/solver_out_$SLURM_JOB_ID --preprocessed_encoding_out /scratch/$SLURM_JOB_ID/preprocessed_$SLURM_JOB_ID --plan_out /scratch/$SLURM_JOB_ID/plan_$SLURM_JOB_ID --encoding_intermediate_out /scratch/$SLURM_JOB_ID/intermediate_$SLURM_JOB_ID '
 
       if (encoding == 'UG'):
-        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --run_benchmarks 1 --time_limit 5 > out_UG_" + domain_name + "_$SLURM_JOB_ID\n")
-        command = 'sbatch ' + "run_UG_"+ domain_name + ".sh"
+        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --preprocessing 1 --run 1 --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > out_UG_po_pre_" + domain_name + "_$SLURM_JOB_ID\n")
+        command = 'sbatch ' + "run_UG_po_pre_"+ domain_name + ".sh"
       elif(encoding == 'SAT'):
-        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --run_benchmarks 1 -e SAT --time_limit 5 --solver_type 4 > out_SAT_" + domain_name + "$SLURM_JOB_ID\n")
+        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --run_benchmarks 1 -e SAT --solver_type 5 --time_limit 5000 > out_SAT_" + domain_name + "$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_SAT_"+ domain_name + ".sh"
 
       f.write("\necho '========= Job finished at `date` =========='\n")
-      f.write("\nrm ./intermediate_files/* \n")
+      #f.write("\nrm ./intermediate_files/* \n")
       f.close()
 
 
-      print(command)
-      #os.popen(command)
+      #print(command)
+      os.popen(command)
