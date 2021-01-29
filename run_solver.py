@@ -181,6 +181,7 @@ class RunSolver():
       self.sat = 1
       return
     result = lines.pop().strip("\n")
+    # XXX improve extracting the existence of plan:
     if (result != 'c Unsatisfiable'):
       self.sat = 1
       if (self.plan_extract == 1):
