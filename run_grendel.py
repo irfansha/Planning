@@ -11,7 +11,7 @@ if __name__ == '__main__':
   parser.add_argument("--nodes", help="no of nodes", default = '1')
   parser.add_argument("--mem", help="mem in GB, default 0 i.e. all of it", default = '0')
   parser.add_argument("--time", help="estimated time in hours", default = '24')
-  parser.add_argument("--mail_type", help="mail type", default = 'ALL')
+  parser.add_argument("--mail_type", help="mail type", default = 'END')
   parser.add_argument("--mail_user", help="mail", default = 'irfansha.shaik@cs.au.dk')
   args = parser.parse_args()
 
@@ -20,10 +20,11 @@ if __name__ == '__main__':
 
   competition_domain_path = "./competition_benchmarks/"
 
-  encodings = ["UG"]
+  encoding_variants = ["UG", "UG_po", "UG_po_pre", "SAT"]
 
 
-  for encoding in encodings:
+
+  for encoding in encoding_variants:
     for domain in competition_domains:
 
       competition_domain = domain.split("/")
@@ -31,6 +32,10 @@ if __name__ == '__main__':
 
       # Generate batch script:
       if (encoding == "UG"):
+        f = open("run_UG_"+ domain_name + ".sh", "w")
+      elif (encoding == "UG_po"):
+        f = open("run_UG_po_"+ domain_name + ".sh", "w")
+      elif (encoding == "UG_po_pre"):
         f = open("run_UG_po_pre_"+ domain_name + ".sh", "w")
       elif (encoding == "SAT"):
         f = open("run_SAT_"+ domain_name + ".sh", "w")
@@ -52,7 +57,14 @@ if __name__ == '__main__':
 
       default_file_names = ' --encoding_out /scratch/$SLURM_JOB_ID/encoding_$SLURM_JOB_ID --solver_out /scratch/$SLURM_JOB_ID/solver_out_$SLURM_JOB_ID --preprocessed_encoding_out /scratch/$SLURM_JOB_ID/preprocessed_$SLURM_JOB_ID --plan_out /scratch/$SLURM_JOB_ID/plan_$SLURM_JOB_ID --encoding_intermediate_out /scratch/$SLURM_JOB_ID/intermediate_$SLURM_JOB_ID '
 
-      if (encoding == 'UG'):
+
+      if(encoding == 'UG'):
+        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --run_benchmarks 1 --time_limit 5000 > out_UG_" + domain_name + "_$SLURM_JOB_ID\n")
+        command = 'sbatch ' + "run_UG_"+ domain_name + ".sh"
+      elif(encoding == 'UG_po'):
+        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > out_UG_" + domain_name + "_$SLURM_JOB_ID\n")
+        command = 'sbatch ' + "run_UG_po_"+ domain_name + ".sh"
+      elif(encoding == 'UG_po_pre'):
         f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --preprocessing 1 --run 1 --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > out_UG_po_pre_" + domain_name + "_$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_UG_po_pre_"+ domain_name + ".sh"
       elif(encoding == 'SAT'):
@@ -64,5 +76,5 @@ if __name__ == '__main__':
       f.close()
 
 
-      #print(command)
-      os.popen(command)
+      print(command)
+      #os.popen(command)
