@@ -172,6 +172,11 @@ class RunSolver():
   def parse_caqe_output(self):
     f = open(self.output_file_path, 'r')
     lines = f.readlines()
+    # Printing the data to the output for correctness purposes:
+    for line in lines:
+      if (line != '\n' and 'V' not in line):
+        nline = line.strip("\n")
+        print(nline)
     lines.pop(0)
     early_result = lines.pop(0)
     if ('c Unsatisfiable' in early_result):
