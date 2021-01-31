@@ -50,7 +50,7 @@ def run_instance(domain_filepath, problem_filepath, args):
       plan_status = os.popen(command).read()
       ls = plan_status.strip("\n").split("\n")
       for line in ls:
-        if ("Encoding time" in line or "Solving time" in line or 'Preprocessing' in line or "Namespace" in line or ": (" in line or "c " == line[0:2] or "s " == line[0:2]):
+        if ("Encoding time" in line or "Solving time" in line or 'Preprocessing' in line or "Namespace" in line or ": (" in line or "c " == line[0:2] or "s " == line[0:2] or "size (in KB)" in line):
           print(line)
       if ("Plan found" in plan_status):
           print("Plan found for length: " + str(k))
