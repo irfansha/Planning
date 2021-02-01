@@ -15,8 +15,9 @@ if __name__ == '__main__':
   parser.add_argument("--mail_user", help="mail", default = 'irfansha.shaik@cs.au.dk')
   args = parser.parse_args()
 
-  competition_domains = ["IPC2/Blocks/", "IPC2/Elevator/", "IPC3/DriverLog/",
-                         "IPC3/ZenoTravel/" , "IPC4/SATELLITE/", "IPC5/rovers/"]
+  competition_domains = ["IPC2/Blocks/", "IPC2/Elevator/", "IPC2/FreeCell/",
+                         "IPC3/DriverLog/", "IPC3/ZenoTravel/" , "IPC4/SATELLITE/",
+                         "IPC5/rovers/", "IPC8/Thoughtful/", "IPC8/Visitall/", "IPC9/termes/"]
 
   competition_domain_path = "./competition_benchmarks/"
 
