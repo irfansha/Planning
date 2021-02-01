@@ -136,7 +136,7 @@ if __name__ == '__main__':
       run_qs = qs(args)
       # --------------------------------------- Timing the solver run ----------------------------------------
       start_run_time = time.perf_counter()
-      run_qs.run()
+      run_qs.runsolver()
       solving_time = time.perf_counter() - start_run_time
       print("Solving time: " + str(solving_time))
       # ------------------------------------------------------------------------------------------------------
@@ -149,6 +149,7 @@ if __name__ == '__main__':
       # ------------------------------------------------------------------------------------------------------
       if run_qs.timed_out:
         exit()
+      assert(run_qs.sat != -1)
       if run_qs.sat:
         print("Plan found")
         if (args.run == 2):

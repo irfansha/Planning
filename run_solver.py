@@ -5,7 +5,7 @@ import subprocess
 
 class RunSolver():
 
-  def run(self):
+  def runsolver(self):
     if (self.solver_type == 1):
       self.run_quabs()
       if not self.timed_out:
@@ -14,7 +14,7 @@ class RunSolver():
       self.run_caqe(self.input_file_path)
       if not self.timed_out:
         self.parse_caqe_output()
-        if (self.preprocessing == 1 and self.sat != 0 and self.plan_extract == 2):
+        if (self.preprocessing == 1 and self.sat != 0 and self.run == 2):
           self.generate_encoding_with_solution()
           self.run_caqe(self.preprocessed_extraction_file)
           self.parse_caqe_output()
@@ -47,7 +47,7 @@ class RunSolver():
 
   def run_caqe(self, input_file_path):
     if (self.preprocessing == 2):
-      assert(self.plan_extract != 2)
+      assert(self.run != 2)
       command = self.solver_path + " --preprocessor bloqqer " + input_file_path + " > " + self.output_file_path
     else:
       command = self.solver_path + " --qdo --dependency-schemes " + str(self.dependency_schemes) + " " + input_file_path + " > " + self.output_file_path
@@ -174,24 +174,22 @@ class RunSolver():
     lines = f.readlines()
     # Printing the data to the output for correctness purposes:
     for line in lines:
-      if (line != '\n' and 'V' not in line):
+      #if (line != '\n' and 'V' not in line):
+      # printing the whole solver output for correctness purposes:
+      if (line != '\n'):
         nline = line.strip("\n")
         print(nline)
-    lines.pop(0)
-    early_result = lines.pop(0)
-    if ('c Unsatisfiable' in early_result):
-      self.sat = 0
-      return
-    elif ('c Satisfiable' in early_result and self.plan_extract == 1):
-      self.sat = 1
-      return
-    result = lines.pop().strip("\n")
-    # XXX improve extracting the existence of plan:
-    if (result != 'c Unsatisfiable'):
-      self.sat = 1
-      if (self.plan_extract == 1):
+
+    for line in lines:
+      if ('c Unsatisfiable' in line):
+        self.sat = 0
         return
-      for line in lines:
+
+    self.sat = 1
+    if (self.run == 1):
+      return
+    for line in lines:
+      if ('V' in line):
         temp = line.split(" ")
         if (temp != ['\n']):
           literal = temp[1]
@@ -199,8 +197,6 @@ class RunSolver():
             self.sol_map[int(literal)] = 1
           else:
             self.sol_map[-int(literal)] = -1
-    else:
-      self.sat = 0
 
   # parsing the caqe solver output:
   def parse_depqbf_output(self):
@@ -213,7 +209,7 @@ class RunSolver():
       return
     else:
       self.sat = 1
-      if (self.plan_extract == 1):
+      if (self.run == 1):
         return
       for line in lines:
         temp = line.split(" ")
@@ -273,7 +269,7 @@ class RunSolver():
     self.output_file_path = args.solver_out
     self.solver_type = args.solver_type
     self.time_limit = args.time_limit
-    self.plan_extract = args.run
+    self.run = args.run
     self.preprocessing = args.preprocessing
     self.dependency_schemes = args.dependency_schemes
     # By default timeout not occured yet:
