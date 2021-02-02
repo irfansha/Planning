@@ -56,6 +56,8 @@ class RunSolver():
     except subprocess.TimeoutExpired:
       self.timed_out = True
       print("Time out after " + str(self.time_limit)+ " seconds.")
+    except subprocess.CalledProcessError as e:
+      print("Error from solver :", e.output)
 
   def run_depqbf(self):
     command = self.solver_path + " --qdo --no-dynamic-nenofex " + self.input_file_path + " > " + self.output_file_path
