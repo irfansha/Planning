@@ -35,11 +35,11 @@ def gen_new_arguments(domain, problem, k, args, file_name):
     elif( arg == "solver_out"):
       new_command = new_command + ' --solver_out ' + args.solver_out + "_" + file_name + "_" + str(k)
     elif(arg == "preprocessed_encoding_out"):
-      new_command = new_command + ' --preprocessed_encoding_out ' + args.solver_out + "_" + file_name + "_" + str(k)
+      new_command = new_command + ' --preprocessed_encoding_out ' + args.preprocessed_encoding_out + "_" + file_name + "_" + str(k)
     elif(arg == "plan_out"):
-      new_command = new_command + ' --plan_out ' + args.solver_out + "_" + file_name + "_" + str(k)
+      new_command = new_command + ' --plan_out ' + args.plan_out + "_" + file_name + "_" + str(k)
     elif(arg == "encoding_intermediate_out"):
-      new_command = new_command + ' --encoding_intermediate_out ' + args.solver_out + "_" + file_name + "_" + str(k)
+      new_command = new_command + ' --encoding_intermediate_out ' + args.encoding_intermediate_out + "_" + file_name + "_" + str(k)
     elif (len(arg) == 1):
       new_command += ' -' + str(arg) + ' ' + str(getattr(args, arg))
     else:
