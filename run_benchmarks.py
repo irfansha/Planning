@@ -14,7 +14,7 @@ def atoi(text):
 def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
-def gen_new_arguments(domain, problem, k, args):
+def gen_new_arguments(domain, problem, k, args, file_name):
   new_command = ''
   for arg in vars(args):
     # We set these separately:
@@ -30,6 +30,16 @@ def gen_new_arguments(domain, problem, k, args):
       new_command += ' --verbosity_level 0'
     elif( arg == "run_benchmarks"):
       new_command += ' --run_benchmarks 0'
+    elif( arg == "encoding_out"):
+      new_command =  new_command + ' --encoding_out ' + args.encoding_out + "_" + file_name + "_" + str(k)
+    elif( arg == "solver_out"):
+      new_command = new_command + ' --solver_out ' + args.solver_out + "_" + file_name + "_" + str(k)
+    elif(arg == "preprocessed_encoding_out"):
+      new_command = new_command + ' --preprocessed_encoding_out ' + args.solver_out + "_" + file_name + "_" + str(k)
+    elif(arg == "plan_out"):
+      new_command = new_command + ' --plan_out ' + args.solver_out + "_" + file_name + "_" + str(k)
+    elif(arg == "encoding_intermediate_out"):
+      new_command = new_command + ' --encoding_intermediate_out ' + args.solver_out + "_" + file_name + "_" + str(k)
     elif (len(arg) == 1):
       new_command += ' -' + str(arg) + ' ' + str(getattr(args, arg))
     else:
@@ -43,8 +53,12 @@ def run_instance(domain_filepath, problem_filepath, args):
     k = 0
     while(1):
       k = k + 5
+      # Assuming linux system:
+      problem_name = problem_filepath.split("/")
+      file_name = problem_name[-1]
+      file_name = file_name.strip(".pddl")
       # domain and problem files are new:
-      command_arguments = gen_new_arguments(domain_filepath, problem_filepath, k, args)
+      command_arguments = gen_new_arguments(domain_filepath, problem_filepath, k, args, file_name)
       # command = 'python3 main.py -d ' + domain_filepath + ' -p ' + problem_filepath + ' -e ' + args.e + ' --run ' + str(args.run) + ' -k ' + str(k) + ' --testing ' + str(args.testing) + ' --verbosity_level 0 --time_limit ' + str(args.time_limit) + ' --preprocessing ' + str(args.preprocessing) + ' --parameters_overlap ' + str(args.parameters_overlap) + ' --solver_type ' + str(args.solver_type)
       command = 'python3 main.py ' + command_arguments
       plan_status = os.popen(command).read()
