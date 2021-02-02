@@ -52,7 +52,7 @@ class RunSolver():
     else:
       command = self.solver_path + " --qdo --dependency-schemes " + str(self.dependency_schemes) + " " + input_file_path + " > " + self.output_file_path
     try:
-      subprocess.run([command], shell = True, timeout=self.time_limit)
+      subprocess.run([command], shell = True, check=True, timeout=self.time_limit)
     except subprocess.TimeoutExpired:
       self.timed_out = True
       print("Time out after " + str(self.time_limit)+ " seconds.")
