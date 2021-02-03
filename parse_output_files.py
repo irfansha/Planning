@@ -45,7 +45,7 @@ def parse_file(file_path, output_dir):
         if (time_out_flag == 0):
           f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " " + str(solving_time) + "\n")
         else:
-          f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " TO \n")
+          f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " TO\n")
       else:
         f_out.write("Testcase k encoding_time solving_time\n")
       encoding_time = 0
@@ -74,7 +74,7 @@ def parse_file(file_path, output_dir):
   if (time_out_flag == 0):
     f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " " + str(solving_time) + "\n")
   else:
-    f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " TO \n")
+    f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " TO\n")
 
 
 # Main:
