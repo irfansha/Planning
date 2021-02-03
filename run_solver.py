@@ -68,6 +68,8 @@ class RunSolver():
     except subprocess.TimeoutExpired:
       self.timed_out = True
       print("Time out after " + str(self.time_limit)+ " seconds.")
+    except subprocess.CalledProcessError as e:
+      print("Error from solver :", e, e.output)
 
   def run_minisat(self):
     command = self.solver_path + " " + self.input_file_path + " " + self.output_file_path
@@ -76,6 +78,8 @@ class RunSolver():
     except subprocess.TimeoutExpired:
       self.timed_out = True
       print("Time out after " + str(self.time_limit)+ " seconds.")
+    except subprocess.CalledProcessError as e:
+      print("Error from solver :", e, e.output)
 
   def run_cryptominisat(self):
     command = self.solver_path + " --verb 0 --maxtime " + str(self.time_limit) + " " + self.input_file_path + " > " + self.output_file_path
@@ -84,7 +88,8 @@ class RunSolver():
     except subprocess.TimeoutExpired:
       self.timed_out = True
       print("Time out after " + str(self.time_limit)+ " seconds.")
-
+    except subprocess.CalledProcessError as e:
+      print("Error from solver :", e, e.output)
 
 
   def change_to_dimacs(self):
@@ -249,9 +254,10 @@ class RunSolver():
     f = open(self.output_file_path, 'r')
     lines = f.readlines()
     header = lines.pop(0)
+    print(header)
     if (header == "s UNSATISFIABLE\n"):
       self.sat = 0
-    else:
+    elif (header == "s SATISFIABLE\n"):
       self.sat = 1
       for line in lines:
         vars = line.strip("\n").split(" ")
