@@ -13,13 +13,17 @@ if __name__ == '__main__':
   parser.add_argument("--time", help="estimated time in hours", default = '24')
   parser.add_argument("--mail_type", help="mail type", default = 'END')
   parser.add_argument("--mail_user", help="mail", default = 'irfansha.shaik@cs.au.dk')
+  parser.add_argument("--only_testing", type =int, help=" only for testing purposes", default = 0)
   args = parser.parse_args()
 
-  competition_domains = ["IPC2/Blocks/", "IPC2/Elevator/", "IPC2/FreeCell/",
-                         "IPC3/DriverLog/", "IPC3/ZenoTravel/" , "IPC4/SATELLITE/",
-                         "IPC5/rovers/", "IPC8/Thoughtful/", "IPC8/Visitall/", "IPC9/termes/"]
+  if (args.only_testing == 0):
+    competition_domains = ["IPC2/Blocks/", "IPC2/Elevator/", "IPC3/DriverLog/",
+                           "IPC3/ZenoTravel/" , "IPC4/SATELLITE/", "IPC5/rovers/"]
 
-  competition_domain_path = "./competition_benchmarks/"
+    competition_domain_path = "./competition_benchmarks/"
+  else:
+    competition_domains = ["DriverLog/"]
+    competition_domain_path = "./test_benchmarks/"
 
   encoding_variants = ["UG", "UG_po", "UG_po_pre", "SAT"]
 
@@ -29,7 +33,7 @@ if __name__ == '__main__':
     for domain in competition_domains:
 
       competition_domain = domain.split("/")
-      domain_name = competition_domain[1]
+      domain_name = competition_domain[-2]
 
       # Generate batch script:
       if (encoding == "UG"):
