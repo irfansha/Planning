@@ -17,8 +17,11 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   if (args.only_testing == 0):
-    competition_domains = ["IPC2/Blocks/", "IPC2/Elevator/", "IPC3/DriverLog/",
-                           "IPC3/ZenoTravel/" , "IPC4/SATELLITE/", "IPC5/rovers/"]
+    #competition_domains = ["IPC2/Blocks/", "IPC2/Elevator/", "IPC3/DriverLog/",
+    #                       "IPC3/ZenoTravel/" , "IPC4/SATELLITE/", "IPC5/rovers/"]
+
+    # Rest of the typed domains:
+    competition_domains = ["IPC2/FreeCell/", "IPC8/Thoughtful/", "IPC9/termes/"]
 
     competition_domain_path = "./competition_benchmarks/"
   else:
