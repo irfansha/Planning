@@ -67,7 +67,7 @@ if __name__ == '__main__':
         f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --run_benchmarks 1 --time_limit 5000 > out_UG_" + domain_name + "_$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_UG_"+ domain_name + ".sh"
       elif(encoding == 'UG_po'):
-        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > out_UG_" + domain_name + "_$SLURM_JOB_ID\n")
+        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > out_UG_po_" + domain_name + "_$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_UG_po_"+ domain_name + ".sh"
       elif(encoding == 'UG_po_pre'):
         f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --preprocessing 1 --run 1 --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > out_UG_po_pre_" + domain_name + "_$SLURM_JOB_ID\n")
