@@ -14,6 +14,8 @@ class RunSolver():
       self.run_caqe(self.input_file_path)
       if not self.timed_out:
         self.parse_caqe_output()
+        if (self.sat == -1):
+          return
         if (self.preprocessing == 1 and self.sat != 0 and self.run == 2):
           self.generate_encoding_with_solution()
           self.run_caqe(self.preprocessed_extraction_file)
@@ -290,4 +292,4 @@ class RunSolver():
       self.solver_path = './solvers/sat/cryptominisat5'
 
     self.sol_map = {}
-    self.sat = 0 # by default plan not found.
+    self.sat = -1 # by default plan not found.

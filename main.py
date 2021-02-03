@@ -149,6 +149,9 @@ if __name__ == '__main__':
       # ------------------------------------------------------------------------------------------------------
       if run_qs.timed_out:
         exit()
+      if run_qs.sat == -1:
+        print("Memory out occurred\n")
+        exit()
       if run_qs.sat:
         print("Plan found")
         if (args.run == 2):

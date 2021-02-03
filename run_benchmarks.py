@@ -78,6 +78,8 @@ def run_instance(domain_filepath, problem_filepath, args):
           if ('Time out' in plan_status):
               print("Time out occured\n")
               return 1
+          elif ('Memory out occurred' in plan_status):
+              return 1
 
 
 # Main:
