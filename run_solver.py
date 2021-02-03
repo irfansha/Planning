@@ -59,7 +59,9 @@ class RunSolver():
       self.timed_out = True
       print("Time out after " + str(self.time_limit)+ " seconds.")
     except subprocess.CalledProcessError as e:
-      print("Error from solver :", e, e.output)
+      # 10, 20 are statuses for SAT and UNSAT:
+      if ("exit status 10" not in str(e) and "exit status 20"  not in str(e)):
+        print("Error from solver :", e, e.output)
 
   def run_depqbf(self):
     command = self.solver_path + " --qdo --no-dynamic-nenofex " + self.input_file_path + " > " + self.output_file_path
