@@ -52,12 +52,12 @@ class RunSolver():
     else:
       command = self.solver_path + " --qdo --dependency-schemes " + str(self.dependency_schemes) + " " + input_file_path + " > " + self.output_file_path
     try:
-      subprocess.run([command], shell = True, check=True, timeout=self.time_limit)
+      subprocess.run([command], shell = True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT ,check=True, timeout=self.time_limit)
     except subprocess.TimeoutExpired:
       self.timed_out = True
       print("Time out after " + str(self.time_limit)+ " seconds.")
     except subprocess.CalledProcessError as e:
-      print("Error from solver :", e.output)
+      print("Error from solver :", e, e.output)
 
   def run_depqbf(self):
     command = self.solver_path + " --qdo --no-dynamic-nenofex " + self.input_file_path + " > " + self.output_file_path
@@ -176,9 +176,7 @@ class RunSolver():
     lines = f.readlines()
     # Printing the data to the output for correctness purposes:
     for line in lines:
-      #if (line != '\n' and 'V' not in line):
-      # printing the whole solver output for correctness purposes:
-      if (line != '\n'):
+      if (line != '\n' and 'V' not in line):
         nline = line.strip("\n")
         print(nline)
 
@@ -187,7 +185,11 @@ class RunSolver():
         self.sat = 0
         return
 
-    self.sat = 1
+    for line in lines:
+      if ('c Satisfiable' in line):
+        self.sat = 1
+        break
+
     if (self.run == 1):
       return
     for line in lines:
@@ -288,4 +290,4 @@ class RunSolver():
       self.solver_path = './solvers/sat/cryptominisat5'
 
     self.sol_map = {}
-    self.sat = -1 # sat value is never -1, either 1 or 0 for sat and unsat
+    self.sat = 0 # by default plan not found.
