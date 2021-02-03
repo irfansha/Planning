@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     competition_domain_path = "./competition_benchmarks/"
   else:
-    competition_domains = ["DriverLog/"]
+    competition_domains = ["visitall-opt11-strips"]
     competition_domain_path = "./test_benchmarks/"
 
   encoding_variants = ["UG", "UG_po", "UG_po_pre", "SAT"]
