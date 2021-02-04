@@ -15,18 +15,26 @@ if __name__ == '__main__':
   parser.add_argument("--mail_type", help="mail type", default = 'END')
   parser.add_argument("--mail_user", help="mail", default = 'irfansha.shaik@cs.au.dk')
   parser.add_argument("--only_testing", type =int, help=" only for testing purposes", default = 0)
+  parser.add_argument("--typed", type =int, help=" typed/untyped domains [1/0] default 1", default = 1)
   parser.add_argument("--output_dir", help="directory path for output files", default = 'out_data/')
   args = parser.parse_args()
 
   if (args.only_testing == 0):
-    typed_domains = ["Blocks/", "DriverLog/", "Elevator/", "FreeCell/",
-                     "rovers/", "SATELLITE/", "termes/", "termes-opt18/",
-                     "Thoughtful/", "tidybot-opt11-strips/", "Visitall/",
-                     "visitall-opt11-strips/", "visitall-sat11-strips/", "ZenoTravel/"]
-    typed_domain_path = "./typed_benchmarks/"
+    if (args.typed == 1):
+      test_domains = ["Blocks/", "DriverLog/", "Elevator/", "FreeCell/",
+                      "rovers/", "SATELLITE/", "termes/", "termes-opt18/",
+                      "Thoughtful/", "tidybot-opt11-strips/", "Visitall/",
+                      "visitall-opt11-strips/", "visitall-sat11-strips/", "ZenoTravel/"]
+      test_domain_path = "./typed_benchmarks/"
+    else:
+      test_domains = ["blocks/", "driverlog/", "grid/", "logistics00/", "mystery/", "rovers-02/", "zenotravel/",
+                      "blocks-3op/", "ferry/", "gripper/", "miconic/", "no-mprime/", "satellite/"
+                      "depot/", "freecell/", "hanoi/", "movie/", "no-mystery/", "tsp/"]
+      test_domain_path = "./untyped_benchmarks/"
+
   else:
-    typed_domains = ["visitall-opt11-strips/"]
-    typed_domain_path = "./test_benchmarks/"
+    test_domains = ["visitall-opt11-strips/"]
+    test_domain_path = "./test_benchmarks/"
 
   encoding_variants = ["UG", "UG_po", "UG_po_pre", "SAT"]
 
@@ -37,10 +45,10 @@ if __name__ == '__main__':
     os.mkdir(args.output_dir)
 
   for encoding in encoding_variants:
-    for domain in typed_domains:
+    for domain in test_domains:
 
-      typed_domain = domain.split("/")
-      domain_name = typed_domain[-2]
+      test_domain = domain.split("/")
+      domain_name = test_domain[-2]
 
       # Generate batch script:
       if (encoding == "UG"):
@@ -71,16 +79,16 @@ if __name__ == '__main__':
 
 
       if(encoding == 'UG'):
-        f.write("time python3 main.py --dir " + typed_domain_path + domain + default_file_names + " --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_" + domain_name + "_$SLURM_JOB_ID\n")
+        f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + " --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_" + domain_name + "_$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_UG_"+ domain_name + ".sh"
       elif(encoding == 'UG_po'):
-        f.write("time python3 main.py --dir " + typed_domain_path + domain + default_file_names + " --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_po_" + domain_name + "_$SLURM_JOB_ID\n")
+        f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + " --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_po_" + domain_name + "_$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_UG_po_"+ domain_name + ".sh"
       elif(encoding == 'UG_po_pre'):
-        f.write("time python3 main.py --dir " + typed_domain_path + domain + default_file_names + " --preprocessing 1 --run 1 --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_po_pre_" + domain_name + "_$SLURM_JOB_ID\n")
+        f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + " --preprocessing 1 --run 1 --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_po_pre_" + domain_name + "_$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_UG_po_pre_"+ domain_name + ".sh"
       elif(encoding == 'SAT'):
-        f.write("time python3 main.py --dir " + typed_domain_path + domain + default_file_names + " --run_benchmarks 1 -e SAT --solver_type 5 --time_limit 5000 > " + args.output_dir + "out_SAT_" + domain_name + "$SLURM_JOB_ID\n")
+        f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + " --run_benchmarks 1 -e SAT --solver_type 5 --time_limit 5000 > " + args.output_dir + "out_SAT_" + domain_name + "$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_SAT_"+ domain_name + ".sh"
 
       f.write("\necho '========= Job finished at `date` =========='\n")
