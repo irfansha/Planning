@@ -57,10 +57,12 @@ if __name__ == '__main__':
   # [e, parameters_overlap, preprocessing, solver_type, t]
   sat_options = ['SAT', '0', '0', '5', 'b']
   UG_options = ['UE', '0', '0', '2', 'b']
+  UG_po_options = ['UE', '1', '0', '2', 'b']
   UG_po_pre_options = ['UE', '1', '1', '2', 'b']
 
   sat_solving_times = []
   UG_solving_times = []
+  UG_po_solving_times = []
   UG_po_pre_solving_times = []
 
 
@@ -81,6 +83,7 @@ if __name__ == '__main__':
   for file_path in files_list:
     sat_solving_times.extend(parse_file(file_path, args.output_dir, sat_options))
     UG_solving_times.extend(parse_file(file_path, args.output_dir, UG_options))
+    UG_po_solving_times.extend(parse_file(file_path, args.output_dir, UG_po_options))
     UG_po_pre_solving_times.extend(parse_file(file_path, args.output_dir, UG_po_pre_options))
 
 
@@ -108,6 +111,19 @@ if __name__ == '__main__':
     count += value
     UG_solved_cases.append(count)
 
+  # Gathering UG data with parameter overlap:
+  UG_po_solving_times.sort()
+
+  UG_po_c = collections.Counter(UG_po_solving_times)
+  UG_po_solved_cases = []
+  UG_po_solved_times = []
+  count = 0
+  for key,value in UG_po_c.items():
+    UG_po_solved_times.append(key)
+    count += value
+    UG_po_solved_cases.append(count)
+
+
   # Gathering UG with parameters overlap and preprocessing data:
   UG_po_pre_solving_times.sort()
 
@@ -120,10 +136,15 @@ if __name__ == '__main__':
     count += value
     UG_po_pre_solved_cases.append(count)
 
-  max_solved_cases = max(max(SAT_solved_cases), max(UG_solved_cases), max(UG_po_pre_solved_cases))
-  max_solving_time = max(max(SAT_solved_times), max(UG_solved_times), max(UG_po_pre_solved_times))
+  max_solved_cases = max(max(SAT_solved_cases), max(UG_solved_cases), max(UG_po_solved_cases), max(UG_po_pre_solved_cases))
+  max_solving_time = max(max(SAT_solved_times), max(UG_solved_times), max(UG_po_solved_times), max(UG_po_pre_solved_times))
 
   plt.plot(SAT_solved_cases, SAT_solved_times,marker='.', color='b', label = 'SAT')
   plt.plot(UG_solved_cases, UG_solved_times,marker='.', color='r', label = 'UG')
+  plt.plot(UG_po_solved_cases, UG_po_solved_times,marker='.', color='g', label = 'UG_po')
   plt.plot(UG_po_pre_solved_cases, UG_po_pre_solved_times, marker='.', color='k', label = 'UG_po_pre')
+
+  plt.xlabel("# solved instances")
+  plt.ylabel("Time (in sec)")
+  plt.legend()
   plt.show()
