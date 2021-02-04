@@ -1,6 +1,7 @@
 # Irfansha Shaik, 24.01.2021, Aarhus.
 
 import os
+from pathlib import Path
 import argparse
 
 # Main:
@@ -14,29 +15,32 @@ if __name__ == '__main__':
   parser.add_argument("--mail_type", help="mail type", default = 'END')
   parser.add_argument("--mail_user", help="mail", default = 'irfansha.shaik@cs.au.dk')
   parser.add_argument("--only_testing", type =int, help=" only for testing purposes", default = 0)
+  parser.add_argument("--output_dir", help="directory path for output files", default = 'out_data/')
   args = parser.parse_args()
 
   if (args.only_testing == 0):
-    #competition_domains = ["IPC2/Blocks/", "IPC2/Elevator/", "IPC3/DriverLog/",
-    #                       "IPC3/ZenoTravel/" , "IPC4/SATELLITE/", "IPC5/rovers/"]
-
-    # Rest of the typed domains:
-    competition_domains = ["IPC2/FreeCell/", "IPC8/Thoughtful/", "IPC9/termes/"]
-
-    competition_domain_path = "./competition_benchmarks/"
+    typed_domains = ["Blocks/", "DriverLog/", "Elevator/", "FreeCell/",
+                     "rovers/", "SATELLITE/", "termes/", "termes-opt18/",
+                     "Thoughtful/", "tidybot-opt11-strips/", "Visitall/",
+                     "visitall-opt11-strips/", "visitall-sat11-strips/", "ZenoTravel/"]
+    typed_domain_path = "./typed_benchmarks/"
   else:
-    competition_domains = ["visitall-opt11-strips/"]
-    competition_domain_path = "./test_benchmarks/"
+    typed_domains = ["visitall-opt11-strips/"]
+    typed_domain_path = "./test_benchmarks/"
 
   encoding_variants = ["UG", "UG_po", "UG_po_pre", "SAT"]
 
-
+  # Checking if out directory exits:
+  if not Path(args.output_dir).is_dir():
+    print("Invalid directory path: " + args.output_dir)
+    print("Creating new directory with same path.")
+    os.mkdir(args.output_dir)
 
   for encoding in encoding_variants:
-    for domain in competition_domains:
+    for domain in typed_domains:
 
-      competition_domain = domain.split("/")
-      domain_name = competition_domain[-2]
+      typed_domain = domain.split("/")
+      domain_name = typed_domain[-2]
 
       # Generate batch script:
       if (encoding == "UG"):
@@ -67,16 +71,16 @@ if __name__ == '__main__':
 
 
       if(encoding == 'UG'):
-        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --run_benchmarks 1 --time_limit 5000 > out_UG_" + domain_name + "_$SLURM_JOB_ID\n")
+        f.write("time python3 main.py --dir " + typed_domain_path + domain + default_file_names + " --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_" + domain_name + "_$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_UG_"+ domain_name + ".sh"
       elif(encoding == 'UG_po'):
-        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > out_UG_po_" + domain_name + "_$SLURM_JOB_ID\n")
+        f.write("time python3 main.py --dir " + typed_domain_path + domain + default_file_names + " --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_po_" + domain_name + "_$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_UG_po_"+ domain_name + ".sh"
       elif(encoding == 'UG_po_pre'):
-        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --preprocessing 1 --run 1 --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > out_UG_po_pre_" + domain_name + "_$SLURM_JOB_ID\n")
+        f.write("time python3 main.py --dir " + typed_domain_path + domain + default_file_names + " --preprocessing 1 --run 1 --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_po_pre_" + domain_name + "_$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_UG_po_pre_"+ domain_name + ".sh"
       elif(encoding == 'SAT'):
-        f.write("time python3 main.py --dir " + competition_domain_path + domain + default_file_names + " --run_benchmarks 1 -e SAT --solver_type 5 --time_limit 5000 > out_SAT_" + domain_name + "$SLURM_JOB_ID\n")
+        f.write("time python3 main.py --dir " + typed_domain_path + domain + default_file_names + " --run_benchmarks 1 -e SAT --solver_type 5 --time_limit 5000 > " + args.output_dir + "out_SAT_" + domain_name + "$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_SAT_"+ domain_name + ".sh"
 
       f.write("\necho '========= Job finished at `date` =========='\n")
