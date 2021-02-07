@@ -20,6 +20,9 @@ class RunSolver():
           self.generate_encoding_with_solution()
           self.run_caqe(self.preprocessed_extraction_file)
           self.parse_caqe_output()
+          if (self.sat == 0):
+            print("Error in extracting solution (due to preprocessor), plan existence is correct")
+            self.sat = 1
     elif(self.solver_type == 3):
       self.run_depqbf()
       if not self.timed_out:
