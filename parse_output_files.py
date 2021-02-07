@@ -20,6 +20,8 @@ def parse_file(file_path, output_dir):
   f = open(file_path, 'r')
   lines = f.readlines()
   f.close()
+  if (len(lines) == 0):
+    return
   header_line = lines.pop(0)
 
   # extracting the file name without whole path assuming linux:
@@ -35,6 +37,7 @@ def parse_file(file_path, output_dir):
   k = 0
   cur_testcase = ''
   time_out_flag = 0
+  plan_found_flag = 0
 
   for line in lines:
     # Resetting for new testcase:
@@ -51,9 +54,10 @@ def parse_file(file_path, output_dir):
       encoding_time = 0
       solving_time = 0
       time_out_flag = 0
+      plan_found_flag = 0
       k = 0
       cur_testcase = parsed_line[-1]
-    elif("Time out occured" in line):
+    elif("Time out occured" in line or "Memory out" in line or "Large K" in line):
       time_out_flag = 1
     elif ("Encoding time" in line):
       parsed_line = line.strip("\n").split(" ")
@@ -69,9 +73,11 @@ def parse_file(file_path, output_dir):
         if ('k=' in parsed_option):
           parsed_tokens = parsed_option.split("=")
           k = int(parsed_tokens[1])
+    elif("Plan found" in line):
+      plan_found_flag = 1
 
   # Hanlding last testcase seperately:
-  if (time_out_flag == 0):
+  if (time_out_flag == 0 and plan_found_flag == 1):
     f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " " + str(solving_time) + "\n")
   else:
     f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " TO\n")
