@@ -277,7 +277,8 @@ class UngroundedConstraints():
     if (() not in self.predicate_types):
       self.predicate_types.append(())
 
-
+  # Here max parameter length does not need to be computed, instead max predicate arguments is sufficient,
+  # To be checked for predicates with 3 args:
   def get_unique_parameters(self,action):
     temp_parameter_dict = {}
     max_parameter_length = 0
