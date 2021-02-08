@@ -160,20 +160,6 @@ class UngroundedConstraintsPlus():
     parser.parse_domain(domain)
     parser.parse_problem(problem)
 
-    for constant_list in parser.constants:
-      temp_constants = []
-      while(constant_list):
-        cur_constant = constant_list.pop(0)
-        if (cur_constant == '-'):
-          constant_type = constant_list.pop(0)
-          if constant_type not in parser.objects:
-            parser.objects[constant_type] = temp_constants
-          else:
-            parser.objects[constant_type].extend(temp_constants)
-        else:
-          temp_constants.append(cur_constant)
-
-
     state = list(parser.state)
 
 
@@ -441,7 +427,25 @@ class UngroundedConstraintsPlus():
         if (self.action_vars_overlap_dict[obj_type] < count):
           self.action_vars_overlap_dict[obj_type] = count
 
-
+  # Runs through each predicate and checks if any action contains it effects,
+  # if not we add it to the static predicate list:
+  def gen_static_predicates(self):
+    for predicate in self.predicates:
+      # we set is static 0 if it occures in some action effect:
+      is_static = 1
+      for action in self.actions:
+        for add_eff in action.add_effects:
+          if predicate == add_eff[0]:
+            is_static = 0
+            break
+        for del_eff in action.del_effects:
+          if predicate == del_eff[0]:
+            is_static = 0
+            break
+      if (is_static == 1):
+        self.static_predicates.append(predicate)
+      else:
+        self.non_static_predicates.append(predicate)
 
   def __init__(self, domain, problem, testing, verbosity):
     self.initial_state = []
@@ -484,6 +488,15 @@ class UngroundedConstraintsPlus():
     #for action in self.predicate_split_action_list:
     #  print(action)
 
+    #print("predicates",self.predicates)
+
+    #for action in self.actions:
+    #  print(action)
+
+    self.static_predicates = []
+    self.non_static_predicates = []
+
+    self.gen_static_predicates()
 
     self.action_vars = []
     # Extracting action variables:
@@ -503,10 +516,6 @@ class UngroundedConstraintsPlus():
     self.action_vars_overlap_dict = {}
     self.gen_action_vars_overlap_dict()
 
-    #print("predicates",self.predicates)
-
-    #for action in self.actions:
-    #  print(action)
     #print(self.forall_variables_type_dict)
 
     #print(self.initial_state)
