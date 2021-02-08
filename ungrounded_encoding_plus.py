@@ -29,7 +29,8 @@ class UngroundedEncodingPlus():
 
   def generate_initial_gate(self, constraints_extract, splitvars_flag):
     self.encoding.append(['# Initial gate:'])
-    base_predicates = list(constraints_extract.predicates)
+    base_static_predicates = list(constraints_extract.static_predicates)
+    base_nonstatic_predicates = list(constraints_extract.non_static_predicates)
     temp_initial_gate = []
     initial_state = constraints_extract.initial_state
     # For zero-arg predicates:
@@ -39,9 +40,15 @@ class UngroundedEncodingPlus():
       zero_then_gate = []
       for predicate in zero_predicates:
         if [predicate] in initial_state:
-          zero_then_gate.append(self.predicates[0][base_predicates.index(predicate)])
+          if predicate in base_static_predicates:
+            zero_then_gate.append(self.static_predicates[base_static_predicates.index(predicate)])
+          else:
+            zero_then_gate.append(self.predicates[0][base_nonstatic_predicates.index(predicate)])
         else:
-          zero_then_gate.append(-self.predicates[0][base_predicates.index(predicate)])
+          if predicate in base_static_predicates:
+            zero_then_gate.append(-self.static_predicates[base_static_predicates.index(predicate)])
+          else:
+            zero_then_gate.append(-self.predicates[0][base_nonstatic_predicates.index(predicate)])
 
       if (splitvars_flag == 1):
         zero_if_gate = []
@@ -97,14 +104,20 @@ class UngroundedEncodingPlus():
             #print(param_gate, param)
             param_list_gate.append(param_output_gate)
           if len(param_list_gate) == 0:
-            step_all_predicate_gates.append(-self.predicates[0][base_predicates.index(predicate)])
+            if (predicate in base_static_predicates):
+              step_all_predicate_gates.append(-self.static_predicates[base_static_predicates.index(predicate)])
+            else:
+              step_all_predicate_gates.append(-self.predicates[0][base_nonstatic_predicates.index(predicate)])
           else:
             [param_list_output_gate] = self.var_dis.get_vars(1)
             self.encoding.append(['or', param_list_output_gate, param_list_gate])
             # If the param list output gate is true then predicate holds, else not:
             [if_param_list_true_gate] = self.var_dis.get_vars(1)
             [if_param_list_false_gate] = self.var_dis.get_vars(1)
-            cur_predicate_var = self.predicates[0][base_predicates.index(predicate)]
+            if (predicate in base_static_predicates):
+              cur_predicate_var = self.static_predicates[base_static_predicates.index(predicate)]
+            else:
+              cur_predicate_var = self.predicates[0][base_nonstatic_predicates.index(predicate)]
             self.encoding.append(['or', if_param_list_true_gate, [-param_list_output_gate, cur_predicate_var]])
             self.encoding.append(['or', if_param_list_false_gate, [param_list_output_gate, -cur_predicate_var]])
             step_all_predicate_gates.append(if_param_list_true_gate)
@@ -134,7 +147,8 @@ class UngroundedEncodingPlus():
 
   def generate_goal_gate(self, constraints_extract, goal_step, splitvars_flag):
     self.encoding.append(['# Goal gate:'])
-    base_predicates = list(constraints_extract.predicates)
+    base_static_predicates = list(constraints_extract.static_predicates)
+    base_nonstatic_predicates = list(constraints_extract.non_static_predicates)
     temp_goal_gate = []
     goal_state = constraints_extract.goal_state
     #print(goal_state)
@@ -145,9 +159,16 @@ class UngroundedEncodingPlus():
       zero_then_gate = []
       for predicate in zero_predicates:
         if [predicate] in goal_state[0]:
-          zero_then_gate.append(self.predicates[goal_step][base_predicates.index(predicate)])
+          if (predicate in base_static_predicates):
+            zero_then_gate.append(self.static_predicates[base_static_predicates.index(predicate)])
+          else:
+            zero_then_gate.append(self.predicates[goal_step][base_nonstatic_predicates.index(predicate)])
         elif [predicate] in goal_state[1]:
-          zero_then_gate.append(-self.predicates[goal_step][base_predicates.index(predicate)])
+          if (predicate in base_static_predicates):
+            zero_then_gate.append(-self.static_predicates[base_static_predicates.index(predicate)])
+          else:
+            zero_then_gate.append(-self.predicates[goal_step][base_nonstatic_predicates.index(predicate)])
+
 
       if (splitvars_flag == 1):
         zero_if_gate = []
@@ -232,14 +253,20 @@ class UngroundedEncodingPlus():
             [pos_param_list_output_gate] = self.var_dis.get_vars(1)
             self.encoding.append(['or', pos_param_list_output_gate, pos_param_list_gate])
             [if_param_list_pos_gate] = self.var_dis.get_vars(1)
-            cur_predicate_var = self.predicates[goal_step][base_predicates.index(predicate)]
+            if (predicate in base_static_predicates):
+              cur_predicate_var = self.static_predicates[base_static_predicates.index(predicate)]
+            else:
+              cur_predicate_var = self.predicates[goal_step][base_nonstatic_predicates.index(predicate)]
             self.encoding.append(['or', if_param_list_pos_gate, [-pos_param_list_output_gate, cur_predicate_var]])
             step_all_predicate_gates.append(if_param_list_pos_gate)
           if len(neg_param_list_gate) != 0:
             [neg_param_list_output_gate] = self.var_dis.get_vars(1)
             self.encoding.append(['or', neg_param_list_output_gate, neg_param_list_gate])
             [if_param_list_neg_gate] = self.var_dis.get_vars(1)
-            cur_predicate_var = self.predicates[goal_step][base_predicates.index(predicate)]
+            if (predicate in base_static_predicates):
+              cur_predicate_var = self.static_predicates[base_static_predicates.index(predicate)]
+            else:
+              cur_predicate_var = self.predicates[goal_step][base_nonstatic_predicates.index(predicate)]
             self.encoding.append(['or', if_param_list_neg_gate, [-neg_param_list_output_gate, -cur_predicate_var]])
             step_all_predicate_gates.append(if_param_list_neg_gate)
         [step_then_output_gate] = self.var_dis.get_vars(1)
@@ -278,9 +305,9 @@ class UngroundedEncodingPlus():
       self.transition_step_output_gates.append(step_aux_vars[-1])
 
       if (actions_overlap_flag):
-        tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.predicates[i], self.predicates[i+1], self.action_with_parameter_vars_with_overlap[i], self.forall_vars, self.split_forall_vars, step_aux_vars)
+        tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.static_predicates, self.predicates[i], self.predicates[i+1], self.action_with_parameter_vars_with_overlap[i], self.forall_vars, self.split_forall_vars, step_aux_vars)
       else:
-        tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.predicates[i], self.predicates[i+1], self.action_with_parameter_vars[i], self.forall_vars, self.split_forall_vars, step_aux_vars)
+        tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.static_predicates, self.predicates[i], self.predicates[i+1], self.action_with_parameter_vars[i], self.forall_vars, self.split_forall_vars, step_aux_vars)
 
   def generate_final_gate(self):
     temp_final_list = []
@@ -329,6 +356,7 @@ class UngroundedEncodingPlus():
 
     self.quantifier_block.append(['# Predicate variables :'])
 
+    self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in self.static_predicates) + ')'])
     for i in range(k+1):
       self.quantifier_block.append(['# Time step' + str(i) + ' :'])
       self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in self.predicates[i]) + ')'])
@@ -403,8 +431,11 @@ class UngroundedEncodingPlus():
 
   # Generating k+1 states for k steps:
   def gen_predicate_vars(self, tfun, k):
+    # generating first static predicates:
+    self.static_predicates = self.var_dis.get_vars(tfun.num_static_predicates)
+
     for i in range(k+1):
-      step_predicate_vars = self.var_dis.get_vars(tfun.num_predicates)
+      step_predicate_vars = self.var_dis.get_vars(tfun.num_nonstatic_predicates)
       self.predicates.append(step_predicate_vars)
 
   # Generates required variables for each type of object:
@@ -512,6 +543,7 @@ class UngroundedEncodingPlus():
     self.final_output_gate = 0 # final output gate can never be 0
 
     self.predicates = []
+    self.static_predicates = []
     self.gen_predicate_vars(tfun, k)
 
     if (actions_overlap_flag == 0):

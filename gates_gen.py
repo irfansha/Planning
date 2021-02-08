@@ -874,11 +874,12 @@ class UngroundedTransitionGatesGenPlus():
         if (i != 0):
           then_list = []
           for predicate in tfun.predicate_dict[i]:
-            base_predicate_pair = (tfun.sv_pre_inv_map[predicate], tfun.sv_post_inv_map[predicate])
-            if base_predicate_pair not in all_untouched_predicates_pairs:
-              #print(ref_action, base_predicate_pair)
-              # Fetching untoched propagation gate:
-              then_list.append(self.untouched_prop_map[base_predicate_pair])
+            if (predicate in tfun.nonstatic_predicates):
+              base_predicate_pair = (tfun.ns_sv_pre_inv_map[predicate], tfun.ns_sv_post_inv_map[predicate])
+              if base_predicate_pair not in all_untouched_predicates_pairs:
+                #print(ref_action, base_predicate_pair)
+                # Fetching untoched propagation gate:
+                then_list.append(self.untouched_prop_map[base_predicate_pair])
           # We propagate only when no parameter is satisfied, hence, negative:
           if (len(then_list) != 0):
             self.and_gate(then_list)
@@ -959,11 +960,12 @@ class UngroundedTransitionGatesGenPlus():
     self.total_gates = self.output_gate
 
   # XXX to be tested:
-  def new_gate_gen(self, encoding, first_name, second_name, first_predicates, second_predicates, action_vars_list, forall_vars, split_forall_vars, aux_vars):
+  def new_gate_gen(self, encoding, first_name, second_name, static_predicates, first_predicates, second_predicates, action_vars_list, forall_vars, split_forall_vars, aux_vars):
 
     # Appending variables for the new transition function:
     var_list = []
 
+    var_list.extend(static_predicates)
     var_list.extend(first_predicates)
     var_list.extend(second_predicates)
 
@@ -982,6 +984,7 @@ class UngroundedTransitionGatesGenPlus():
 
 
     encoding.append(['# Transition function from ' + first_name + ' to ' + second_name + ':'])
+    encoding.append(['# static_first_name vars : (' + ', '.join(str(x) for x in static_predicates) + ')'])
     encoding.append(['# ' + first_name + ' vars : (' + ', '.join(str(x) for x in first_predicates) + ')'])
     encoding.append(['# ' + second_name + ' vars : (' + ', '.join(str(x) for x in second_predicates) + ')'])
     encoding.append(['# Action vars with parameters:'])

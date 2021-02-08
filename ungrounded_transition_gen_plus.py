@@ -11,28 +11,16 @@ import math
 
 class UngroundedTransitionFunctionPlus():
 
-  # Mapping state variables to 1,...,n where n is the number of predicates:
-  def pre_map_gen(self, predicates):
+  # Mapping state variables to integers:
+  def map_gen(self, predicates):
     predicates_list = list(predicates)
-    pre_map = {}
-    pre_inv_map = {}
+    pmap = {}
+    inv_map = {}
     for predicate in predicates_list:
       [int_var] = self.var_dis.get_vars(1)
-      pre_map[int_var] = predicate
-      pre_inv_map[predicate] = int_var
-    return pre_map, pre_inv_map
-
-  # Mapping state variables to n+1,...,n+n where n is the number of predicates:
-  def post_map_gen(self, predicates):
-    predicates_list = list(predicates)
-    n = len(predicates)
-    post_map = {}
-    post_inv_map = {}
-    for predicate in predicates_list:
-      [int_var] = self.var_dis.get_vars(1)
-      post_map[int_var] = predicate
-      post_inv_map[predicate] = int_var
-    return post_map, post_inv_map
+      pmap[int_var] = predicate
+      inv_map[predicate] = int_var
+    return pmap, inv_map
 
   def action_map_gen(self, n, action_vars, bin_object_type_vars_dict):
     action_map = {}
@@ -70,13 +58,27 @@ class UngroundedTransitionFunctionPlus():
 
   def __init__(self, constraints_extract, splitvars_flag):
     self.var_dis = vd()
-    self.sv_pre_map, self.sv_pre_inv_map = self.pre_map_gen(constraints_extract.predicates)
+    #self.sv_pre_map, self.sv_pre_inv_map = self.map_gen(constraints_extract.predicates)
     #print(self.sv_pre_map)
-    self.sv_post_map, self.sv_post_inv_map = self.post_map_gen(constraints_extract.predicates)
+    #self.sv_post_map, self.sv_post_inv_map = self.map_gen(constraints_extract.predicates)
     #print(self.sv_post_map)
+
+    # Generating static predicates map for preconditions, which is earlier time step:
+    self.s_sv_pre_map, self.s_sv_pre_inv_map = self.map_gen(constraints_extract.static_predicates)
+    # Generating non-static predicates map for preconditions, which is earlier time step:
+    self.ns_sv_pre_map, self.ns_sv_pre_inv_map = self.map_gen(constraints_extract.non_static_predicates)
+    # Generating non-static predicates map for post conditions, which is later time step:
+    self.ns_sv_post_map, self.ns_sv_post_inv_map = self.map_gen(constraints_extract.non_static_predicates)
+
     self.num_predicates = len(constraints_extract.predicates)
+    self.num_static_predicates = len(constraints_extract.static_predicates)
+    self.num_nonstatic_predicates = len(constraints_extract.non_static_predicates)
     self.action_vars = constraints_extract.action_vars
     self.predicate_dict = constraints_extract.predicate_dict
+    self.static_predicates = constraints_extract.static_predicates
+    self.nonstatic_predicates = constraints_extract.non_static_predicates
+    #print(self.static_predicates)
+    #print(self.nonstatic_predicates)
     self.predicate_types = constraints_extract.predicate_types
     self.max_predicate_args = constraints_extract.max_predicate_args
     self.av_map, self.av_inv_map, self.parameter_map = self.action_map_gen(len(constraints_extract.predicates), constraints_extract.action_vars, constraints_extract.bin_object_type_vars_dict)
@@ -88,9 +90,13 @@ class UngroundedTransitionFunctionPlus():
     self.forall_vars_gen(constraints_extract.forall_variables_type_dict, constraints_extract.bin_object_type_vars_dict, constraints_extract.max_predicate_args)
     #print(self.obj_forall_vars)
     [self.next_gate_var] = self.var_dis.get_vars(1)
-    self.integer_tfun = self.integer_tfun_gen(constraints_extract.predicate_split_action_list, constraints_extract.predicates)
+    #self.integer_tfun = self.integer_tfun_gen(constraints_extract.predicate_split_action_list, constraints_extract.predicates)
+    self.integer_tfun = self.integer_tfun_gen(constraints_extract.predicate_static_and_nonstatic_split_action_list, constraints_extract.predicates)
+    #for action in self.integer_tfun:
+    #  print(action)
     self.gates_gen = gg(self, splitvars_flag)
     self.num_aux_vars = self.gates_gen.total_gates - self.next_gate_var + 1
+
 
   def integer_tfun_gen(self, action_list, predicates):
     int_tfun = []
@@ -103,27 +109,33 @@ class UngroundedTransitionFunctionPlus():
 
       # Appending the positive preconditions as positive literals:
       for pos_pre in action_list[i].positive_preconditions:
-        current_predicates.append(self.sv_pre_inv_map[pos_pre])
+        if (pos_pre in self.s_sv_pre_inv_map):
+          current_predicates.append(self.s_sv_pre_inv_map[pos_pre])
+        elif (pos_pre in self.ns_sv_pre_inv_map):
+          current_predicates.append(self.ns_sv_pre_inv_map[pos_pre])
 
       # Appending the negative preconditions as negative literals:
       for neg_pre in action_list[i].negative_preconditions:
-        current_predicates.append(-self.sv_pre_inv_map[neg_pre])
+        if (neg_pre in self.s_sv_pre_inv_map):
+          current_predicates.append(-self.s_sv_pre_inv_map[neg_pre])
+        elif (neg_pre in self.ns_sv_pre_inv_map):
+          current_predicates.append(-self.ns_sv_pre_inv_map[neg_pre])
 
       # Appending the positive postconditions as positive literals:
       for pos_post in action_list[i].add_effects:
-        current_predicates.append(self.sv_post_inv_map[pos_post])
+        current_predicates.append(self.ns_sv_post_inv_map[pos_post])
 
       # Appending the negative postconditions as negative literals:
       for neg_post in action_list[i].del_effects:
-        current_predicates.append(-self.sv_post_inv_map[neg_post])
+        current_predicates.append(-self.ns_sv_post_inv_map[neg_post])
 
       untouched_propagate_pairs = []
       for ut_pred in action_list[i].untouched_predicates:
-        untouched_propagate_pairs.append((self.sv_pre_inv_map[ut_pred], self.sv_post_inv_map[ut_pred]))
+        untouched_propagate_pairs.append((self.ns_sv_pre_inv_map[ut_pred], self.ns_sv_post_inv_map[ut_pred]))
 
       all_untouched_propagate_pairs = []
       for all_ut_pred in action_list[i].all_untouched_predicates:
-        all_untouched_propagate_pairs.append((self.sv_pre_inv_map[all_ut_pred], self.sv_post_inv_map[all_ut_pred]))
+        all_untouched_propagate_pairs.append((self.ns_sv_pre_inv_map[all_ut_pred], self.ns_sv_post_inv_map[all_ut_pred]))
 
 
       cur_parameters = []
