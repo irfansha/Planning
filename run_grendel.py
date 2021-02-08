@@ -36,7 +36,7 @@ if __name__ == '__main__':
     test_domains = ["visitall-opt11-strips/"]
     test_domain_path = "./test_benchmarks/"
 
-  encoding_variants = ["UG", "UG_po", "UG_po_pre", "SAT"]
+  encoding_variants = ["UG", "UG_po", "UG_po_pre", "SAT", "SATL"]
 
   # Checking if out directory exits:
   if not Path(args.output_dir).is_dir():
@@ -59,6 +59,8 @@ if __name__ == '__main__':
         f = open("run_UG_po_pre_"+ domain_name + ".sh", "w")
       elif (encoding == "SAT"):
         f = open("run_SAT_"+ domain_name + ".sh", "w")
+      elif (encoding == "SATL"):
+        f = open("run_SATL_"+ domain_name + ".sh", "w")
 
 
       f.write("#!/bin/bash\n")
@@ -90,6 +92,10 @@ if __name__ == '__main__':
       elif(encoding == 'SAT'):
         f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + " --run_benchmarks 1 -e SAT --solver_type 5 --time_limit 5000 > " + args.output_dir + "out_SAT_" + domain_name + "$SLURM_JOB_ID\n")
         command = 'sbatch ' + "run_SAT_"+ domain_name + ".sh"
+      elif(encoding == 'SATL'):
+        f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + " --run_benchmarks 1 -e SAT -t l --solver_type 5 --time_limit 5000 > " + args.output_dir + "out_SATL_" + domain_name + "$SLURM_JOB_ID\n")
+        command = 'sbatch ' + "run_SATL_"+ domain_name + ".sh"
+
 
       f.write("\necho '========= Job finished at `date` =========='\n")
       #f.write("\nrm ./intermediate_files/* \n")
