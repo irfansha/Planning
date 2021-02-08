@@ -19,6 +19,7 @@ Todos:
 import argparse, textwrap
 from constraints import Constraints as cs
 from ungrounded_constraints import UngroundedConstraints as ucs
+from ungrounded_constraints_plus import UngroundedConstraintsPlus as ucsp
 from generate_encoding import EncodingGen as eg
 from run_solver import RunSolver as qs
 from plan_extraction import ExtractPlan as pe
@@ -47,7 +48,8 @@ if __name__ == '__main__':
                                   RE2  = Reachability Encoding 2
                                   FE  = Flat Encoding
                                   CTE = Compact Tree Encoding
-                                  UE = Ungrounded Encoding'''),default = 'UE')
+                                  UE = Ungrounded Encoding
+                                  UE+ = Ungrounded encoding, also handling hierarchial types'''),default = 'UE')
   parser.add_argument("-t", help="transition function with binary or linear action variables: [b l]",default = 'b')
   parser.add_argument("--run", type=int, help=textwrap.dedent('''
                                Three levels of execution:
@@ -119,6 +121,8 @@ if __name__ == '__main__':
       constraints_extract = []
     elif (args.e == 'UE'):
       constraints_extract = ucs(args.d, args.p, args.testing, args.verbosity_level)
+    elif (args.e == "UE+"):
+      constraints_extract = ucsp(args.d, args.p, args.testing, args.verbosity_level)
     else:
       constraints_extract = cs(args.d, args.p)
 
@@ -165,7 +169,7 @@ if __name__ == '__main__':
           plan_extract = pe(run_qs.sol_map, args.plan_out)
           if (args.e == 'CTE' or args.e == 'FE'):
             plan_extract.extract_action_based_plan(encoding_gen.encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
-          elif(args.e == 'UE'):
+          elif(args.e == 'UE' or args.e == 'UE+'):
             if (args.parameters_overlap == 0):
               plan_extract.extract_ungrounded_plan(encoding_gen.encoding.action_with_parameter_vars, constraints_extract, args.k)
             else:

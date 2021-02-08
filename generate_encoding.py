@@ -3,12 +3,14 @@
 from transition_gen import TransitionFunction as tfl
 from transition_gen_withoutamoalo import TransitionFunction as tfb
 from ungrounded_transition_gen import UngroundedTransitionFunction as utf
+from ungrounded_transition_gen_plus import UngroundedTransitionFunctionPlus as utfp
 from sat_encoding_gen import SatEncoding as se
 from qr_encoding_gen import QREncoding as qr
 from qbf_intermediate_encoding import QIEncoding as qi
 from ctencoding import CTEncoding as cte
 from flat_encoding import FlatEncoding as fe
 from ungrounded_encoding import UngroundedEncoding as ue
+from ungrounded_encoding_plus import UngroundedEncodingPlus as uep
 import os
 
 
@@ -22,13 +24,16 @@ class EncodingGen():
       os.rename(args.encoding_out + "." + padded_k + ".cnf", args.encoding_out)
       return
     # Generating transition function:
-    if (args.e != 'UE'):
+    if (args.e == 'UE'):
+      tfun = utf(constraints_extract, args.splitvars)
+    elif (args.e == 'UE+'):
+      tfun = utfp(constraints_extract, args.splitvars)
+    else:
       if (args.t == 'l'):
         tfun = tfl(constraints_extract)
       elif (args.t == 'b'):
         tfun = tfb(constraints_extract)
-    else:
-      tfun = utf(constraints_extract, args.splitvars)
+
 
     if (args.e == 'SAT'):
       self.encoding = se(constraints_extract, tfun, args.k)
@@ -38,6 +43,8 @@ class EncodingGen():
       self.encoding = qi(constraints_extract, tfun, args.k, args.forall_pruning)
     elif (args.e == 'UE'):
       self.encoding = ue(constraints_extract, tfun, args.k, args.splitvars, args.parameters_overlap)
+    elif (args.e == 'UE+'):
+      self.encoding = uep(constraints_extract, tfun, args.k, args.splitvars, args.parameters_overlap)
     elif (args.e == 'CTE'):
       if (args.run == 2):
         self.encoding = cte(constraints_extract, tfun, args.k, 1)
