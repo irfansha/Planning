@@ -388,6 +388,77 @@ class UngroundedConstraintsPlus():
     # Handling noop operation:
     self.predicate_split_action_list.append(ap(self.actions[-1].name, [0, []], [], [], [], [], list(self.predicates), list(self.predicates)))
 
+  def gen_predicate_static_and_nonstatic_split_action_list(self):
+    for action in self.actions:
+      # Noop handled separately:
+      if (action.name == 'noop'):
+        continue
+      temp_parameter_dict, max_parameter_length =  self.get_unique_parameters(action)
+      parameter_type_dict = self.gen_action_parameter_type_dict(action)
+      #print("paramete_type_dict",parameter_type_dict)
+      #print("paramete_dict",temp_parameter_dict)
+      for i in range(max_parameter_length+1):
+        if i in temp_parameter_dict.keys():
+          for temp_parameter in temp_parameter_dict[i]:
+            # Generating new positive preconditions after splitting:
+            new_positive_preconditions = []
+            for pos_pre in action.positive_preconditions:
+              pos_pre_param = list(pos_pre[1:])
+              if (temp_parameter == pos_pre_param):
+                new_positive_preconditions.append(pos_pre[0])
+            # Generating new negative preconditions after splitting:
+            new_negative_preconditions = []
+            for neg_pre in action.negative_preconditions:
+              neg_pre_param = list(neg_pre[1:])
+              if (temp_parameter == neg_pre_param):
+                new_negative_preconditions.append(neg_pre[0])
+            # Generating new add effects after splitting:
+            new_add_effects = []
+            for add_eff in action.add_effects:
+              add_eff_param = list(add_eff[1:])
+              if (temp_parameter == add_eff_param):
+                new_add_effects.append(add_eff[0])
+            # Generating new del effects after splitting:
+            new_del_effects = []
+            for del_eff in action.del_effects:
+              del_eff_param = list(del_eff[1:])
+              if (temp_parameter == del_eff_param):
+                new_del_effects.append(del_eff[0])
+            untouched_predicates = []
+            all_untouched_predicates = []
+            # Generating parameter type:
+            cur_parameter_type = []
+            for cur_parameter in temp_parameter:
+              cur_parameter_type.append(parameter_type_dict[cur_parameter])
+            # Generating untouched clauses after splitting:
+            for predicate in self.predicate_dict[i]:
+              predicate_values = list(self.predicates[predicate].values())
+              flag = 1
+              for j in range(i):
+                if (cur_parameter_type[j] != predicate_values[j]):
+                  flag = 0
+                  break
+              if (flag and predicate in self.non_static_predicates):
+                all_untouched_predicates.append(predicate)
+                if predicate not in new_add_effects and predicate not in new_del_effects:
+                  untouched_predicates.append(predicate)
+            self.predicate_static_and_nonstatic_split_action_list.append(ap(action.name, [i, temp_parameter], new_positive_preconditions, new_negative_preconditions, new_add_effects, new_del_effects, untouched_predicates, all_untouched_predicates))
+        else:
+          untouched_predicates = []
+          all_untouched_predicates = []
+          # Generating untouched clauses after splitting:
+          for predicate in self.predicate_dict[i]:
+            if (predicate in self.non_static_predicates):
+              predicate_values = list(self.predicates[predicate].values())
+              all_untouched_predicates.append(predicate)
+              untouched_predicates.append(predicate)
+          # If parameter is non-empty, here might be the problem:
+          self.predicate_static_and_nonstatic_split_action_list.append(ap(action.name, [i, []], [], [], [], [], untouched_predicates, all_untouched_predicates))
+
+    # Handling noop operation:
+    self.predicate_static_and_nonstatic_split_action_list.append(ap(self.actions[-1].name, [0, []], [], [], [], [], list(self.non_static_predicates), list(self.non_static_predicates)))
+
+
   def extract_action_vars(self):
     for action in self.actions:
       self.action_vars.append((action.name, tuple(action.parameters)))
@@ -460,6 +531,8 @@ class UngroundedConstraintsPlus():
 
     self.predicate_split_action_list = []
 
+    self.predicate_static_and_nonstatic_split_action_list = []
+
     self.type_hierarchy_dict = {}
 
     self.types = []
@@ -497,6 +570,13 @@ class UngroundedConstraintsPlus():
     self.non_static_predicates = []
 
     self.gen_static_predicates()
+
+    # splitting actions based on predicates:
+    self.gen_predicate_static_and_nonstatic_split_action_list()
+
+    #for action in self.predicate_static_and_nonstatic_split_action_list:
+    #  print(action)
+
 
     self.action_vars = []
     # Extracting action variables:
