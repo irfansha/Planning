@@ -42,6 +42,7 @@ if __name__ == '__main__':
   parser.add_argument("-e", help=textwrap.dedent('''
                                   encoding types:
                                   SAT = Satisfiability
+                                  M-seq = Madagascar SAT sequential encoding
                                   RE1  = Reachability Encoding 1
                                   RE2  = Reachability Encoding 2
                                   FE  = Flat Encoding
@@ -113,11 +114,14 @@ if __name__ == '__main__':
     # --------------------------------------- Timing the encoding ----------------------------------------
     start_encoding_time = time.perf_counter()
 
-    # Extracting constraints from problem:
-    if (args.e != 'UE'):
-      constraints_extract = cs(args.d, args.p)
-    else:
+    # Extracting constraints from problem (expect for madagascar encoding):
+    if (args.e == 'M-seq'):
+      constraints_extract = []
+    elif (args.e == 'UE'):
       constraints_extract = ucs(args.d, args.p, args.testing, args.verbosity_level)
+    else:
+      constraints_extract = cs(args.d, args.p)
+
 
     encoding_gen = eg(constraints_extract, args)
 
@@ -154,6 +158,9 @@ if __name__ == '__main__':
         exit()
       if run_qs.sat:
         print("Plan found")
+        # We do not extract a plan from Madagascar:
+        if (args.e == "M-seq"):
+          exit()
         if (args.run == 2):
           plan_extract = pe(run_qs.sol_map, args.plan_out)
           if (args.e == 'CTE' or args.e == 'FE'):

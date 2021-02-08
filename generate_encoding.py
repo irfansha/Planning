@@ -15,6 +15,12 @@ import os
 class EncodingGen():
 
   def __init__(self, constraints_extract, args):
+    if (args.e == 'M-seq'):
+      os.system('./tools/M -P 0 -O -F ' + str(args.k) + ' -T ' + str(args.k) + " -b " + args.encoding_out + " " + args.d + " " + args.p)
+      # renaming the encoding file, due to madagascar encoding naming scheme:
+      padded_k = str(args.k).zfill(3)
+      os.rename(args.encoding_out + "." + padded_k + ".cnf", args.encoding_out)
+      return
     # Generating transition function:
     if (args.e != 'UE'):
       if (args.t == 'l'):
