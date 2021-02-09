@@ -103,7 +103,7 @@ if __name__ == '__main__':
       else:
         options += ' --de_type 0 '
 
-      f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + options + " --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_" + encoding + "_" + str(args.ue) + "_" + str(args.tf) + "_" + domain_name + "_$SLURM_JOB_ID\n")
+      f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + options + " --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_" + encoding + "_" + str(args.ue) + "_" + str(args.tf) + "_" + str(args.dt) + "_" + domain_name + "_$SLURM_JOB_ID\n")
 
       command = 'sbatch run_' + encoding + "_"+ str(args.ue) + "_" + str(args.tf) + "_" + str(args.dt) + "_" + domain_name + ".sh"
 
