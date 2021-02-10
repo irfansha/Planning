@@ -10,6 +10,10 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description=text,formatter_class=argparse.RawTextHelpFormatter)
   parser.add_argument("--partition", help="partition name", default = 'q48')
   parser.add_argument("--nodes", help="no of nodes", default = '1')
+  parser.add_argument("-e", type =int, help="UE/SAT [0/1], default 0", default = 0)
+  parser.add_argument("--ue", type =int, help="UE/UE+ [0/1], default 0", default = 0)
+  parser.add_argument("--tf", type =int, help="b/l [0/1], default 0", default = 0)
+  parser.add_argument("--dt", type =int, help="detype [0/1], default 0", default = 0)
   parser.add_argument("--mem", help="mem in GB, default 0 i.e. all of it", default = '0')
   parser.add_argument("--time", help="estimated time in hours", default = '24')
   parser.add_argument("--mail_type", help="mail type", default = 'END')
@@ -36,7 +40,10 @@ if __name__ == '__main__':
     test_domains = ["visitall-opt11-strips/"]
     test_domain_path = "./test_benchmarks/"
 
-  encoding_variants = ["UG", "UG_po", "UG_po_pre", "SAT"]
+  if (args.e == 0):
+    encoding_variants = ["UG", "UG_po", "UG_po_pre"]
+  else:
+    encoding_variants = ["SAT"]
 
   # Checking if out directory exits:
   if not Path(args.output_dir).is_dir():
@@ -51,15 +58,7 @@ if __name__ == '__main__':
       domain_name = test_domain[-2]
 
       # Generate batch script:
-      if (encoding == "UG"):
-        f = open("run_UG_"+ domain_name + ".sh", "w")
-      elif (encoding == "UG_po"):
-        f = open("run_UG_po_"+ domain_name + ".sh", "w")
-      elif (encoding == "UG_po_pre"):
-        f = open("run_UG_po_pre_"+ domain_name + ".sh", "w")
-      elif (encoding == "SAT"):
-        f = open("run_SAT_"+ domain_name + ".sh", "w")
-
+      f = open("run_" + encoding + "_"+ str(args.ue) + "_" + str(args.tf) + "_" + str(args.dt) + "_" + domain_name + ".sh", "w")
 
       f.write("#!/bin/bash\n")
       f.write("#SBATCH --partition=" + args.partition + "\n")
@@ -75,21 +74,40 @@ if __name__ == '__main__':
 
       f.write("cd $SLURM_SUBMIT_DIR\n\n")
 
-      default_file_names = ' --encoding_out /scratch/$SLURM_JOB_ID/encoding_$SLURM_JOB_ID --solver_out /scratch/$SLURM_JOB_ID/solver_out_$SLURM_JOB_ID --preprocessed_encoding_out /scratch/$SLURM_JOB_ID/preprocessed_$SLURM_JOB_ID --plan_out /scratch/$SLURM_JOB_ID/plan_$SLURM_JOB_ID --encoding_intermediate_out /scratch/$SLURM_JOB_ID/intermediate_$SLURM_JOB_ID '
+      default_file_names = ' --dd_out /scratch/$SLURM_JOB_ID/dd_out_$SLURM_JOB_ID --dp_out /scratch/$SLURM_JOB_ID/dp_out_$SLURM_JOB_ID --encoding_out /scratch/$SLURM_JOB_ID/encoding_$SLURM_JOB_ID --solver_out /scratch/$SLURM_JOB_ID/solver_out_$SLURM_JOB_ID --preprocessed_encoding_out /scratch/$SLURM_JOB_ID/preprocessed_$SLURM_JOB_ID --plan_out /scratch/$SLURM_JOB_ID/plan_$SLURM_JOB_ID --encoding_intermediate_out /scratch/$SLURM_JOB_ID/intermediate_$SLURM_JOB_ID '
 
 
       if(encoding == 'UG'):
-        f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + " --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_" + domain_name + "_$SLURM_JOB_ID\n")
-        command = 'sbatch ' + "run_UG_"+ domain_name + ".sh"
+        if (args.ue == 0):
+          options = " -e UE "
+        else:
+          options = " -e UE+ "
       elif(encoding == 'UG_po'):
-        f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + " --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_po_" + domain_name + "_$SLURM_JOB_ID\n")
-        command = 'sbatch ' + "run_UG_po_"+ domain_name + ".sh"
+        if (args.ue == 0):
+          options = " -e UE --parameters_overlap 1 "
+        else:
+          options = " -e UE+ --parameters_overlap 1 "
       elif(encoding == 'UG_po_pre'):
-        f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + " --preprocessing 1 --run 1 --parameters_overlap 1 --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_UG_po_pre_" + domain_name + "_$SLURM_JOB_ID\n")
-        command = 'sbatch ' + "run_UG_po_pre_"+ domain_name + ".sh"
+        if (args.ue == 0):
+          options = " -e UE --preprocessing 1 --run 1 --parameters_overlap 1 "
+        else:
+          options = " -e UE+ --preprocessing 1 --run 1 --parameters_overlap 1 "
       elif(encoding == 'SAT'):
-        f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + " --run_benchmarks 1 -e SAT --solver_type 5 --time_limit 5000 > " + args.output_dir + "out_SAT_" + domain_name + "$SLURM_JOB_ID\n")
-        command = 'sbatch ' + "run_SAT_"+ domain_name + ".sh"
+        if (args.tf == 0):
+          options = " -e SAT --solver_type 5 -t b "
+        else:
+          options = " -e SAT --solver_type 5 -t l "
+
+      if (args.dt == 1):
+        options += ' --de_type 1 '
+      else:
+        options += ' --de_type 0 '
+
+      f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + options + " --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_" + encoding + "_" + str(args.ue) + "_" + str(args.tf) + "_" + str(args.dt) + "_" + domain_name + "_$SLURM_JOB_ID\n")
+
+      command = 'sbatch run_' + encoding + "_"+ str(args.ue) + "_" + str(args.tf) + "_" + str(args.dt) + "_" + domain_name + ".sh"
+
+
 
       f.write("\necho '========= Job finished at `date` =========='\n")
       #f.write("\nrm ./intermediate_files/* \n")
