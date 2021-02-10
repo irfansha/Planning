@@ -15,7 +15,10 @@ def find_objects(parser, obj_type, type_hierarchy_dict):
     if obj_type in parser.objects:
       return parser.objects[obj_type]
     else:
-      next_obj_types = type_hierarchy_dict[obj_type]
+      if (obj_type in type_hierarchy_dict):
+        next_obj_types = type_hierarchy_dict[obj_type]
+      else:
+        next_obj_types = []
       object_list = []
       for next_obj_type in next_obj_types:
         objects = find_objects(parser, next_obj_type, type_hierarchy_dict)
@@ -123,7 +126,7 @@ def detype(domain, problem, domain_out, problem_out):
   f_problem.close()
 
   # replacing '_' with '-' for consistency:
-  replace_chars(domain_out, problem_out)
+  #replace_chars(domain_out, problem_out)
 
 def replace_chars(domain_out, problem_out):
   # reading the lines in domain file:
@@ -149,7 +152,6 @@ def replace_chars(domain_out, problem_out):
     line = line.replace("_","-")
     f.write(line)
   f.close()
-
 
 
 def print_detyped_domain_file(parser, f_domain):
@@ -227,7 +229,7 @@ def print_detyped_problem_file(parser, updated_objects, used_types, f_problem):
   for goal in parser.positive_goals:
     f_problem.write("    (" + " ".join(goal) + ")\n")
   for goal in parser.negative_goals:
-    f_problem.write("    not " + str(tuple(goal)) + " )\n")
+    f_problem.write("    (not (" + ' '.join(goal) + ") )\n")
   f_problem.write("  ))\n")
 
   # closing parantheses for problem file:
