@@ -72,9 +72,12 @@ def update_types_and_objects(parser, type_hierarchy_dict, types):
   return updated_objects
 
 # Changing actions, adding types to preconditions:
-def detype_domain(parser):
+def detype_domain(parser, updated_objects):
+  invalid_actions = []
   used_types = []
-  for action in parser.actions:
+  #for action in parser.actions:
+  for i in range(len(parser.actions)):
+    action = parser.actions[i]
     new_parameters = []
     new_positive_preconditions = []
     for parameter in action.parameters:
@@ -86,9 +89,13 @@ def detype_domain(parser):
       # Collecting used types from parameters:
       if parameter[1] not in used_types:
         used_types.append(parameter[1])
+      # if no objects present for type the action is invalid:
+      if len(updated_objects[parameter[1]]) == 0:
+        if (i not in invalid_actions):
+          invalid_actions.append(i)
     action.parameters = new_parameters
     action.positive_preconditions.extend(new_positive_preconditions)
-  return used_types
+  return used_types, invalid_actions
 
 def detype(domain, problem, domain_out, problem_out):
   # Parser
@@ -109,14 +116,14 @@ def detype(domain, problem, domain_out, problem_out):
 
   # returns used types, we only add typed predicates
   # if they are used in the domain:
-  used_types = detype_domain(parser)
+  used_types, invalid_actions = detype_domain(parser, updated_objects)
 
   # Testing if the actions are changed accordingly:
   #for action in parser.actions:
   #  print(action)
 
 
-  print_detyped_domain_file(parser, f_domain)
+  print_detyped_domain_file(parser, f_domain, invalid_actions)
 
   f_domain.close()
 
@@ -128,6 +135,7 @@ def detype(domain, problem, domain_out, problem_out):
   # replacing '_' with '-' for consistency:
   #replace_chars(domain_out, problem_out)
 
+  # replacing '=' with 'eq' for equality:
   if (":equality" in parser.requirements):
     replace_chars(domain_out)
 
@@ -147,7 +155,7 @@ def replace_chars(domain_out):
   f.close()
 
 
-def print_detyped_domain_file(parser, f_domain):
+def print_detyped_domain_file(parser, f_domain, invalid_actions):
   # domain name is unchanged:
   f_domain.write("(define (domain " + parser.domain_name + ")\n")
 
@@ -155,8 +163,13 @@ def print_detyped_domain_file(parser, f_domain):
   # to specify explicitly:
   f_domain.write("(:predicates )\n")
 
-  for action in parser.actions:
-    f_domain.write("(:action " + action.name + "\n")
+  # for action in parser.actions:
+  for i in range(len(parser.actions)):
+    action = parser.actions[i]
+    if (i in invalid_actions):
+      f_domain.write("\n;;(:action " + action.name + ") ;; invalid action not printing\n")
+      continue
+    f_domain.write("\n(:action " + action.name + "\n")
     f_domain.write("  :parameters (" + " ".join(action.parameters) + ")\n")
     f_domain.write("  :precondition\n")
     precondition_string = ''
