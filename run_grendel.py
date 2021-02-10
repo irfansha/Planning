@@ -13,6 +13,7 @@ if __name__ == '__main__':
   parser.add_argument("-e", type =int, help="UE/SAT [0/1], default 0", default = 0)
   parser.add_argument("--ue", type =int, help="UE/UE+ [0/1], default 0", default = 0)
   parser.add_argument("--tf", type =int, help="b/l [0/1], default 0", default = 0)
+  parser.add_argument("--dt", type =int, help="detype [0/1], default 0", default = 0)
   parser.add_argument("--mem", help="mem in GB, default 0 i.e. all of it", default = '0')
   parser.add_argument("--time", help="estimated time in hours", default = '24')
   parser.add_argument("--mail_type", help="mail type", default = 'END')
@@ -57,7 +58,7 @@ if __name__ == '__main__':
       domain_name = test_domain[-2]
 
       # Generate batch script:
-      f = open("run_" + encoding + "_"+ str(args.ue) + "_" + str(args.tf) + "_" +  domain_name + ".sh", "w")
+      f = open("run_" + encoding + "_"+ str(args.ue) + "_" + str(args.tf) + "_" + str(args.dt) + "_" + domain_name + ".sh", "w")
 
       f.write("#!/bin/bash\n")
       f.write("#SBATCH --partition=" + args.partition + "\n")
@@ -73,7 +74,7 @@ if __name__ == '__main__':
 
       f.write("cd $SLURM_SUBMIT_DIR\n\n")
 
-      default_file_names = ' --encoding_out /scratch/$SLURM_JOB_ID/encoding_$SLURM_JOB_ID --solver_out /scratch/$SLURM_JOB_ID/solver_out_$SLURM_JOB_ID --preprocessed_encoding_out /scratch/$SLURM_JOB_ID/preprocessed_$SLURM_JOB_ID --plan_out /scratch/$SLURM_JOB_ID/plan_$SLURM_JOB_ID --encoding_intermediate_out /scratch/$SLURM_JOB_ID/intermediate_$SLURM_JOB_ID '
+      default_file_names = ' --dd_out /scratch/$SLURM_JOB_ID/dd_out_$SLURM_JOB_ID --dp_out /scratch/$SLURM_JOB_ID/dp_out_$SLURM_JOB_ID --encoding_out /scratch/$SLURM_JOB_ID/encoding_$SLURM_JOB_ID --solver_out /scratch/$SLURM_JOB_ID/solver_out_$SLURM_JOB_ID --preprocessed_encoding_out /scratch/$SLURM_JOB_ID/preprocessed_$SLURM_JOB_ID --plan_out /scratch/$SLURM_JOB_ID/plan_$SLURM_JOB_ID --encoding_intermediate_out /scratch/$SLURM_JOB_ID/intermediate_$SLURM_JOB_ID '
 
 
       if(encoding == 'UG'):
@@ -97,9 +98,14 @@ if __name__ == '__main__':
         else:
           options = " -e SAT --solver_type 5 -t l "
 
-      f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + options + " --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_" + encoding + "_" + str(args.ue) + "_" + str(args.tf) + "_" + domain_name + "_$SLURM_JOB_ID\n")
+      if (args.dt == 1):
+        options += ' --de_type 1 '
+      else:
+        options += ' --de_type 0 '
 
-      command = 'sbatch run_' + encoding + "_"+ str(args.ue) + "_" + str(args.tf) + "_" +  domain_name + ".sh"
+      f.write("time python3 main.py --dir " + test_domain_path + domain + default_file_names + options + " --run_benchmarks 1 --time_limit 5000 > " + args.output_dir + "out_" + encoding + "_" + str(args.ue) + "_" + str(args.tf) + "_" + str(args.dt) + "_" + domain_name + "_$SLURM_JOB_ID\n")
+
+      command = 'sbatch run_' + encoding + "_"+ str(args.ue) + "_" + str(args.tf) + "_" + str(args.dt) + "_" + domain_name + ".sh"
 
 
 

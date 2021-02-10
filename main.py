@@ -27,6 +27,7 @@ import plan_tester as pt
 import run_tests as rt
 import run_benchmarks as rb
 import preprocess  as pre
+import detype as dt
 import time
 import os
 
@@ -36,8 +37,11 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description=text,formatter_class=argparse.RawTextHelpFormatter)
   parser.add_argument("-V", "--version", help="show program version", action="store_true")
   parser.add_argument("-d", help="domain file path", default = 'testcases/competition/IPC2/Blocks/domain.pddl')
+  parser.add_argument("--dd_out", help="detyped domain output file path", default = './detyped_domain')
   parser.add_argument("-p", help="problem file path", default = 'testcases/competition/IPC2/Blocks/prob01.pddl')
+  parser.add_argument("--dp_out", help="detyped problem output file path", default = './detyped_problem')
   parser.add_argument("--dir", help="Benchmarks directory path", default = 'competition_benchmarks/IPC2/Elevator/')
+  parser.add_argument("--de_type", type=int, help="detype domain and problem file [0/1], default 0",default = 0)
   parser.add_argument("--plan_out", help="plan output file path", default = 'cur_plan.txt')
   parser.add_argument("-k", type=int, help="path length",default = 4)
   parser.add_argument("-e", help=textwrap.dedent('''
@@ -110,6 +114,14 @@ if __name__ == '__main__':
   elif (args.run_benchmarks != 0):
     rb.run(args)
   else:
+
+    # If detype is set to 1, then we detype:
+    if (args.de_type == 1):
+      dt.detype(args.d, args.p, args.dd_out, args.dp_out)
+      # after generating detyped files, we use them are source:
+      args.d = args.dd_out
+      args.p = args.dp_out
+
     # If not extracting plan, we dont test by default:
     if (args.run < 2):
       args.testing = 0
