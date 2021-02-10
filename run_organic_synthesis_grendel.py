@@ -50,7 +50,7 @@ if __name__ == '__main__':
     default_file_names = ' --dd_out /scratch/$SLURM_JOB_ID/dd_out_$SLURM_JOB_ID --dp_out /scratch/$SLURM_JOB_ID/dp_out_$SLURM_JOB_ID --encoding_out /scratch/$SLURM_JOB_ID/encoding_$SLURM_JOB_ID --solver_out /scratch/$SLURM_JOB_ID/solver_out_$SLURM_JOB_ID --preprocessed_encoding_out /scratch/$SLURM_JOB_ID/preprocessed_$SLURM_JOB_ID --plan_out /scratch/$SLURM_JOB_ID/plan_$SLURM_JOB_ID --encoding_intermediate_out /scratch/$SLURM_JOB_ID/intermediate_$SLURM_JOB_ID '
 
 
-    options = " -e UE+ --preprocessing 1 --run 2 --parameters_overlap 1 --de_type 1 --step 1 --run_benchmarks 1 --time_limit 21600 --preprocessing_time_limit 10800 > "
+    options = " -e UE+ --preprocessing 1 --run 3 --parameters_overlap 1 --de_type 1 --step 1 --run_benchmarks 1 --time_limit 21600 --preprocessing_time_limit 10800 > "
 
 
     f.write("time python3 main.py --dir " + test_domain_path + domain_name + "/ " + default_file_names + options + args.output_dir + "out_" + domain_name + "_$SLURM_JOB_ID\n")

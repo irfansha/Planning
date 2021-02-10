@@ -60,7 +60,8 @@ if __name__ == '__main__':
                                Three levels of execution:
                                0 = only generate encoding
                                1 = test plan existence
-                               2 = extract the plan in found'''),default = 2)
+                               2 = extract the plan in found
+                               3 = extract the plan from preprocessed solution itself'''),default = 2)
   parser.add_argument("--testing", type=int, help=textwrap.dedent('''
                                           0 = no testing
                                           1 = internal testing with direct grounding, more memory required
