@@ -128,7 +128,12 @@ def detype(domain, problem, domain_out, problem_out):
   # replacing '_' with '-' for consistency:
   #replace_chars(domain_out, problem_out)
 
-def replace_chars(domain_out, problem_out):
+  if (":equality" in parser.requirements):
+    replace_chars(domain_out)
+
+
+
+def replace_chars(domain_out):
   # reading the lines in domain file:
   f = open(domain_out, "r")
   domain_lines = f.readlines()
@@ -137,19 +142,7 @@ def replace_chars(domain_out, problem_out):
   # writing back by replacing:
   f = open(domain_out, "w")
   for line in domain_lines:
-    line = line.replace("_", "-")
-    f.write(line)
-  f.close()
-
-  # reading the lines in problem file:
-  f = open(problem_out, "r")
-  problem_lines = f.readlines()
-  f.close()
-
-  # writing back to problem file after replacing:
-  f = open(problem_out, "w")
-  for line in problem_lines:
-    line = line.replace("_","-")
+    line = line.replace("=", "eq")
     f.write(line)
   f.close()
 
@@ -220,8 +213,18 @@ def print_detyped_problem_file(parser, updated_objects, used_types, f_problem):
     if (obj_type in used_types):
       for obj in objs:
         f_problem.write("    (" + str(obj_type) + " "  + str(obj) + ")\n")
+
+  # Printing equality propositions for objects
+  # if equality is a requirement:
+  if (":equality" in parser.requirements):
+    f_problem.write("    ;; equality propositions for objects:\n")
+    for obj_type, objs  in parser.objects.items():
+        for obj in objs:
+          f_problem.write("    (eq "  + str(obj) + " " + str(obj) + ")\n")
+
   # closing parantheses for initial state definition:
   f_problem.write("  )\n")
+
 
 
   # Goal state does not change so writting as before:

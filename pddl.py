@@ -16,7 +16,8 @@ from action import Action
 
 class PDDL_Parser:
 
-    SUPPORTED_REQUIREMENTS = [':strips', ':negative-preconditions', ':typing', 'constants']
+    #SUPPORTED_REQUIREMENTS = [':strips', ':negative-preconditions', ':typing', 'constants']
+    SUPPORTED_REQUIREMENTS = [':strips', ':negative-preconditions', ':equality', ':typing', 'constants']
 
     # ------------------------------------------
     # Tokens
