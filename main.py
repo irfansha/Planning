@@ -179,7 +179,7 @@ if __name__ == '__main__':
         # We do not extract a plan from Madagascar:
         if (args.e == "M-seq"):
           exit()
-        if (args.run == 2):
+        if (args.run >= 2):
           plan_extract = pe(run_qs.sol_map, args.plan_out)
           if (args.e == 'CTE' or args.e == 'FE'):
             plan_extract.extract_action_based_plan(encoding_gen.encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
