@@ -56,7 +56,7 @@ def run_instance(domain_filepath, problem_filepath, args):
       if (k >= 100):
         print("Large K\n")
         break
-      k = k + 5
+      k = k + args.step
       # Assuming linux system:
       problem_name = problem_filepath.split("/")
       file_name = problem_name[-1]
