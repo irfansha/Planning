@@ -95,7 +95,10 @@ def run(args):
     files_list = glob.glob(args.dir + "*")
     files_list.sort(key=natural_keys)
 
-    domain_filepath = args.dir + "domain.pddl"
+    for file_path in files_list:
+      if ('domain' in file_path):
+        domain_filepath = file_path
+        break
 
     count = 0
 
