@@ -44,6 +44,7 @@ if __name__ == '__main__':
   parser.add_argument("--de_type", type=int, help="detype domain and problem file [0/1], default 0",default = 0)
   parser.add_argument("--plan_out", help="plan output file path", default = 'cur_plan.txt')
   parser.add_argument("-k", type=int, help="path length",default = 4)
+  parser.add_argument("--step", type=int, help="step value for k, in benchmarks, default 5",default = 5)
   parser.add_argument("-e", help=textwrap.dedent('''
                                   encoding types:
                                   SAT = Satisfiability
