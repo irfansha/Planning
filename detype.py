@@ -85,7 +85,8 @@ def detype_domain(parser, updated_objects):
       new_parameters.append(parameter[0])
       # Adding static type predicate in precondition
       # Need [type, ?argument] format:
-      new_positive_preconditions.append([parameter[1], parameter[0]])
+      if (parameter[1] != 'object'):
+        new_positive_preconditions.append([parameter[1], parameter[0]])
       # Collecting used types from parameters:
       if parameter[1] not in used_types:
         used_types.append(parameter[1])
@@ -223,7 +224,7 @@ def print_detyped_problem_file(parser, updated_objects, used_types, f_problem):
   #for obj_type, objs  in parser.objects.items():
   # Instead using updated types to handle super types:
   for obj_type, objs  in updated_objects.items():
-    if (obj_type in used_types):
+    if (obj_type in used_types and obj_type != 'object'):
       for obj in objs:
         f_problem.write("    (" + str(obj_type) + " "  + str(obj) + ")\n")
 
