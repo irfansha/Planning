@@ -68,6 +68,10 @@ if __name__ == '__main__':
                                           2 = external testing with VAL'''),default = 2)
   parser.add_argument("--splitvars", type=int, help="Turn split forall vars on: [0 = No 1 = Yes]",default = 0)
   parser.add_argument("--parameters_overlap", type=int, help="Turn reusing parameter vars for actions on: [0 = No 1 = Yes]",default = 0)
+  parser.add_argument("--parameters_fold", type=int, help=textwrap.dedent('''
+                                           "Turn reusing parameter vars with in each time step on: [0 = No 1 = Yes], default 0
+                                            Experimental'''),default = 0)
+  parser.add_argument("--fold_num", type=int, help="Number of max different variables to use, when parameters fold is on, default 10",default = 10)
   parser.add_argument("--encoding_out", help="output encoding file",default = 'encoding')
   parser.add_argument("--encoding_intermediate_out", help="output encoding file",default = 'intermediate_encoding')
   parser.add_argument("--encoding_type", type=int, help="Encoding type: [1 = QCIR14 2 = QDIMACS]",default = 2)
@@ -105,6 +109,10 @@ if __name__ == '__main__':
 
 
   print(args)
+
+  # Asserting if detype is turned on when parameter fold is turned on:
+  if (args.parameters_fold == 1):
+    assert(args.de_type == 1)
 
   if args.version:
     print("Version 0.9")
@@ -184,7 +192,7 @@ if __name__ == '__main__':
           if (args.e == 'CTE' or args.e == 'FE'):
             plan_extract.extract_action_based_plan(encoding_gen.encoding.extraction_action_vars_gen.states, constraints_extract, args.k)
           elif(args.e == 'UE' or args.e == 'UE+'):
-            if (args.parameters_overlap == 0):
+            if (args.parameters_overlap == 0 and args.parameters_fold == 0):
               plan_extract.extract_ungrounded_plan(encoding_gen.encoding.action_with_parameter_vars, constraints_extract, args.k)
             else:
               plan_extract.extract_ungrounded_plan(encoding_gen.encoding.action_with_parameter_vars_with_overlap, constraints_extract, args.k)

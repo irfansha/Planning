@@ -296,7 +296,7 @@ class UngroundedEncodingPlus():
 
 
 
-  def generate_k_transitions(self, tfun, k, actions_overlap_flag):
+  def generate_k_transitions(self, tfun, k, actions_overlap_flag, actions_fold_flag):
     # Generating transition function for each step:
     for i in range(k):
       # Generating auxilary vars:
@@ -304,7 +304,7 @@ class UngroundedEncodingPlus():
       # Appending transition output gates:
       self.transition_step_output_gates.append(step_aux_vars[-1])
 
-      if (actions_overlap_flag):
+      if (actions_overlap_flag or actions_fold_flag):
         tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.static_predicates, self.predicates[i], self.predicates[i+1], self.action_with_parameter_vars_with_overlap[i], self.forall_vars, self.split_forall_vars, step_aux_vars)
       else:
         tfun.gates_gen.new_gate_gen(self.encoding, 'S_' + str(i), 'S_' + str(i+1), self.static_predicates, self.predicates[i], self.predicates[i+1], self.action_with_parameter_vars[i], self.forall_vars, self.split_forall_vars, step_aux_vars)
@@ -322,19 +322,25 @@ class UngroundedEncodingPlus():
     [self.final_output_gate] = self.var_dis.get_vars(1)
     self.encoding.append(['and', self.final_output_gate, temp_final_list])
 
-  def generate_quantifier_blocks(self, k, splitvars_flag, actions_overlap_flag):
+  def generate_quantifier_blocks(self, k, splitvars_flag, actions_overlap_flag, actions_fold_flag):
     self.quantifier_block.append(['# Action variables :'])
     for i in range(k):
       self.quantifier_block.append(['# Time step' + str(i) + ' :'])
-      if (actions_overlap_flag):
+      if (actions_overlap_flag or actions_fold_flag):
         for action_vars in self.action_with_parameter_vars_with_overlap[i]:
           overlap_main_action_var = action_vars[0]
           self.quantifier_block.append(['# Main action variable :'])            # XXX add name directly later
           self.quantifier_block.append(['exists(' + str(overlap_main_action_var) + ')'])
-        for overlap_parameters in self.base_parameter_vars_with_overlap[i]:
-          self.quantifier_block.append(['# Parameter variables :'])
-          for overlap_parameter in overlap_parameters:
-            self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in overlap_parameter) + ')'])
+        # XXX here add if condition for appropriate flag and base parameters:
+        if (actions_fold_flag == 1 and self.fold_num < self.max_parameters):
+          for fold_parameters in self.base_parameter_vars_with_fold[i]:
+            self.quantifier_block.append(['# Parameter variables :'])
+            self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in fold_parameters) + ')'])
+        else:
+          for overlap_parameters in self.base_parameter_vars_with_overlap[i]:
+            self.quantifier_block.append(['# Parameter variables :'])
+            for overlap_parameter in overlap_parameters:
+              self.quantifier_block.append(['exists(' + ', '.join(str(x) for x in overlap_parameter) + ')'])
       else:
         for action_vars in self.action_with_parameter_vars[i]:
           main_action_var = action_vars[0]
@@ -406,6 +412,9 @@ class UngroundedEncodingPlus():
     #    print(action)
     #  print("\n")
 
+  # When generating parameter existential variables, we do not need to have seperate
+  # variables for each opertion/ungrounded-action instead we generate the minimum number
+  # variables required in total and use the same variables for all the operators:
   def gen_action_with_parameter_vars_with_overlap(self, object_type_dict, overlap_dict, action_vars, tfun, k):
     for i in range(k):
       base_parameter_vars_dict = {}
@@ -429,6 +438,48 @@ class UngroundedEncodingPlus():
       self.action_with_parameter_vars_with_overlap.append(step_action_with_parameter_vars)
 
 
+  # Similar to above parameters overlap, we use only one set of variables for all the operators.
+  # However, we can do better (for now only handing de-typed domains) by reusing the variables within
+  # each time step, this can make a difference for domains with large number of parameters:
+  def gen_action_with_parameter_vars_with_fold(self, object_type_dict, overlap_dict, action_vars, tfun, k):
+    for i in range(k):
+      base_parameter_vars_list = []
+      fold_vars_list = []
+
+      # Since we assert to detype when using parameter fold,
+      # we simply take parameter count from 'object' type:
+      self.max_parameters = overlap_dict["object"]
+
+      if (self.fold_num < self.max_parameters):
+        for j in range(self.fold_num):
+          fold_vars_list.append(self.var_dis.get_vars(object_type_dict["object"]))
+        # Remembering only base parameter in each time step:
+        self.base_parameter_vars_with_fold.append(fold_vars_list)
+        copied_fold_vars = copy.deepcopy(fold_vars_list)
+        for j in range(self.max_parameters):
+          # We keep copying the same variables in a cycle:
+          if (len(copied_fold_vars) == 0):
+            copied_fold_vars = copy.deepcopy(fold_vars_list)
+            base_parameter_vars_list.append(copied_fold_vars.pop(0))
+          else:
+            base_parameter_vars_list.append(copied_fold_vars.pop(0))
+      else:
+        for j in range(self.max_parameters):
+          base_parameter_vars_list.append(self.var_dis.get_vars(object_type_dict["object"]))
+      # For now sending in as list of listes but not need, remove extra list below:
+      self.base_parameter_vars_with_overlap.append([base_parameter_vars_list])
+      step_action_with_parameter_vars = []
+      for action_var in action_vars:
+        temp_vars_list = copy.deepcopy(base_parameter_vars_list)
+        [action_name_var] = self.var_dis.get_vars(1)
+        parameter_vars = []
+        for parameter in action_var[1]:
+          parameter_vars.append(temp_vars_list.pop(0))
+        step_action_with_parameter_vars.append([action_name_var, parameter_vars])
+      self.action_with_parameter_vars_with_overlap.append(step_action_with_parameter_vars)
+
+
+
   # Generating k+1 states for k steps:
   def gen_predicate_vars(self, tfun, k):
     # generating first static predicates:
@@ -448,18 +499,18 @@ class UngroundedEncodingPlus():
       self.forall_vars.append(temp_var_list)
       self.forall_vars_map[obj_type] = temp_var_list
 
-  def gen_if_existential_gate(self, updated_objects, base_action_vars, actions_overlap_flag, k):
+  def gen_if_existential_gate(self, updated_objects, base_action_vars, actions_overlap_flag, actions_fold_flag, k):
     # Avoiding conditional gates for same parameters:
     check_list = []
     if_existential_output_list = []
     for i in range(k):
-      if actions_overlap_flag == 0:
+      if actions_overlap_flag == 0 and actions_fold_flag == 0 :
         length = len(self.action_with_parameter_vars[i])
       else:
         length = len(self.action_with_parameter_vars_with_overlap[i])
       for j in range(length):
         cur_base_action_vars = base_action_vars[j]
-        if actions_overlap_flag == 0:
+        if actions_overlap_flag == 0 and actions_fold_flag == 0:
           action_vars = self.action_with_parameter_vars[i][j]
         else:
           action_vars = self.action_with_parameter_vars_with_overlap[i][j]
@@ -531,7 +582,7 @@ class UngroundedEncodingPlus():
     self.encoding.append(['or',self.final_transition_gate, [if_condition_gate, then_final_transition_output_gate]])
 
 
-  def __init__(self, constraints_extract, tfun, k, splitvars_flag, actions_overlap_flag):
+  def __init__(self, constraints_extract, tfun, k, splitvars_flag, actions_overlap_flag, actions_fold_flag, fold_num):
     self.var_dis = vd()
     self.quantifier_block = []
     self.encoding = []
@@ -542,17 +593,30 @@ class UngroundedEncodingPlus():
     self.final_transition_gate = 0 # final transition gate can never be 0
     self.final_output_gate = 0 # final output gate can never be 0
 
+    # The number of varibles to use for one time step:
+    self.fold_num = fold_num
+    # The maximum number of variables available for one time step:
+    self.max_parameters = -1 # can never be -1, must be updated later:
+
+
     self.predicates = []
     self.static_predicates = []
     self.gen_predicate_vars(tfun, k)
 
-    if (actions_overlap_flag == 0):
-      self.action_with_parameter_vars = []
-      self.gen_action_with_parameter_vars(constraints_extract.bin_object_type_vars_dict, constraints_extract.action_vars, tfun, k)
-    else:
+    if (actions_overlap_flag == 1):
       self.base_parameter_vars_with_overlap = []
       self.action_with_parameter_vars_with_overlap = []
       self.gen_action_with_parameter_vars_with_overlap(constraints_extract.bin_object_type_vars_dict, constraints_extract.action_vars_overlap_dict, constraints_extract.action_vars, tfun, k)
+    elif (actions_fold_flag == 1):
+      self.base_parameter_vars_with_fold = []
+      # Keeping same names, so that we do not change all the places:
+      self.base_parameter_vars_with_overlap = []
+      self.action_with_parameter_vars_with_overlap = []
+      self.gen_action_with_parameter_vars_with_fold(constraints_extract.bin_object_type_vars_dict, constraints_extract.action_vars_overlap_dict, constraints_extract.action_vars, tfun, k)
+    else:
+      self.action_with_parameter_vars = []
+      self.gen_action_with_parameter_vars(constraints_extract.bin_object_type_vars_dict, constraints_extract.action_vars, tfun, k)
+
 
     self.forall_vars = []
     self.forall_vars_map = {}
@@ -561,15 +625,15 @@ class UngroundedEncodingPlus():
     self.split_forall_vars = self.var_dis.get_vars(len(tfun.split_predicates_forall_vars))
     #print(self.split_forall_vars)
 
-    self.generate_k_transitions(tfun, k, actions_overlap_flag)
+    self.generate_k_transitions(tfun, k, actions_overlap_flag, actions_fold_flag)
 
     self.generate_initial_gate(constraints_extract, splitvars_flag)
     self.generate_goal_gate(constraints_extract, k, splitvars_flag)
 
     self.gen_conditional_transition_gates(constraints_extract.updated_objects)
 
-    self.gen_if_existential_gate(constraints_extract.updated_objects, constraints_extract.action_vars, actions_overlap_flag, k)
+    self.gen_if_existential_gate(constraints_extract.updated_objects, constraints_extract.action_vars, actions_overlap_flag, actions_fold_flag, k)
 
     self.generate_final_gate()
 
-    self.generate_quantifier_blocks(k, splitvars_flag, actions_overlap_flag)
+    self.generate_quantifier_blocks(k, splitvars_flag, actions_overlap_flag, actions_fold_flag)

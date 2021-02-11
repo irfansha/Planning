@@ -44,7 +44,7 @@ class EncodingGen():
     elif (args.e == 'UE'):
       self.encoding = ue(constraints_extract, tfun, args.k, args.splitvars, args.parameters_overlap)
     elif (args.e == 'UE+'):
-      self.encoding = uep(constraints_extract, tfun, args.k, args.splitvars, args.parameters_overlap)
+      self.encoding = uep(constraints_extract, tfun, args.k, args.splitvars, args.parameters_overlap, args.parameters_fold, args.fold_num)
     elif (args.e == 'CTE'):
       if (args.run == 2):
         self.encoding = cte(constraints_extract, tfun, args.k, 1)
