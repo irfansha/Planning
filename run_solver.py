@@ -52,8 +52,7 @@ class RunSolver():
 
   def run_caqe(self, input_file_path):
     if (self.preprocessing == 2):
-      assert(self.run != 2)
-      command = self.solver_path + " --preprocessor bloqqer " + input_file_path + " > " + self.output_file_path
+      command = self.solver_path + " --preprocessor=bloqqer --qdo " + input_file_path + " > " + self.output_file_path
     else:
       command = self.solver_path + " --qdo --dependency-schemes " + str(self.dependency_schemes) + " " + input_file_path + " > " + self.output_file_path
     try:
