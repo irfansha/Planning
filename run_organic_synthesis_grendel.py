@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-import argparse
+import argparse, textwrap
 
 # Main:
 if __name__ == '__main__':
@@ -15,9 +15,25 @@ if __name__ == '__main__':
   parser.add_argument("--mail_type", help="mail type", default = 'END')
   parser.add_argument("--mail_user", help="mail", default = 'irfansha.shaik@cs.au.dk')
   parser.add_argument("--output_dir", help="directory path for output files", default = 'out_data/')
+  parser.add_argument("--problem_set", help=textwrap.dedent('''
+                                  problem set to run:
+                                  sat18 = organic-synthesis-sat18
+                                  opt18 = organic-synthesis-opt18
+                                  alkene  = Alkene_problem
+                                  mitexams  = OrganicSynthesisMITexamsBenchmark'''))
+
   args = parser.parse_args()
 
-  test_domain_path = "./organic_synthesis_benchmarks/"
+  benchmarks_path = "Organic_synthesis_complete_benchmarks/run_benchmarks_datasets/"
+
+  if (args.problem_set == "sat18"):
+    test_domain_path = "organic-synthesis-sat18/"
+  elif (args.problem_set == "opt18"):
+    test_domain_path = "organic-synthesis-opt18/"
+  elif(args.problem_set == "alkene"):
+    test_domain_path = "Alkene_problem/"
+  elif(args.problem_set == "mitexams"):
+    test_domain_path = "OrganicSynthesisMITexamsBenchmark/"
 
   # Checking if out directory exits:
   if not Path(args.output_dir).is_dir():
@@ -26,7 +42,9 @@ if __name__ == '__main__':
     os.mkdir(args.output_dir)
 
   for i in range(1, 21):
-
+    # Alkene only has 18 problems:
+    if (args.problem_set == "alkene" and i >= 19):
+      continue
     # domain name with 0 padding:
     domain_name = "problem" + str(i).zfill(2)
 
@@ -50,10 +68,10 @@ if __name__ == '__main__':
     default_file_names = ' --dd_out /scratch/$SLURM_JOB_ID/dd_out_$SLURM_JOB_ID --dp_out /scratch/$SLURM_JOB_ID/dp_out_$SLURM_JOB_ID --encoding_out /scratch/$SLURM_JOB_ID/encoding_$SLURM_JOB_ID --solver_out /scratch/$SLURM_JOB_ID/solver_out_$SLURM_JOB_ID --preprocessed_encoding_out /scratch/$SLURM_JOB_ID/preprocessed_$SLURM_JOB_ID --plan_out /scratch/$SLURM_JOB_ID/plan_$SLURM_JOB_ID --encoding_intermediate_out /scratch/$SLURM_JOB_ID/intermediate_$SLURM_JOB_ID '
 
 
-    options = " -e UE+ --preprocessing 1 --run 3 --parameters_fold 1 --fold_num 15 --de_type 1 --step 1 --run_benchmarks 1 --time_limit 21600 --preprocessing_time_limit 10800 > "
+    options = " -e UE+ --preprocessing 2 --run 2 --parameters_overlap 1 --de_type 1 --step 1 --run_benchmarks 1 --time_limit 21600 > "
 
 
-    f.write("time python3 main.py --dir " + test_domain_path + domain_name + "/ " + default_file_names + options + args.output_dir + "out_" + domain_name + "_$SLURM_JOB_ID\n")
+    f.write("time python3 main.py --dir " + benchmarks_path + test_domain_path + domain_name + "/ " + default_file_names + options + args.output_dir + "out_" + domain_name + "_$SLURM_JOB_ID\n")
 
     command = 'sbatch run_' + domain_name + ".sh"
 
