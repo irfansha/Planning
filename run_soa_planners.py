@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
 
     if (args.planner == 'FDS'):
-      options = " --alias seq-sat-fdss-1   --overall-time-limit 5000s --overall-memory-limit 300g --portfolio-single-plan --sas-plan /scratch/$SLURM_JOB_ID/plan_$SLURM_JOB_ID "
+      options = " --alias seq-sat-fdss-1   --overall-time-limit 5000s --overall-memory-limit 300g --portfolio-single-plan --sas-file /scratch/$SLURM_JOB_ID/plan_$SLURM_JOB_ID "
       f.write("time python3 downward/fast-downward.py " + options + domain_filepath + " " + problem_filepath + " > "+ args.output_dir + "out_" + domain_name + "_$SLURM_JOB_ID\n")
 
     command = 'sbatch run_' + domain_name + ".sh"
