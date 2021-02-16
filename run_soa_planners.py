@@ -1,7 +1,7 @@
 # Irfansha Shaik, 16.02.2021, Aarhus.
 
 '''
-Dispatches batch jobs of state-of-the-art planners on Organic synthesis benchmarks
+Dispatches batch jobs of state-of-the-art grounded planners on Organic synthesis benchmarks
 (can be extended to other domains later)
 '''
 
@@ -40,7 +40,6 @@ if __name__ == '__main__':
   parser.add_argument("--planner", help=textwrap.dedent('''
                                   Planners:
                                   M = madagascar
-                                  PL = Power Lifted
                                   FDS  = Fast Downward soup 18
                                   D  = Delfi'''))
 
@@ -78,9 +77,9 @@ if __name__ == '__main__':
 
     for file_path in files_list:
       if ('domain' in file_path):
-        domain_filepath = "../" + file_path
+        domain_filepath = file_path
       else:
-        problem_filepath = "../" + file_path
+        problem_filepath = file_path
 
 
     # Generate batch script:
@@ -101,12 +100,9 @@ if __name__ == '__main__':
     f.write("cd $SLURM_SUBMIT_DIR\n\n")
 
 
-
-
-    if (args.planner == 'PL'):
-      default_file_names = ' --translator-output-file /scratch/$SLURM_JOB_ID/translator-output-file_$SLURM_JOB_ID '
-      options = " -s gbfs -e goalcount -g yannakakis > "
-      f.write("time python3 correa-et-al-icaps2020-code/power-lifted.py -d " + domain_filepath + " -i " + problem_filepath + default_file_names + options + args.output_dir + "out_" + domain_name + "_$SLURM_JOB_ID\n")
+    if (args.planner == 'FDS'):
+      options = " --alias seq-sat-fdss-1   --overall-time-limit 5000s --overall-memory-limit 300g --portfolio-single-plan --sas-plan /scratch/$SLURM_JOB_ID/plan_$SLURM_JOB_ID "
+      f.write("time python3 downward/fast-downward.py " + options + domain_filepath + " " + problem_filepath + " > "+ args.output_dir + "out_" + domain_name + "_$SLURM_JOB_ID\n")
 
     command = 'sbatch run_' + domain_name + ".sh"
 
