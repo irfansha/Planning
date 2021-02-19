@@ -5,6 +5,7 @@ import glob
 import re
 import os
 from pathlib import Path
+from resource import *
 
 
 
@@ -14,7 +15,7 @@ def atoi(text):
 def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
-def gen_new_arguments(domain, problem, k, args, file_name):
+def gen_new_arguments(domain, problem, k, args, file_name, remaining_time):
   new_command = ''
   for arg in vars(args):
     # We set these separately:
@@ -26,6 +27,8 @@ def gen_new_arguments(domain, problem, k, args, file_name):
       new_command += ' -p ' + problem
     elif(arg == 'k'):
       new_command += ' -k ' + str(k)
+    elif(arg == 'time_limit'):
+      new_command += ' --time_limit ' + str(remaining_time)
     elif(arg == "verbosity_level"):
       new_command += ' --verbosity_level 0'
     elif( arg == "run_benchmarks"):
@@ -51,6 +54,7 @@ def run_instance(domain_filepath, problem_filepath, args):
     print("Running " + problem_filepath)
     print("---------------------------------------------------------------------------------------------")
     k = 0
+    remaining_time = args.time_limit
     while(1):
       # Handing testcases with no solution:
       if (k >= 100):
@@ -62,15 +66,22 @@ def run_instance(domain_filepath, problem_filepath, args):
       file_name = problem_name[-1]
       file_name = file_name.strip(".pddl")
       # domain and problem files are new:
-      command_arguments = gen_new_arguments(domain_filepath, problem_filepath, k, args, file_name)
+      command_arguments = gen_new_arguments(domain_filepath, problem_filepath, k, args, file_name, remaining_time)
       # command = 'python3 main.py -d ' + domain_filepath + ' -p ' + problem_filepath + ' -e ' + args.e + ' --run ' + str(args.run) + ' -k ' + str(k) + ' --testing ' + str(args.testing) + ' --verbosity_level 0 --time_limit ' + str(args.time_limit) + ' --preprocessing ' + str(args.preprocessing) + ' --parameters_overlap ' + str(args.parameters_overlap) + ' --solver_type ' + str(args.solver_type)
       command = 'python3 main.py ' + command_arguments
       plan_status = os.popen(command).read()
       ls = plan_status.strip("\n").split("\n")
+
       for line in ls:
         print(line)
+        # Getting time used for one call:
+        if ("Solving time" in line):
+          parsed_line = line.strip("\n").split(": ")
+          remaining_time -= float(parsed_line[1])
+
       if ("Plan found" in plan_status):
           print("Plan found for length: " + str(k))
+          print("Peak Memory used (in MB): " + str(getrusage(RUSAGE_CHILDREN).ru_maxrss/1024.0))
           if (args.testing != 0 and args.run == 2):
             if ("Plan valid" in plan_status):
               print("Plan valid\n")
@@ -80,9 +91,11 @@ def run_instance(domain_filepath, problem_filepath, args):
       else:
           print("Plan not found for length: " + str(k) + "\n")
           if ('Time out' in plan_status):
+              print("Peak Memory used (in MB): " + str(getrusage(RUSAGE_CHILDREN).ru_maxrss/1024.0))
               print("Time out occured\n")
               return 1
           elif ('Memory out occurred' in plan_status):
+              print("Peak Memory used (in MB): " + str(getrusage(RUSAGE_CHILDREN).ru_maxrss/1024.0))
               return 1
 
 

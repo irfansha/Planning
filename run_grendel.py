@@ -11,9 +11,9 @@ if __name__ == '__main__':
   parser.add_argument("--partition", help="partition name", default = 'q48')
   parser.add_argument("--nodes", help="no of nodes", default = '1')
   parser.add_argument("-e", type =int, help="UE/SAT [0/1], default 0", default = 0)
-  parser.add_argument("--ue", type =int, help="UE/UE+ [0/1], default 0", default = 0)
+  parser.add_argument("--ue", type =int, help="UE/UE+ [0/1], default 0", default = 1)
   parser.add_argument("--tf", type =int, help="b/l [0/1], default 0", default = 0)
-  parser.add_argument("--dt", type =int, help="detype [0/1], default 0", default = 0)
+  parser.add_argument("--dt", type =int, help="detype [0/1], default 0", default = 1)
   parser.add_argument("--mem", help="mem in GB, default 0 i.e. all of it", default = '0')
   parser.add_argument("--time", help="estimated time in hours", default = '24')
   parser.add_argument("--mail_type", help="mail type", default = 'END')
@@ -26,22 +26,22 @@ if __name__ == '__main__':
   if (args.only_testing == 0):
     if (args.typed == 1):
       test_domains = ["Blocks/", "DriverLog/", "Elevator/", "FreeCell/",
-                      "rovers/", "SATELLITE/", "termes/", "termes-opt18/",
-                      "Thoughtful/", "tidybot-opt11-strips/", "Visitall/",
+                       "Hiking/", "SATELLITE/", "storage/", "termes/", "termes-opt18/",
+                      "Thoughtful/", "tidybot-opt11-strips/",
                       "visitall-opt11-strips/", "visitall-sat11-strips/", "ZenoTravel/"]
-      test_domain_path = "./typed_benchmarks/"
+      test_domain_path = "./Final_benchmarks/typed_benchmarks/"
     else:
-      test_domains = ["blocks/", "driverlog/", "grid/", "logistics00/", "mystery/", "rovers-02/", "zenotravel/",
-                      "blocks-3op/", "ferry/", "gripper/", "miconic/", "no-mprime/", "satellite/",
-                      "depot/", "freecell/", "hanoi/", "movie/", "no-mystery/", "tsp/"]
-      test_domain_path = "./untyped_benchmarks/"
+      test_domains = ["blocks/", "driverlog/", "grid/", "logistics00/", "mystery/", "zenotravel/",
+                      "blocks-3op/", "gripper/", "miconic/", "no-mprime/", "satellite/",
+                      "depot/", "freecell/", "hanoi/", "movie/", "no-mystery/", "mprime/", "mystery/"]
+      test_domain_path = "./Final_benchmarks/untyped_benchmarks/"
 
   else:
     test_domains = ["visitall-opt11-strips/"]
     test_domain_path = "./test_benchmarks/"
 
   if (args.e == 0):
-    encoding_variants = ["UG", "UG_po", "UG_po_pre"]
+    encoding_variants = ["UG_po", "UG_po_pre"]
   else:
     encoding_variants = ["SAT"]
 
@@ -89,9 +89,9 @@ if __name__ == '__main__':
           options = " -e UE+ --parameters_overlap 1 "
       elif(encoding == 'UG_po_pre'):
         if (args.ue == 0):
-          options = " -e UE --preprocessing 1 --run 1 --parameters_overlap 1 "
+          options = " -e UE --preprocessing 2 --run 2 --parameters_overlap 1 "
         else:
-          options = " -e UE+ --preprocessing 1 --run 1 --parameters_overlap 1 "
+          options = " -e UE+ --preprocessing 2 --run 2 --parameters_overlap 1 "
       elif(encoding == 'SAT'):
         if (args.tf == 0):
           options = " -e SAT --solver_type 5 -t b "
