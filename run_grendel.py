@@ -43,7 +43,8 @@ if __name__ == '__main__':
   if (args.e == 0):
     encoding_variants = ["UG_po", "UG_po_pre"]
   else:
-    encoding_variants = ["SAT"]
+    #encoding_variants = ["SAT"]
+    encoding_variants = ["M-SAT"]
 
   # Checking if out directory exits:
   if not Path(args.output_dir).is_dir():
@@ -97,6 +98,8 @@ if __name__ == '__main__':
           options = " -e SAT --solver_type 5 -t b "
         else:
           options = " -e SAT --solver_type 5 -t l "
+      elif(encoding == 'M-SAT'):
+        options = " -e M-seq --solver_type 5 --run 1"
 
       if (args.dt == 1):
         options += ' --de_type 1 '

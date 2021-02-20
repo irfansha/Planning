@@ -28,12 +28,14 @@ class RunSolver():
       if not self.timed_out:
         self.parse_depqbf_output()
     elif(self.solver_type == 4):
-      self.change_to_dimacs()
+      if (self.e != 'M-seq'):
+        self.change_to_dimacs()
       self.run_minisat()
       if not self.timed_out:
         self.parser_minisat_output()
     elif(self.solver_type == 5):
-      self.change_to_dimacs()
+      if (self.e != 'M-seq'):
+        self.change_to_dimacs()
       self.run_cryptominisat()
       if not self.timed_out:
         self.parser_cryptominisat_output()
@@ -285,6 +287,7 @@ class RunSolver():
     self.output_file_path = args.solver_out
     self.solver_type = args.solver_type
     self.time_limit = args.time_limit
+    self.e = args.e
     self.run = args.run
     self.preprocessing = args.preprocessing
     self.dependency_schemes = args.dependency_schemes
