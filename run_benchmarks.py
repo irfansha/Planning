@@ -57,7 +57,7 @@ def run_instance(domain_filepath, problem_filepath, args):
     remaining_time = args.time_limit
     while(1):
       # Handing testcases with no solution:
-      if (k >= 100):
+      if (k >= 500):
         print("Large K\n")
         break
       k = k + args.step
