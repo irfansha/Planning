@@ -33,7 +33,7 @@ if __name__ == '__main__':
     else:
       test_domains = ["blocks/", "driverlog/", "grid/", "logistics00/", "mystery/", "zenotravel/",
                       "blocks-3op/", "gripper/", "miconic/", "no-mprime/", "satellite/",
-                      "depot/", "freecell/", "hanoi/", "movie/", "no-mystery/", "mprime/", "mystery/"]
+                      "depot/", "freecell/", "movie/", "no-mystery/", "mprime/", "mystery/"]
       test_domain_path = "./Final_benchmarks/untyped_benchmarks/"
 
   else:
