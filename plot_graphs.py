@@ -17,7 +17,7 @@ def natural_keys(text):
   return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 
-def parse_file(file_path, output_dir, options):
+def parse_file(file_path, output_dir, options, data_dict):
   f = open(file_path, 'r')
   lines = f.readlines()
   f.close()
@@ -32,17 +32,13 @@ def parse_file(file_path, output_dir, options):
   opt4 = "solver_type=" + options[3]
   opt5 = "t='" + options[4] +"'"
 
-  temp_solving_times = []
 
   if (opt1 in header_line and opt2 in header_line and opt3 in header_line and opt4 in header_line and opt5 in header_line):
     secondary_header = lines.pop(0)
     for line in lines:
       parsed_line = line.strip("\n").split(" ")
       if (parsed_line[-1] != 'TO'):
-        temp_solving_times.append(float(parsed_line[-1]))
-    return temp_solving_times
-  else:
-    return []
+        data_dict[parsed_line[0]] = float(parsed_line[-1])
 
 
 # Main:
@@ -55,15 +51,16 @@ if __name__ == '__main__':
 
   # versions we consider for plots:
   # [e, parameters_overlap, preprocessing, solver_type, t]
-  sat_options = ['SAT', '0', '0', '5', 'b']
-  UG_options = ['UE', '0', '0', '2', 'b']
-  UG_po_options = ['UE', '1', '0', '2', 'b']
-  UG_po_pre_options = ['UE', '1', '1', '2', 'b']
+  #sat_options = ['SAT', '0', '0', '5', 'b']
+  sat_options = ['M-seq', '0', '0', '5', 'b']
+  #UG_options = ['UE', '0', '0', '2', 'b']
+  UG_po_options = ['UE+', '1', '0', '2', 'b']
+  UG_po_pre_options = ['UE+', '1', '2', '2', 'b']
 
-  sat_solving_times = []
-  UG_solving_times = []
-  UG_po_solving_times = []
-  UG_po_pre_solving_times = []
+  sat_solving_times = {}
+  #UG_solving_times = []
+  UG_po_solving_times = {}
+  UG_po_pre_solving_times = {}
 
 
   # Checking if directory exists:
@@ -81,70 +78,79 @@ if __name__ == '__main__':
 
   # Parsing each file seperately:
   for file_path in files_list:
-    sat_solving_times.extend(parse_file(file_path, args.output_dir, sat_options))
-    UG_solving_times.extend(parse_file(file_path, args.output_dir, UG_options))
-    UG_po_solving_times.extend(parse_file(file_path, args.output_dir, UG_po_options))
-    UG_po_pre_solving_times.extend(parse_file(file_path, args.output_dir, UG_po_pre_options))
+    parse_file(file_path, args.output_dir, sat_options, sat_solving_times)
+    #UG_solving_times.extend(parse_file(file_path, args.output_dir, UG_options))
+    parse_file(file_path, args.output_dir, UG_po_options, UG_po_solving_times)
+    parse_file(file_path, args.output_dir, UG_po_pre_options, UG_po_pre_solving_times)
+
+  All_instances_list = []
 
 
-  # Gathering SAT data:
-  sat_solving_times.sort()
+  # listing all instances:
+  for line in sat_solving_times.keys():
+    if (line not in All_instances_list):
+      All_instances_list.append(line)
 
-  SAT_c = collections.Counter(sat_solving_times)
-  SAT_solved_cases = []
-  SAT_solved_times = []
-  count = 0
-  for key,value in SAT_c.items():
-    SAT_solved_times.append(key)
-    count += value
-    SAT_solved_cases.append(count)
+  for line in UG_po_solving_times.keys():
+    if (line not in All_instances_list):
+      All_instances_list.append(line)
 
-  # Gathering UG data:
-  UG_solving_times.sort()
-
-  UG_c = collections.Counter(UG_solving_times)
-  UG_solved_cases = []
-  UG_solved_times = []
-  count = 0
-  for key,value in UG_c.items():
-    UG_solved_times.append(key)
-    count += value
-    UG_solved_cases.append(count)
-
-  # Gathering UG data with parameter overlap:
-  UG_po_solving_times.sort()
-
-  UG_po_c = collections.Counter(UG_po_solving_times)
-  UG_po_solved_cases = []
-  UG_po_solved_times = []
-  count = 0
-  for key,value in UG_po_c.items():
-    UG_po_solved_times.append(key)
-    count += value
-    UG_po_solved_cases.append(count)
+  for line in UG_po_pre_solving_times.keys():
+    if (line not in All_instances_list):
+      All_instances_list.append(line)
 
 
-  # Gathering UG with parameters overlap and preprocessing data:
-  UG_po_pre_solving_times.sort()
+  All_instances_dict = {}
 
-  UG_po_pre_c = collections.Counter(UG_po_pre_solving_times)
-  UG_po_pre_solved_cases = []
-  UG_po_pre_solved_times = []
-  count = 0
-  for key,value in UG_po_pre_c.items():
-    UG_po_pre_solved_times.append(key)
-    count += value
-    UG_po_pre_solved_cases.append(count)
+  # Noting all the times:
+  for instance in All_instances_list:
+    if (instance not in sat_solving_times):
+      sat = 6000
+    else:
+      sat = sat_solving_times[instance]
+    if (instance not in UG_po_solving_times):
+      ug_po = 6000
+    else:
+      ug_po = UG_po_solving_times[instance]
+    if (instance not in UG_po_pre_solving_times):
+      ug_po_pre = 6000
+    else:
+      ug_po_pre = UG_po_pre_solving_times[instance]
+    All_instances_dict[instance] = [sat, ug_po, ug_po_pre]
 
-  max_solved_cases = max(max(SAT_solved_cases), max(UG_solved_cases), max(UG_po_solved_cases), max(UG_po_pre_solved_cases))
-  max_solving_time = max(max(SAT_solved_times), max(UG_solved_times), max(UG_po_solved_times), max(UG_po_pre_solved_times))
 
-  plt.plot(SAT_solved_cases, SAT_solved_times,marker='.', color='b', label = 'SAT')
-  plt.plot(UG_solved_cases, UG_solved_times,marker='.', color='r', label = 'UG')
-  plt.plot(UG_po_solved_cases, UG_po_solved_times,marker='.', color='g', label = 'UG_po')
-  plt.plot(UG_po_pre_solved_cases, UG_po_pre_solved_times, marker='.', color='k', label = 'UG_po_pre')
+  # Plotting M-SAT and UG_po_pre:
+  # M-SAT on x axis and UG_po_pre on y axis:
+  x_data = []
+  y_data = []
 
-  plt.xlabel("# solved instances")
-  plt.ylabel("Time (in sec)")
-  plt.legend()
+  '''
+  for key,value in All_instances_dict.items():
+    # SAT is at position 0:
+    x_data.append(value[0])
+    # UG po pre is at position 2:
+    y_data.append(value[2])
+    if (value[0] >= value[2]):
+      print(key, value)
+  '''
+
+  #'''
+  for key,value in All_instances_dict.items():
+    # UG pre is at position 2:
+    x_data.append(value[2])
+    # UG is at position 1:
+    y_data.append(value[1])
+  #'''
+
+  plt.scatter(x_data, y_data, marker = '+')
+  '''
+  plt.xlabel("Time for M-simple (in sec) ")
+  plt.ylabel("Time for UG-bloqqer-qdo (in sec)")
+  '''
+  plt.grid()
+  #'''
+  plt.xlabel("Time for UG-bloqqer-qdo (in sec) ")
+  plt.ylabel("Time for UG (in sec)")
+  #'''
+  #plt.legend()
   plt.show()
