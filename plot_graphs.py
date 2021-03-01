@@ -17,7 +17,7 @@ def natural_keys(text):
   return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 
-def parse_file(file_path, output_dir, options, data_dict):
+def parse_file(file_path, output_dir, options, data_dict,size_dict, peak_dict):
   f = open(file_path, 'r')
   lines = f.readlines()
   f.close()
@@ -37,8 +37,13 @@ def parse_file(file_path, output_dir, options, data_dict):
     secondary_header = lines.pop(0)
     for line in lines:
       parsed_line = line.strip("\n").split(" ")
+      # solving time on last column:
       if (parsed_line[-1] != 'TO'):
         data_dict[parsed_line[0]] = float(parsed_line[-1])
+        # encoding size of 3rd column:
+        size_dict[parsed_line[0]] = float(parsed_line[2])
+        # peak memory in 4th column:
+        peak_dict[parsed_line[0]] = float(parsed_line[3])
 
 
 # Main:
@@ -62,6 +67,16 @@ if __name__ == '__main__':
   UG_po_solving_times = {}
   UG_po_pre_solving_times = {}
 
+  sat_encoding_sizes = {}
+  UG_po_solving_sizes = {}
+  UG_po_pre_solving_sizes = {}
+
+  sat_peak_mem = {}
+  UG_po_peak_mem = {}
+  UG_po_pre_peak_mem = {}
+
+
+
 
   # Checking if directory exists:
   if not Path(args.dir).is_dir():
@@ -78,10 +93,10 @@ if __name__ == '__main__':
 
   # Parsing each file seperately:
   for file_path in files_list:
-    parse_file(file_path, args.output_dir, sat_options, sat_solving_times)
+    parse_file(file_path, args.output_dir, sat_options, sat_solving_times, sat_encoding_sizes, sat_peak_mem)
     #UG_solving_times.extend(parse_file(file_path, args.output_dir, UG_options))
-    parse_file(file_path, args.output_dir, UG_po_options, UG_po_solving_times)
-    parse_file(file_path, args.output_dir, UG_po_pre_options, UG_po_pre_solving_times)
+    parse_file(file_path, args.output_dir, UG_po_options, UG_po_solving_times, UG_po_solving_sizes, UG_po_peak_mem)
+    parse_file(file_path, args.output_dir, UG_po_pre_options, UG_po_pre_solving_times, UG_po_pre_solving_sizes, UG_po_pre_peak_mem)
 
   All_instances_list = []
 
@@ -119,12 +134,16 @@ if __name__ == '__main__':
     All_instances_dict[instance] = [sat, ug_po, ug_po_pre]
 
 
+
+
+
   # Plotting M-SAT and UG_po_pre:
   # M-SAT on x axis and UG_po_pre on y axis:
   x_data = []
   y_data = []
 
   '''
+  # plot for M-simple and with pre:
   for key,value in All_instances_dict.items():
     # SAT is at position 0:
     x_data.append(value[0])
@@ -132,25 +151,52 @@ if __name__ == '__main__':
     y_data.append(value[2])
     if (value[0] >= value[2]):
       print(key, value)
+  plt.scatter(x_data, y_data, marker = '+')
+  plt.xlabel("Time for M-simple (in sec) ")
+  plt.ylabel("Time for UG-bloqqer-qdo (in sec)")
+  plt.grid()
+  plt.show()
   '''
 
-  #'''
+  '''
+  # plot for UG with and without pre:
   for key,value in All_instances_dict.items():
     # UG pre is at position 2:
     x_data.append(value[2])
     # UG is at position 1:
     y_data.append(value[1])
-  #'''
-
   plt.scatter(x_data, y_data, marker = '+')
-  '''
-  plt.xlabel("Time for M-simple (in sec) ")
-  plt.ylabel("Time for UG-bloqqer-qdo (in sec)")
-  '''
   plt.grid()
-  #'''
   plt.xlabel("Time for UG-bloqqer-qdo (in sec) ")
   plt.ylabel("Time for UG (in sec)")
-  #'''
   #plt.legend()
   plt.show()
+  '''
+
+  #'''
+  # plot for M-simple and UG size:
+  for instance in All_instances_list:
+    if (instance in sat_encoding_sizes and instance in UG_po_pre_solving_sizes):
+      x_data.append(sat_encoding_sizes[instance])
+      y_data.append(UG_po_pre_solving_sizes[instance])
+  plt.scatter(x_data, y_data, marker = '+')
+  plt.grid()
+  plt.xlabel("Encoding size for M-simple (in MB) ")
+  plt.ylabel("Encoding size for UG (in MB)")
+  plt.show()
+  #'''
+
+  '''
+  # plot for M-simple and UG po pre peak memory:
+  for instance in All_instances_list:
+    if (instance in sat_peak_mem and instance in UG_po_pre_peak_mem):
+      x_data.append(sat_peak_mem[instance])
+      y_data.append(UG_po_pre_peak_mem[instance])
+      if (sat_peak_mem[instance] >= UG_po_pre_peak_mem[instance]):
+        print(instance)
+  plt.scatter(x_data, y_data, marker = '+')
+  plt.grid()
+  plt.xlabel("Peak memory for M-simple (in MB) ")
+  plt.ylabel("Peak memory for UG-bloqqer-qdo (in MB)")
+  plt.show()
+  '''
