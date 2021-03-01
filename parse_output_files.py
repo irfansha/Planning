@@ -35,6 +35,8 @@ def parse_file(file_path, output_dir):
   encoding_time = 0
   solving_time = 0
   k = 0
+  encoding_size = 0
+  peak_memory = 0
   cur_testcase = ''
   time_out_flag = 0
   plan_found_flag = 0
@@ -46,16 +48,18 @@ def parse_file(file_path, output_dir):
       # Writing previous testcase stats to file:
       if (len(cur_testcase) != 0):
         if (time_out_flag == 0):
-          f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " " + str(solving_time) + "\n")
+          f_out.write( cur_testcase + " " + str(k) + " " + str(round((encoding_size/1000), 5)) + " " + str(round(peak_memory,5)) + " " +str(encoding_time) + " " + str(solving_time) + "\n")
         else:
-          f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " TO\n")
+          f_out.write( cur_testcase + " " + str(k) + " " + str(round((encoding_size/1000), 5)) + " " + str(round(peak_memory,5)) + " " + str(encoding_time) + " TO\n")
       else:
-        f_out.write("Testcase k encoding_time solving_time\n")
+        f_out.write("Testcase k encoding_size(MB) peak_memory(MB) encoding_time solving_time\n")
       encoding_time = 0
       solving_time = 0
       time_out_flag = 0
       plan_found_flag = 0
       k = 0
+      encoding_size = 0
+      peak_memory = 0
       cur_testcase = parsed_line[-1]
     elif("Time out occured" in line or "Memory out" in line or "Large K" in line):
       time_out_flag = 1
@@ -67,6 +71,12 @@ def parse_file(file_path, output_dir):
       parsed_line = line.strip("\n").split(" ")
       if (time_out_flag == 0):
         solving_time += float(parsed_line[-1])
+    elif("Encoding size (in KB):" in line):
+      parsed_line = line.strip("\n").split(" ")
+      encoding_size = float(parsed_line[-1])
+    elif("Peak Memory used (in MB):" in line):
+      parsed_line = line.strip("\n").split(" ")
+      peak_memory = float(parsed_line[-1])
     elif("Namespace" in line):
       parsed_line = line.strip("\n").split(", ")
       for parsed_option in parsed_line:
@@ -78,9 +88,9 @@ def parse_file(file_path, output_dir):
 
   # Hanlding last testcase seperately:
   if (time_out_flag == 0 and plan_found_flag == 1):
-    f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " " + str(solving_time) + "\n")
+    f_out.write( cur_testcase + " " + str(k) + " " + str(round((encoding_size/1000), 5)) + " " + str(round(peak_memory,5)) + " " + str(encoding_time) + " " + str(solving_time) + "\n")
   else:
-    f_out.write( cur_testcase + " " + str(k) + " " + str(encoding_time) + " TO\n")
+    f_out.write( cur_testcase + " " + str(k) + " " + str(round((encoding_size/1000), 5)) + " " + str(round(peak_memory,5)) + " " + str(encoding_time) + " TO\n")
 
 
 # Main:
