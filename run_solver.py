@@ -11,6 +11,7 @@ class RunSolver():
       if not self.timed_out:
         self.parse_quabs_output()
     elif(self.solver_type == 2):
+      print(self.solver_path)
       self.run_caqe(self.input_file_path)
       if not self.timed_out:
         self.parse_caqe_output()
@@ -303,6 +304,9 @@ class RunSolver():
       self.solver_path = './solvers/sat/MiniSat_v1.14_linux'
     elif(self.solver_type == 5):
       self.solver_path = './solvers/sat/cryptominisat5'
+    elif(self.solver_type == 6):
+      self.solver_path = './solvers/parallel_qbf/caqe'
+      self.solver_type = 2
 
     self.sol_map = {}
     self.sat = -1 # by default plan not found.
