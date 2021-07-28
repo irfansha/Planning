@@ -41,7 +41,8 @@ if __name__ == '__main__':
                                   Planners:
                                   M = madagascar
                                   FDS  = Fast Downward soup 18
-                                  D  = Delfi'''))
+                                  D  = Delfi
+                                  PF = Powerlifted'''))
 
 
   args = parser.parse_args()
@@ -108,6 +109,9 @@ if __name__ == '__main__':
       options = " -t 5000 -m 300000 -S 1 "
       f.write("time ./tools/M " + options + domain_filepath + " " + problem_filepath + " > "+ args.output_dir + "out_" + domain_name + "_$SLURM_JOB_ID\n")
 
+    elif (args.planner == 'PF'):
+      options = " -s lazy-po -e add -g yannakakis --validate --translator-output-file /scratch/$SLURM_JOB_ID/translator_$SLURM_JOB_ID "
+      f.write("time ./powerlifted.py -d " + domain_filepath + " -i " + problem_filepath + options + " > "+ args.output_dir + "out_" + domain_name + "_$SLURM_JOB_ID\n")
 
     command = 'sbatch run_' + domain_name + ".sh"
 
