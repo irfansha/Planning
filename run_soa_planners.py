@@ -110,7 +110,7 @@ if __name__ == '__main__':
       f.write("time ./tools/M " + options + domain_filepath + " " + problem_filepath + " > "+ args.output_dir + "out_" + domain_name + "_$SLURM_JOB_ID\n")
 
     elif (args.planner == 'PF'):
-      options = " -s lazy-po -e add -g yannakakis --validate --translator-output-file /scratch/$SLURM_JOB_ID/translator_$SLURM_JOB_ID "
+      options = " -s lazy-po -e add -g yannakakis --validate --translator-output-file /scratch/$SLURM_JOB_ID/translator_$SLURM_JOB_ID --datalog-file /scratch/$SLURM_JOB_ID/datalog_$SLURM_JOB_ID"
       f.write("time ./powerlifted.py -d " + domain_filepath + " -i " + problem_filepath + options + " > "+ args.output_dir + "out_" + domain_name + "_$SLURM_JOB_ID\n")
 
     command = 'sbatch run_' + domain_name + ".sh"
